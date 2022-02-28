@@ -1,0 +1,52 @@
+import os
+
+configfile: "config.json"
+
+#Tools
+fastqc_path = "fastqc"
+bbduksh_path = "bbduk.sh"
+multiqc_path = "multiqc"
+star_path = "STAR"
+picard_path = "picard"
+bamtools_path = "bamtools"
+featureCounts_path = "featureCounts"
+kallisto_path = "kallisto"
+salmon_path = "salmon"
+
+
+rule all:
+        input:
+        	expand(config["rawQC"]+"{sample}_fq1_fastqc.html", sample = config["sample_names"]),
+        	expand(config["rawQC"]+"{sample}_fq2_fastqc.html", sample = config["sample_names"])
+        	
+
+#---------------------
+# Reference genome and annotation were downloaded prior to running snakemake. 
+
+#---------------------
+#rule fastqc on raw:
+#---------------------
+rule raw_fastqc:
+        input:
+                fq1 = lambda wildcards: config[wildcards.sample]["fq_path"] + config[wildcards.sample]["fq1"] + ".fastq.gz",
+                fq2 = lambda wildcards: config[wildcards.sample]["fq_path"] + config[wildcards.sample]["fq2"] + ".fastq.gz"
+        output:
+                fq1_zip =  (config["rawQC"]+"{sample}_fq1_fastqc.zip"),
+                fq1_html = (config["rawQC"]+"{sample}_fq1_fastqc.html"),
+                fq2_zip =  (config["rawQC"]+"{sample}_fq2_fastqc.zip"),
+                fq2_html = (config["rawQC"]+"{sample}_fq2_fastqc.html")
+        params:
+                fastqc = fastqc_path,
+                fastqc_dir = (config["rawQC"]),
+                fq1_prefix = lambda wildcards: config[wildcards.sample]["fq_path"] + config[wildcards.sample]["fq1"],
+                fq2_prefix = lambda wildcards: config[wildcards.sample]["fq_path"] + config[wildcards.sample]["fq2"],
+        shell:
+                """
+                {params.fastqc} {input.fq1};
+                {params.fastqc} {input.fq2};
+                mv {params.fq1_prefix}_fastqc.html {output.fq1_html};
+                mv {params.fq1_prefix}_fastqc.zip {output.fq1_zip};
+                mv {params.fq2_prefix}_fastqc.html {output.fq2_html};
+                mv {params.fq2_prefix}_fastqc.zip {output.fq2_zip}
+                """
+

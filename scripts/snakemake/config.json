@@ -1,0 +1,2134 @@
+{
+    "Commment_Input_Output_Directories": "This section specifies the input and output directories for scripts",
+    "rawReads" : "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+    "rawQC" : "../../rawQC/",
+    "trimmedReads" : "../../trimmedReads/",
+    "trimmedQC" : "../../trimmedQC/",
+    "starAligned" : "../../starAligned/",
+    "bamstats" : "../../bamstats/",
+    "featureCounts" : "../../featureCounts/",
+    "kallisto" : "../../kallisto/",
+    "salmon" : "../../salmon/", 
+
+    "Comment_Reference" : "This section specifies the location of the Sus scrofa, Ensembl reference genome",
+    "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome",
+    "GRCh38.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation",
+    
+    "GRCh38.Ymasked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX.fa",
+    "GRCh38.YPARs_masked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY.fa",
+
+    
+    "GRCh38.Ymasked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY_STAR",
+    "GRCh38.YPARs_masked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY_STAR",
+
+
+    "Comment_Sample_Info": "The following section lists the samples that are to be analyzed",
+    "sample_names": ['5421_FCH5MYFDMXY_L1', '5421_FCH5MYFDMXY_L2', '5510_FCH5MYFDMXY_L1', '5510_FCH5MYFDMXY_L2', 'NA00-190_FCH5MYFDMXY_L1', 'NA00-190_FCH5MYFDMXY_L2', 'NA01-135_FCH5MYFDMXY_L1', 'NA01-135_FCH5MYFDMXY_L2', 'NA03-082_FCH5MYFDMXY_L1', 'NA03-082_FCH5MYFDMXY_L2', 'NA03-247_FCH5MYFDMXY_L1', 'NA03-247_FCH5MYFDMXY_L2', 'NA03-267_FCH5MYFDMXY_L1', 'NA03-267_FCH5MYFDMXY_L2', 'NA04-053_FCH5MYFDMXY_L1', 'NA04-053_FCH5MYFDMXY_L2', 'NA04-324_FCH5MYFDMXY_L1', 'NA04-324_FCH5MYFDMXY_L2', 'NA05-038_FCH5MYFDMXY_L1', 'NA05-038_FCH5MYFDMXY_L2', 'NA05-079_FCH5MYFDMXY_L1', 'NA05-079_FCH5MYFDMXY_L2', 'NA05-130_FCH5MYFDMXY_L1', 'NA05-130_FCH5MYFDMXY_L2', 'NA06-047_FCH5MYFDMXY_L1', 'NA06-047_FCH5MYFDMXY_L2', 'NA06-243_FCH5MYFDMXY_L1', 'NA06-243_FCH5MYFDMXY_L2', 'NA06-299_FCH5MYFDMXY_L1', 'NA06-299_FCH5MYFDMXY_L2', 'NA07-178_FCH5MYFDMXY_L1', 'NA07-178_FCH5MYFDMXY_L2', 'NA07-283_FCH5MYFDMXY_L1', 'NA07-283_FCH5MYFDMXY_L2', 'NA08-126_FCH5MYFDMXY_L1', 'NA08-126_FCH5MYFDMXY_L2', 'NA08-218_FCH5MYFDMXY_L1', 'NA08-218_FCH5MYFDMXY_L2', 'NA08-234_FCH5MYFDMXY_L1', 'NA08-234_FCH5MYFDMXY_L2', 'NA09-047_FCH5MYFDMXY_L1', 'NA09-047_FCH5MYFDMXY_L2', 'NA09-287_FCH5MYFDMXY_L1', 'NA09-287_FCH5MYFDMXY_L2', 'NA09-347_FCH5MYFDMXY_L1', 'NA09-347_FCH5MYFDMXY_L2', 'NA10-041_FCH5MYFDMXY_L1', 'NA10-041_FCH5MYFDMXY_L2', 'NA10-161_FCH5MYFDMXY_L1', 'NA10-161_FCH5MYFDMXY_L2', 'NA10-375_FCH5MYFDMXY_L1', 'NA10-375_FCH5MYFDMXY_L2', 'NA11-143_FCH5MYFDMXY_L1', 'NA11-143_FCH5MYFDMXY_L2', 'NA11-239_FCH5MYFDMXY_L1', 'NA11-239_FCH5MYFDMXY_L2', 'NA11-339_FCH5MYFDMXY_L1', 'NA11-339_FCH5MYFDMXY_L2', 'NA11-391_FCH5MYFDMXY_L1', 'NA11-391_FCH5MYFDMXY_L2', 'NA12-112_FCH5MYFDMXY_L1', 'NA12-112_FCH5MYFDMXY_L2', 'NA13-047_FCH5MYFDMXY_L1', 'NA13-047_FCH5MYFDMXY_L2', 'NA13-060_FCH5MYFDMXY_L1', 'NA13-060_FCH5MYFDMXY_L2', 'NA13-279_FCH5MYFDMXY_L1', 'NA13-279_FCH5MYFDMXY_L2', 'NA13-327_FCH5MYFDMXY_L1', 'NA13-327_FCH5MYFDMXY_L2', 'NA14-034_FCH5MYFDMXY_L1', 'NA14-034_FCH5MYFDMXY_L2', 'NA15-127_FCH5MYFDMXY_L1', 'NA15-127_FCH5MYFDMXY_L2', 'NA16-017_FCH5MYFDMXY_L1', 'NA16-017_FCH5MYFDMXY_L2', 'NA16-075_FCH5MYFDMXY_L1', 'NA16-075_FCH5MYFDMXY_L2', 'NA16-297_FCH5MYFDMXY_L1', 'NA16-297_FCH5MYFDMXY_L2', 'NA17-179_FCH5MYFDMXY_L1', 'NA17-179_FCH5MYFDMXY_L2', 'NA17-277_FCH5MYFDMXY_L1', 'NA17-277_FCH5MYFDMXY_L2', 'NA17-323_FCH5MYFDMXY_L1', 'NA17-323_FCH5MYFDMXY_L2', 'NA17-359_FCH5MYFDMXY_L1', 'NA17-359_FCH5MYFDMXY_L2', 'NA17-400_FCH5MYFDMXY_L1', 'NA17-400_FCH5MYFDMXY_L2', 'NA18-049_FCH5MYFDMXY_L1', 'NA18-049_FCH5MYFDMXY_L2', 'NA18-133_FCH5MYFDMXY_L1', 'NA18-133_FCH5MYFDMXY_L2', 'NA18-173_FCH5MYFDMXY_L1', 'NA18-173_FCH5MYFDMXY_L2', 'NA18-174_FCH5MYFDMXY_L1', 'NA18-174_FCH5MYFDMXY_L2', 'NA18-175_FCH5MYFDMXY_L1', 'NA18-175_FCH5MYFDMXY_L2', 'NA18-265_FCH5MYFDMXY_L1', 'NA18-265_FCH5MYFDMXY_L2', 'NA18-281_FCH5MYFDMXY_L1', 'NA18-281_FCH5MYFDMXY_L2', 'NA18-314_FCH5MYFDMXY_L1', 'NA18-314_FCH5MYFDMXY_L2', 'NA18-317_FCH5MYFDMXY_L1', 'NA18-317_FCH5MYFDMXY_L2', 'NA18-361_FCH5MYFDMXY_L1', 'NA18-361_FCH5MYFDMXY_L2', 'NA18-369_FCH5MYFDMXY_L1', 'NA18-369_FCH5MYFDMXY_L2', 'NA18-374_FCH5MYFDMXY_L1', 'NA18-374_FCH5MYFDMXY_L2', 'NA18-381_FCH5MYFDMXY_L1', 'NA18-381_FCH5MYFDMXY_L2', 'NA18-386_FCH5MYFDMXY_L1', 'NA18-386_FCH5MYFDMXY_L2', 'NA18-429_FCH5MYFDMXY_L1', 'NA18-429_FCH5MYFDMXY_L2', 'NA18-430_FCH5MYFDMXY_L1', 'NA18-430_FCH5MYFDMXY_L2', 'NA19-021_FCH5MYFDMXY_L1', 'NA19-021_FCH5MYFDMXY_L2', 'NA19-028_FCH5MYFDMXY_L1', 'NA19-028_FCH5MYFDMXY_L2', 'NA19-029_FCH5MYFDMXY_L1', 'NA19-029_FCH5MYFDMXY_L2', 'NA19-045_FCH5MYFDMXY_L1', 'NA19-045_FCH5MYFDMXY_L2', 'NA19-060_FCH5MYFDMXY_L1', 'NA19-060_FCH5MYFDMXY_L2', 'NA19-109_FCH5MYFDMXY_L1', 'NA19-109_FCH5MYFDMXY_L2', 'NA19-115_FCH5MYFDMXY_L1', 'NA19-115_FCH5MYFDMXY_L2', 'NA19-131_FCH5MYFDMXY_L1', 'NA19-131_FCH5MYFDMXY_L2', 'NA19-134_FCH5MYFDMXY_L1', 'NA19-134_FCH5MYFDMXY_L2', 'NA19-136_FCH5MYFDMXY_L1', 'NA19-136_FCH5MYFDMXY_L2', 'NA19-170_FCH5MYFDMXY_L1', 'NA19-170_FCH5MYFDMXY_L2', 'NA19-189_FCH5MYFDMXY_L1', 'NA19-189_FCH5MYFDMXY_L2', 'NA19-349_FCH5MYFDMXY_L1', 'NA19-349_FCH5MYFDMXY_L2', 'NA19-378_FCH5MYFDMXY_L1', 'NA19-378_FCH5MYFDMXY_L2', 'NA19-403_FCH5MYFDMXY_L1', 'NA19-403_FCH5MYFDMXY_L2', 'NA20-002_FCH5MYFDMXY_L1', 'NA20-002_FCH5MYFDMXY_L2', 'NA20-037_FCH5MYFDMXY_L1', 'NA20-037_FCH5MYFDMXY_L2', 'NA20-436_FCH5MYFDMXY_L1', 'NA20-436_FCH5MYFDMXY_L2', 'NA99-167_FCH5MYFDMXY_L1', 'NA99-167_FCH5MYFDMXY_L2', 'NA99-224_FCH5MYFDMXY_L1', 'NA99-224_FCH5MYFDMXY_L2'],
+    "read": ['R1', 'R2'],
+
+    "5421_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "5421.FCH5MYFDMXY_L1_R1_ICATAATAC-TTCTAACG",
+        "fq2": "5421.FCH5MYFDMXY_L1_R2_ICATAATAC-TTCTAACG",
+        "shortName1": "5421_FCH5MYFDMXY_L1_R1",
+        "shortName2": "5421_FCH5MYFDMXY_L1_R2",
+        "ID": "5421_FCH5MYFDMXY_L1",
+        "SM": "5421_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "5421_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "5421_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "5421.FCH5MYFDMXY_L2_R1_ICATAATAC-TTCTAACG",
+        "fq2": "5421.FCH5MYFDMXY_L2_R2_ICATAATAC-TTCTAACG",
+        "shortName1": "5421_FCH5MYFDMXY_L2_R1",
+        "shortName2": "5421_FCH5MYFDMXY_L2_R2",
+        "ID": "5421_FCH5MYFDMXY_L2",
+        "SM": "5421_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "5421_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "5510_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "5510.FCH5MYFDMXY_L1_R1_ITGCGGCGT-CCTCGGTA",
+        "fq2": "5510.FCH5MYFDMXY_L1_R2_ITGCGGCGT-CCTCGGTA",
+        "shortName1": "5510_FCH5MYFDMXY_L1_R1",
+        "shortName2": "5510_FCH5MYFDMXY_L1_R2",
+        "ID": "5510_FCH5MYFDMXY_L1",
+        "SM": "5510_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "5510_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "5510_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "5510.FCH5MYFDMXY_L2_R1_ITGCGGCGT-CCTCGGTA",
+        "fq2": "5510.FCH5MYFDMXY_L2_R2_ITGCGGCGT-CCTCGGTA",
+        "shortName1": "5510_FCH5MYFDMXY_L2_R1",
+        "shortName2": "5510_FCH5MYFDMXY_L2_R2",
+        "ID": "5510_FCH5MYFDMXY_L2",
+        "SM": "5510_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "5510_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA00-190_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA00-190.FCH5MYFDMXY_L1_R1_ITCTCTACT-CGCGGTTC",
+        "fq2": "NA00-190.FCH5MYFDMXY_L1_R2_ITCTCTACT-CGCGGTTC",
+        "shortName1": "NA00-190_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA00-190_FCH5MYFDMXY_L1_R2",
+        "ID": "NA00-190_FCH5MYFDMXY_L1",
+        "SM": "NA00-190_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA00-190_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA00-190_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA00-190.FCH5MYFDMXY_L2_R1_ITCTCTACT-CGCGGTTC",
+        "fq2": "NA00-190.FCH5MYFDMXY_L2_R2_ITCTCTACT-CGCGGTTC",
+        "shortName1": "NA00-190_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA00-190_FCH5MYFDMXY_L2_R2",
+        "ID": "NA00-190_FCH5MYFDMXY_L2",
+        "SM": "NA00-190_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA00-190_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA01-135_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA01-135.FCH5MYFDMXY_L1_R1_ITGGTGGCA-TCCTGTAA",
+        "fq2": "NA01-135.FCH5MYFDMXY_L1_R2_ITGGTGGCA-TCCTGTAA",
+        "shortName1": "NA01-135_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA01-135_FCH5MYFDMXY_L1_R2",
+        "ID": "NA01-135_FCH5MYFDMXY_L1",
+        "SM": "NA01-135_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA01-135_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA01-135_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA01-135.FCH5MYFDMXY_L2_R1_ITGGTGGCA-TCCTGTAA",
+        "fq2": "NA01-135.FCH5MYFDMXY_L2_R2_ITGGTGGCA-TCCTGTAA",
+        "shortName1": "NA01-135_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA01-135_FCH5MYFDMXY_L2_R2",
+        "ID": "NA01-135_FCH5MYFDMXY_L2",
+        "SM": "NA01-135_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA01-135_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA03-082_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA03-082.FCH5MYFDMXY_L1_R1_IGCCACAGG-CATGCCAT",
+        "fq2": "NA03-082.FCH5MYFDMXY_L1_R2_IGCCACAGG-CATGCCAT",
+        "shortName1": "NA03-082_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA03-082_FCH5MYFDMXY_L1_R2",
+        "ID": "NA03-082_FCH5MYFDMXY_L1",
+        "SM": "NA03-082_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA03-082_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA03-082_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA03-082.FCH5MYFDMXY_L2_R1_IGCCACAGG-CATGCCAT",
+        "fq2": "NA03-082.FCH5MYFDMXY_L2_R2_IGCCACAGG-CATGCCAT",
+        "shortName1": "NA03-082_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA03-082_FCH5MYFDMXY_L2_R2",
+        "ID": "NA03-082_FCH5MYFDMXY_L2",
+        "SM": "NA03-082_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA03-082_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA03-247_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA03-247.FCH5MYFDMXY_L1_R1_IATGTAAGT-ACTCTATG",
+        "fq2": "NA03-247.FCH5MYFDMXY_L1_R2_IATGTAAGT-ACTCTATG",
+        "shortName1": "NA03-247_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA03-247_FCH5MYFDMXY_L1_R2",
+        "ID": "NA03-247_FCH5MYFDMXY_L1",
+        "SM": "NA03-247_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA03-247_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA03-247_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA03-247.FCH5MYFDMXY_L2_R1_IATGTAAGT-ACTCTATG",
+        "fq2": "NA03-247.FCH5MYFDMXY_L2_R2_IATGTAAGT-ACTCTATG",
+        "shortName1": "NA03-247_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA03-247_FCH5MYFDMXY_L2_R2",
+        "ID": "NA03-247_FCH5MYFDMXY_L2",
+        "SM": "NA03-247_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA03-247_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA03-267_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA03-267.FCH5MYFDMXY_L1_R1_IGGTACCTT-AAGACGTC",
+        "fq2": "NA03-267.FCH5MYFDMXY_L1_R2_IGGTACCTT-AAGACGTC",
+        "shortName1": "NA03-267_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA03-267_FCH5MYFDMXY_L1_R2",
+        "ID": "NA03-267_FCH5MYFDMXY_L1",
+        "SM": "NA03-267_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA03-267_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA03-267_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA03-267.FCH5MYFDMXY_L2_R1_IGGTACCTT-AAGACGTC",
+        "fq2": "NA03-267.FCH5MYFDMXY_L2_R2_IGGTACCTT-AAGACGTC",
+        "shortName1": "NA03-267_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA03-267_FCH5MYFDMXY_L2_R2",
+        "ID": "NA03-267_FCH5MYFDMXY_L2",
+        "SM": "NA03-267_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA03-267_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA04-053_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA04-053.FCH5MYFDMXY_L1_R1_IATTGTGAA-TGCATTGC",
+        "fq2": "NA04-053.FCH5MYFDMXY_L1_R2_IATTGTGAA-TGCATTGC",
+        "shortName1": "NA04-053_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA04-053_FCH5MYFDMXY_L1_R2",
+        "ID": "NA04-053_FCH5MYFDMXY_L1",
+        "SM": "NA04-053_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA04-053_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA04-053_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA04-053.FCH5MYFDMXY_L2_R1_IATTGTGAA-TGCATTGC",
+        "fq2": "NA04-053.FCH5MYFDMXY_L2_R2_IATTGTGAA-TGCATTGC",
+        "shortName1": "NA04-053_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA04-053_FCH5MYFDMXY_L2_R2",
+        "ID": "NA04-053_FCH5MYFDMXY_L2",
+        "SM": "NA04-053_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA04-053_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA04-324_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA04-324.FCH5MYFDMXY_L1_R1_IGAATGAGA-GAGGCATT",
+        "fq2": "NA04-324.FCH5MYFDMXY_L1_R2_IGAATGAGA-GAGGCATT",
+        "shortName1": "NA04-324_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA04-324_FCH5MYFDMXY_L1_R2",
+        "ID": "NA04-324_FCH5MYFDMXY_L1",
+        "SM": "NA04-324_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA04-324_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA04-324_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA04-324.FCH5MYFDMXY_L2_R1_IGAATGAGA-GAGGCATT",
+        "fq2": "NA04-324.FCH5MYFDMXY_L2_R2_IGAATGAGA-GAGGCATT",
+        "shortName1": "NA04-324_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA04-324_FCH5MYFDMXY_L2_R2",
+        "ID": "NA04-324_FCH5MYFDMXY_L2",
+        "SM": "NA04-324_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA04-324_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA05-038_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA05-038.FCH5MYFDMXY_L1_R1_ICCAAGTCT-AAGGATGA",
+        "fq2": "NA05-038.FCH5MYFDMXY_L1_R2_ICCAAGTCT-AAGGATGA",
+        "shortName1": "NA05-038_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA05-038_FCH5MYFDMXY_L1_R2",
+        "ID": "NA05-038_FCH5MYFDMXY_L1",
+        "SM": "NA05-038_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA05-038_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA05-038_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA05-038.FCH5MYFDMXY_L2_R1_ICCAAGTCT-AAGGATGA",
+        "fq2": "NA05-038.FCH5MYFDMXY_L2_R2_ICCAAGTCT-AAGGATGA",
+        "shortName1": "NA05-038_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA05-038_FCH5MYFDMXY_L2_R2",
+        "ID": "NA05-038_FCH5MYFDMXY_L2",
+        "SM": "NA05-038_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA05-038_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA05-079_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA05-079.FCH5MYFDMXY_L1_R1_IGGCTTAAG-TCGTGACC",
+        "fq2": "NA05-079.FCH5MYFDMXY_L1_R2_IGGCTTAAG-TCGTGACC",
+        "shortName1": "NA05-079_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA05-079_FCH5MYFDMXY_L1_R2",
+        "ID": "NA05-079_FCH5MYFDMXY_L1",
+        "SM": "NA05-079_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA05-079_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA05-079_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA05-079.FCH5MYFDMXY_L2_R1_IGGCTTAAG-TCGTGACC",
+        "fq2": "NA05-079.FCH5MYFDMXY_L2_R2_IGGCTTAAG-TCGTGACC",
+        "shortName1": "NA05-079_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA05-079_FCH5MYFDMXY_L2_R2",
+        "ID": "NA05-079_FCH5MYFDMXY_L2",
+        "SM": "NA05-079_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA05-079_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA05-130_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA05-130.FCH5MYFDMXY_L1_R1_ITTGGACTC-GGAAGCAG",
+        "fq2": "NA05-130.FCH5MYFDMXY_L1_R2_ITTGGACTC-GGAAGCAG",
+        "shortName1": "NA05-130_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA05-130_FCH5MYFDMXY_L1_R2",
+        "ID": "NA05-130_FCH5MYFDMXY_L1",
+        "SM": "NA05-130_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA05-130_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA05-130_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA05-130.FCH5MYFDMXY_L2_R1_ITTGGACTC-GGAAGCAG",
+        "fq2": "NA05-130.FCH5MYFDMXY_L2_R2_ITTGGACTC-GGAAGCAG",
+        "shortName1": "NA05-130_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA05-130_FCH5MYFDMXY_L2_R2",
+        "ID": "NA05-130_FCH5MYFDMXY_L2",
+        "SM": "NA05-130_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA05-130_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA06-047_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA06-047.FCH5MYFDMXY_L1_R1_IGCAGAATT-ACCGGCCA",
+        "fq2": "NA06-047.FCH5MYFDMXY_L1_R2_IGCAGAATT-ACCGGCCA",
+        "shortName1": "NA06-047_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA06-047_FCH5MYFDMXY_L1_R2",
+        "ID": "NA06-047_FCH5MYFDMXY_L1",
+        "SM": "NA06-047_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA06-047_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA06-047_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA06-047.FCH5MYFDMXY_L2_R1_IGCAGAATT-ACCGGCCA",
+        "fq2": "NA06-047.FCH5MYFDMXY_L2_R2_IGCAGAATT-ACCGGCCA",
+        "shortName1": "NA06-047_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA06-047_FCH5MYFDMXY_L2_R2",
+        "ID": "NA06-047_FCH5MYFDMXY_L2",
+        "SM": "NA06-047_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA06-047_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA06-243_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA06-243.FCH5MYFDMXY_L1_R1_ICCTTCACC-GACGCTCC",
+        "fq2": "NA06-243.FCH5MYFDMXY_L1_R2_ICCTTCACC-GACGCTCC",
+        "shortName1": "NA06-243_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA06-243_FCH5MYFDMXY_L1_R2",
+        "ID": "NA06-243_FCH5MYFDMXY_L1",
+        "SM": "NA06-243_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA06-243_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA06-243_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA06-243.FCH5MYFDMXY_L2_R1_ICCTTCACC-GACGCTCC",
+        "fq2": "NA06-243.FCH5MYFDMXY_L2_R2_ICCTTCACC-GACGCTCC",
+        "shortName1": "NA06-243_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA06-243_FCH5MYFDMXY_L2_R2",
+        "ID": "NA06-243_FCH5MYFDMXY_L2",
+        "SM": "NA06-243_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA06-243_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA06-299_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA06-299.FCH5MYFDMXY_L1_R1_ICTTGGTAT-CCAAGTCC",
+        "fq2": "NA06-299.FCH5MYFDMXY_L1_R2_ICTTGGTAT-CCAAGTCC",
+        "shortName1": "NA06-299_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA06-299_FCH5MYFDMXY_L1_R2",
+        "ID": "NA06-299_FCH5MYFDMXY_L1",
+        "SM": "NA06-299_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA06-299_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA06-299_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA06-299.FCH5MYFDMXY_L2_R1_ICTTGGTAT-CCAAGTCC",
+        "fq2": "NA06-299.FCH5MYFDMXY_L2_R2_ICTTGGTAT-CCAAGTCC",
+        "shortName1": "NA06-299_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA06-299_FCH5MYFDMXY_L2_R2",
+        "ID": "NA06-299_FCH5MYFDMXY_L2",
+        "SM": "NA06-299_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA06-299_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA07-178_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA07-178.FCH5MYFDMXY_L1_R1_ICGGCGTGA-GCGCCTGT",
+        "fq2": "NA07-178.FCH5MYFDMXY_L1_R2_ICGGCGTGA-GCGCCTGT",
+        "shortName1": "NA07-178_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA07-178_FCH5MYFDMXY_L1_R2",
+        "ID": "NA07-178_FCH5MYFDMXY_L1",
+        "SM": "NA07-178_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA07-178_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA07-178_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA07-178.FCH5MYFDMXY_L2_R1_ICGGCGTGA-GCGCCTGT",
+        "fq2": "NA07-178.FCH5MYFDMXY_L2_R2_ICGGCGTGA-GCGCCTGT",
+        "shortName1": "NA07-178_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA07-178_FCH5MYFDMXY_L2_R2",
+        "ID": "NA07-178_FCH5MYFDMXY_L2",
+        "SM": "NA07-178_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA07-178_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA07-283_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA07-283.FCH5MYFDMXY_L1_R1_ITAATACAG-ATATTCAC",
+        "fq2": "NA07-283.FCH5MYFDMXY_L1_R2_ITAATACAG-ATATTCAC",
+        "shortName1": "NA07-283_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA07-283_FCH5MYFDMXY_L1_R2",
+        "ID": "NA07-283_FCH5MYFDMXY_L1",
+        "SM": "NA07-283_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA07-283_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA07-283_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA07-283.FCH5MYFDMXY_L2_R1_ITAATACAG-ATATTCAC",
+        "fq2": "NA07-283.FCH5MYFDMXY_L2_R2_ITAATACAG-ATATTCAC",
+        "shortName1": "NA07-283_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA07-283_FCH5MYFDMXY_L2_R2",
+        "ID": "NA07-283_FCH5MYFDMXY_L2",
+        "SM": "NA07-283_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA07-283_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA08-126_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA08-126.FCH5MYFDMXY_L1_R1_IATGAGGCC-GTTAATTG",
+        "fq2": "NA08-126.FCH5MYFDMXY_L1_R2_IATGAGGCC-GTTAATTG",
+        "shortName1": "NA08-126_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA08-126_FCH5MYFDMXY_L1_R2",
+        "ID": "NA08-126_FCH5MYFDMXY_L1",
+        "SM": "NA08-126_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA08-126_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA08-126_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA08-126.FCH5MYFDMXY_L2_R1_IATGAGGCC-GTTAATTG",
+        "fq2": "NA08-126.FCH5MYFDMXY_L2_R2_IATGAGGCC-GTTAATTG",
+        "shortName1": "NA08-126_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA08-126_FCH5MYFDMXY_L2_R2",
+        "ID": "NA08-126_FCH5MYFDMXY_L2",
+        "SM": "NA08-126_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA08-126_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA08-218_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA08-218.FCH5MYFDMXY_L1_R1_ICCATTCGA-GTTGTCCG",
+        "fq2": "NA08-218.FCH5MYFDMXY_L1_R2_ICCATTCGA-GTTGTCCG",
+        "shortName1": "NA08-218_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA08-218_FCH5MYFDMXY_L1_R2",
+        "ID": "NA08-218_FCH5MYFDMXY_L1",
+        "SM": "NA08-218_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA08-218_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA08-218_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA08-218.FCH5MYFDMXY_L2_R1_ICCATTCGA-GTTGTCCG",
+        "fq2": "NA08-218.FCH5MYFDMXY_L2_R2_ICCATTCGA-GTTGTCCG",
+        "shortName1": "NA08-218_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA08-218_FCH5MYFDMXY_L2_R2",
+        "ID": "NA08-218_FCH5MYFDMXY_L2",
+        "SM": "NA08-218_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA08-218_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA08-234_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA08-234.FCH5MYFDMXY_L1_R1_IGTGAATAT-TCTCATTC",
+        "fq2": "NA08-234.FCH5MYFDMXY_L1_R2_IGTGAATAT-TCTCATTC",
+        "shortName1": "NA08-234_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA08-234_FCH5MYFDMXY_L1_R2",
+        "ID": "NA08-234_FCH5MYFDMXY_L1",
+        "SM": "NA08-234_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA08-234_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA08-234_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA08-234.FCH5MYFDMXY_L2_R1_IGTGAATAT-TCTCATTC",
+        "fq2": "NA08-234.FCH5MYFDMXY_L2_R2_IGTGAATAT-TCTCATTC",
+        "shortName1": "NA08-234_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA08-234_FCH5MYFDMXY_L2_R2",
+        "ID": "NA08-234_FCH5MYFDMXY_L2",
+        "SM": "NA08-234_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA08-234_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA09-047_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA09-047.FCH5MYFDMXY_L1_R1_ICGGACAAC-TCCGGATT",
+        "fq2": "NA09-047.FCH5MYFDMXY_L1_R2_ICGGACAAC-TCCGGATT",
+        "shortName1": "NA09-047_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA09-047_FCH5MYFDMXY_L1_R2",
+        "ID": "NA09-047_FCH5MYFDMXY_L1",
+        "SM": "NA09-047_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA09-047_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA09-047_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA09-047.FCH5MYFDMXY_L2_R1_ICGGACAAC-TCCGGATT",
+        "fq2": "NA09-047.FCH5MYFDMXY_L2_R2_ICGGACAAC-TCCGGATT",
+        "shortName1": "NA09-047_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA09-047_FCH5MYFDMXY_L2_R2",
+        "ID": "NA09-047_FCH5MYFDMXY_L2",
+        "SM": "NA09-047_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA09-047_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA09-287_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA09-287.FCH5MYFDMXY_L1_R1_IACACTAAG-ATCCATAT",
+        "fq2": "NA09-287.FCH5MYFDMXY_L1_R2_IACACTAAG-ATCCATAT",
+        "shortName1": "NA09-287_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA09-287_FCH5MYFDMXY_L1_R2",
+        "ID": "NA09-287_FCH5MYFDMXY_L1",
+        "SM": "NA09-287_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA09-287_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA09-287_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA09-287.FCH5MYFDMXY_L2_R1_IACACTAAG-ATCCATAT",
+        "fq2": "NA09-287.FCH5MYFDMXY_L2_R2_IACACTAAG-ATCCATAT",
+        "shortName1": "NA09-287_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA09-287_FCH5MYFDMXY_L2_R2",
+        "ID": "NA09-287_FCH5MYFDMXY_L2",
+        "SM": "NA09-287_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA09-287_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA09-347_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA09-347.FCH5MYFDMXY_L1_R1_ICATAGAGT-TGCCACCA",
+        "fq2": "NA09-347.FCH5MYFDMXY_L1_R2_ICATAGAGT-TGCCACCA",
+        "shortName1": "NA09-347_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA09-347_FCH5MYFDMXY_L1_R2",
+        "ID": "NA09-347_FCH5MYFDMXY_L1",
+        "SM": "NA09-347_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA09-347_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA09-347_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA09-347.FCH5MYFDMXY_L2_R1_ICATAGAGT-TGCCACCA",
+        "fq2": "NA09-347.FCH5MYFDMXY_L2_R2_ICATAGAGT-TGCCACCA",
+        "shortName1": "NA09-347_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA09-347_FCH5MYFDMXY_L2_R2",
+        "ID": "NA09-347_FCH5MYFDMXY_L2",
+        "SM": "NA09-347_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA09-347_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA10-041_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA10-041.FCH5MYFDMXY_L1_R1_IAACTGTAG-ACGCCGCA",
+        "fq2": "NA10-041.FCH5MYFDMXY_L1_R2_IAACTGTAG-ACGCCGCA",
+        "shortName1": "NA10-041_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA10-041_FCH5MYFDMXY_L1_R2",
+        "ID": "NA10-041_FCH5MYFDMXY_L1",
+        "SM": "NA10-041_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA10-041_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA10-041_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA10-041.FCH5MYFDMXY_L2_R1_IAACTGTAG-ACGCCGCA",
+        "fq2": "NA10-041.FCH5MYFDMXY_L2_R2_IAACTGTAG-ACGCCGCA",
+        "shortName1": "NA10-041_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA10-041_FCH5MYFDMXY_L2_R2",
+        "ID": "NA10-041_FCH5MYFDMXY_L2",
+        "SM": "NA10-041_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA10-041_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA10-161_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA10-161.FCH5MYFDMXY_L1_R1_IAACAGGTT-ATACCAAG",
+        "fq2": "NA10-161.FCH5MYFDMXY_L1_R2_IAACAGGTT-ATACCAAG",
+        "shortName1": "NA10-161_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA10-161_FCH5MYFDMXY_L1_R2",
+        "ID": "NA10-161_FCH5MYFDMXY_L1",
+        "SM": "NA10-161_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA10-161_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA10-161_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA10-161.FCH5MYFDMXY_L2_R1_IAACAGGTT-ATACCAAG",
+        "fq2": "NA10-161.FCH5MYFDMXY_L2_R2_IAACAGGTT-ATACCAAG",
+        "shortName1": "NA10-161_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA10-161_FCH5MYFDMXY_L2_R2",
+        "ID": "NA10-161_FCH5MYFDMXY_L2",
+        "SM": "NA10-161_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA10-161_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA10-375_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA10-375.FCH5MYFDMXY_L1_R1_ITGGATCGA-GTGCGATA",
+        "fq2": "NA10-375.FCH5MYFDMXY_L1_R2_ITGGATCGA-GTGCGATA",
+        "shortName1": "NA10-375_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA10-375_FCH5MYFDMXY_L1_R2",
+        "ID": "NA10-375_FCH5MYFDMXY_L1",
+        "SM": "NA10-375_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA10-375_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA10-375_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA10-375.FCH5MYFDMXY_L2_R1_ITGGATCGA-GTGCGATA",
+        "fq2": "NA10-375.FCH5MYFDMXY_L2_R2_ITGGATCGA-GTGCGATA",
+        "shortName1": "NA10-375_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA10-375_FCH5MYFDMXY_L2_R2",
+        "ID": "NA10-375_FCH5MYFDMXY_L2",
+        "SM": "NA10-375_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA10-375_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA11-143_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-143.FCH5MYFDMXY_L1_R1_IAATCCGGA-CTACAGTT",
+        "fq2": "NA11-143.FCH5MYFDMXY_L1_R2_IAATCCGGA-CTACAGTT",
+        "shortName1": "NA11-143_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA11-143_FCH5MYFDMXY_L1_R2",
+        "ID": "NA11-143_FCH5MYFDMXY_L1",
+        "SM": "NA11-143_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA11-143_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA11-143_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-143.FCH5MYFDMXY_L2_R1_IAATCCGGA-CTACAGTT",
+        "fq2": "NA11-143.FCH5MYFDMXY_L2_R2_IAATCCGGA-CTACAGTT",
+        "shortName1": "NA11-143_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA11-143_FCH5MYFDMXY_L2_R2",
+        "ID": "NA11-143_FCH5MYFDMXY_L2",
+        "SM": "NA11-143_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA11-143_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA11-239_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-239.FCH5MYFDMXY_L1_R1_ITTGCCTAG-ACCACTTA",
+        "fq2": "NA11-239.FCH5MYFDMXY_L1_R2_ITTGCCTAG-ACCACTTA",
+        "shortName1": "NA11-239_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA11-239_FCH5MYFDMXY_L1_R2",
+        "ID": "NA11-239_FCH5MYFDMXY_L1",
+        "SM": "NA11-239_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA11-239_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA11-239_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-239.FCH5MYFDMXY_L2_R1_ITTGCCTAG-ACCACTTA",
+        "fq2": "NA11-239.FCH5MYFDMXY_L2_R2_ITTGCCTAG-ACCACTTA",
+        "shortName1": "NA11-239_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA11-239_FCH5MYFDMXY_L2_R2",
+        "ID": "NA11-239_FCH5MYFDMXY_L2",
+        "SM": "NA11-239_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA11-239_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA11-339_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-339.FCH5MYFDMXY_L1_R1_IGCACGGAC-GTCTCGCA",
+        "fq2": "NA11-339.FCH5MYFDMXY_L1_R2_IGCACGGAC-GTCTCGCA",
+        "shortName1": "NA11-339_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA11-339_FCH5MYFDMXY_L1_R2",
+        "ID": "NA11-339_FCH5MYFDMXY_L1",
+        "SM": "NA11-339_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA11-339_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA11-339_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-339.FCH5MYFDMXY_L2_R1_IGCACGGAC-GTCTCGCA",
+        "fq2": "NA11-339.FCH5MYFDMXY_L2_R2_IGCACGGAC-GTCTCGCA",
+        "shortName1": "NA11-339_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA11-339_FCH5MYFDMXY_L2_R2",
+        "ID": "NA11-339_FCH5MYFDMXY_L2",
+        "SM": "NA11-339_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA11-339_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA11-391_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-391.FCH5MYFDMXY_L1_R1_IATATGGAT-CTGTATTA",
+        "fq2": "NA11-391.FCH5MYFDMXY_L1_R2_IATATGGAT-CTGTATTA",
+        "shortName1": "NA11-391_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA11-391_FCH5MYFDMXY_L1_R2",
+        "ID": "NA11-391_FCH5MYFDMXY_L1",
+        "SM": "NA11-391_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA11-391_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA11-391_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA11-391.FCH5MYFDMXY_L2_R1_IATATGGAT-CTGTATTA",
+        "fq2": "NA11-391.FCH5MYFDMXY_L2_R2_IATATGGAT-CTGTATTA",
+        "shortName1": "NA11-391_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA11-391_FCH5MYFDMXY_L2_R2",
+        "ID": "NA11-391_FCH5MYFDMXY_L2",
+        "SM": "NA11-391_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA11-391_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA12-112_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA12-112.FCH5MYFDMXY_L1_R1_IGATCTATC-ATGAGGCT",
+        "fq2": "NA12-112.FCH5MYFDMXY_L1_R2_IGATCTATC-ATGAGGCT",
+        "shortName1": "NA12-112_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA12-112_FCH5MYFDMXY_L1_R2",
+        "ID": "NA12-112_FCH5MYFDMXY_L1",
+        "SM": "NA12-112_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA12-112_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA12-112_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA12-112.FCH5MYFDMXY_L2_R1_IGATCTATC-ATGAGGCT",
+        "fq2": "NA12-112.FCH5MYFDMXY_L2_R2_IGATCTATC-ATGAGGCT",
+        "shortName1": "NA12-112_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA12-112_FCH5MYFDMXY_L2_R2",
+        "ID": "NA12-112_FCH5MYFDMXY_L2",
+        "SM": "NA12-112_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA12-112_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA13-047_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-047.FCH5MYFDMXY_L1_R1_IGGAGCGTC-GTCCGTGC",
+        "fq2": "NA13-047.FCH5MYFDMXY_L1_R2_IGGAGCGTC-GTCCGTGC",
+        "shortName1": "NA13-047_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA13-047_FCH5MYFDMXY_L1_R2",
+        "ID": "NA13-047_FCH5MYFDMXY_L1",
+        "SM": "NA13-047_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA13-047_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA13-047_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-047.FCH5MYFDMXY_L2_R1_IGGAGCGTC-GTCCGTGC",
+        "fq2": "NA13-047.FCH5MYFDMXY_L2_R2_IGGAGCGTC-GTCCGTGC",
+        "shortName1": "NA13-047_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA13-047_FCH5MYFDMXY_L2_R2",
+        "ID": "NA13-047_FCH5MYFDMXY_L2",
+        "SM": "NA13-047_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA13-047_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA13-060_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-060.FCH5MYFDMXY_L1_R1_IGCAATGCA-GGAACGTT",
+        "fq2": "NA13-060.FCH5MYFDMXY_L1_R2_IGCAATGCA-GGAACGTT",
+        "shortName1": "NA13-060_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA13-060_FCH5MYFDMXY_L1_R2",
+        "ID": "NA13-060_FCH5MYFDMXY_L1",
+        "SM": "NA13-060_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA13-060_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA13-060_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-060.FCH5MYFDMXY_L2_R1_IGCAATGCA-GGAACGTT",
+        "fq2": "NA13-060.FCH5MYFDMXY_L2_R2_IGCAATGCA-GGAACGTT",
+        "shortName1": "NA13-060_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA13-060_FCH5MYFDMXY_L2_R2",
+        "ID": "NA13-060_FCH5MYFDMXY_L2",
+        "SM": "NA13-060_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA13-060_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA13-279_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-279.FCH5MYFDMXY_L1_R1_IATGGCATG-AAGGTACC",
+        "fq2": "NA13-279.FCH5MYFDMXY_L1_R2_IATGGCATG-AAGGTACC",
+        "shortName1": "NA13-279_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA13-279_FCH5MYFDMXY_L1_R2",
+        "ID": "NA13-279_FCH5MYFDMXY_L1",
+        "SM": "NA13-279_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA13-279_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA13-279_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-279.FCH5MYFDMXY_L2_R1_IATGGCATG-AAGGTACC",
+        "fq2": "NA13-279.FCH5MYFDMXY_L2_R2_IATGGCATG-AAGGTACC",
+        "shortName1": "NA13-279_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA13-279_FCH5MYFDMXY_L2_R2",
+        "ID": "NA13-279_FCH5MYFDMXY_L2",
+        "SM": "NA13-279_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA13-279_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA13-327_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-327.FCH5MYFDMXY_L1_R1_IACAGGCGC-CTCTGCCT",
+        "fq2": "NA13-327.FCH5MYFDMXY_L1_R2_IACAGGCGC-CTCTGCCT",
+        "shortName1": "NA13-327_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA13-327_FCH5MYFDMXY_L1_R2",
+        "ID": "NA13-327_FCH5MYFDMXY_L1",
+        "SM": "NA13-327_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA13-327_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA13-327_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA13-327.FCH5MYFDMXY_L2_R1_IACAGGCGC-CTCTGCCT",
+        "fq2": "NA13-327.FCH5MYFDMXY_L2_R2_IACAGGCGC-CTCTGCCT",
+        "shortName1": "NA13-327_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA13-327_FCH5MYFDMXY_L2_R2",
+        "ID": "NA13-327_FCH5MYFDMXY_L2",
+        "SM": "NA13-327_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA13-327_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA14-034_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA14-034.FCH5MYFDMXY_L1_R1_IGCGCAAGC-TCACGCCG",
+        "fq2": "NA14-034.FCH5MYFDMXY_L1_R2_IGCGCAAGC-TCACGCCG",
+        "shortName1": "NA14-034_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA14-034_FCH5MYFDMXY_L1_R2",
+        "ID": "NA14-034_FCH5MYFDMXY_L1",
+        "SM": "NA14-034_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA14-034_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA14-034_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA14-034.FCH5MYFDMXY_L2_R1_IGCGCAAGC-TCACGCCG",
+        "fq2": "NA14-034.FCH5MYFDMXY_L2_R2_IGCGCAAGC-TCACGCCG",
+        "shortName1": "NA14-034_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA14-034_FCH5MYFDMXY_L2_R2",
+        "ID": "NA14-034_FCH5MYFDMXY_L2",
+        "SM": "NA14-034_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA14-034_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA15-127_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA15-127.FCH5MYFDMXY_L1_R1_ICGGAACTG-CACTACGA",
+        "fq2": "NA15-127.FCH5MYFDMXY_L1_R2_ICGGAACTG-CACTACGA",
+        "shortName1": "NA15-127_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA15-127_FCH5MYFDMXY_L1_R2",
+        "ID": "NA15-127_FCH5MYFDMXY_L1",
+        "SM": "NA15-127_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA15-127_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA15-127_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA15-127.FCH5MYFDMXY_L2_R1_ICGGAACTG-CACTACGA",
+        "fq2": "NA15-127.FCH5MYFDMXY_L2_R2_ICGGAACTG-CACTACGA",
+        "shortName1": "NA15-127_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA15-127_FCH5MYFDMXY_L2_R2",
+        "ID": "NA15-127_FCH5MYFDMXY_L2",
+        "SM": "NA15-127_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA15-127_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA16-017_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA16-017.FCH5MYFDMXY_L1_R1_IGTCGGAGC-GGTTATAA",
+        "fq2": "NA16-017.FCH5MYFDMXY_L1_R2_IGTCGGAGC-GGTTATAA",
+        "shortName1": "NA16-017_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA16-017_FCH5MYFDMXY_L1_R2",
+        "ID": "NA16-017_FCH5MYFDMXY_L1",
+        "SM": "NA16-017_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA16-017_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA16-017_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA16-017.FCH5MYFDMXY_L2_R1_IGTCGGAGC-GGTTATAA",
+        "fq2": "NA16-017.FCH5MYFDMXY_L2_R2_IGTCGGAGC-GGTTATAA",
+        "shortName1": "NA16-017_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA16-017_FCH5MYFDMXY_L2_R2",
+        "ID": "NA16-017_FCH5MYFDMXY_L2",
+        "SM": "NA16-017_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA16-017_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA16-075_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA16-075.FCH5MYFDMXY_L1_R1_IACTAAGAT-AACCGCGG",
+        "fq2": "NA16-075.FCH5MYFDMXY_L1_R2_IACTAAGAT-AACCGCGG",
+        "shortName1": "NA16-075_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA16-075_FCH5MYFDMXY_L1_R2",
+        "ID": "NA16-075_FCH5MYFDMXY_L1",
+        "SM": "NA16-075_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA16-075_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA16-075_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA16-075.FCH5MYFDMXY_L2_R1_IACTAAGAT-AACCGCGG",
+        "fq2": "NA16-075.FCH5MYFDMXY_L2_R2_IACTAAGAT-AACCGCGG",
+        "shortName1": "NA16-075_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA16-075_FCH5MYFDMXY_L2_R2",
+        "ID": "NA16-075_FCH5MYFDMXY_L2",
+        "SM": "NA16-075_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA16-075_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA16-297_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA16-297.FCH5MYFDMXY_L1_R1_IGCGCTCTA-GCTCCGAC",
+        "fq2": "NA16-297.FCH5MYFDMXY_L1_R2_IGCGCTCTA-GCTCCGAC",
+        "shortName1": "NA16-297_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA16-297_FCH5MYFDMXY_L1_R2",
+        "ID": "NA16-297_FCH5MYFDMXY_L1",
+        "SM": "NA16-297_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA16-297_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA16-297_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA16-297.FCH5MYFDMXY_L2_R1_IGCGCTCTA-GCTCCGAC",
+        "fq2": "NA16-297.FCH5MYFDMXY_L2_R2_IGCGCTCTA-GCTCCGAC",
+        "shortName1": "NA16-297_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA16-297_FCH5MYFDMXY_L2_R2",
+        "ID": "NA16-297_FCH5MYFDMXY_L2",
+        "SM": "NA16-297_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA16-297_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA17-179_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-179.FCH5MYFDMXY_L1_R1_ICAAGCTAG-ACATAGCG",
+        "fq2": "NA17-179.FCH5MYFDMXY_L1_R2_ICAAGCTAG-ACATAGCG",
+        "shortName1": "NA17-179_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA17-179_FCH5MYFDMXY_L1_R2",
+        "ID": "NA17-179_FCH5MYFDMXY_L1",
+        "SM": "NA17-179_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA17-179_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA17-179_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-179.FCH5MYFDMXY_L2_R1_ICAAGCTAG-ACATAGCG",
+        "fq2": "NA17-179.FCH5MYFDMXY_L2_R2_ICAAGCTAG-ACATAGCG",
+        "shortName1": "NA17-179_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA17-179_FCH5MYFDMXY_L2_R2",
+        "ID": "NA17-179_FCH5MYFDMXY_L2",
+        "SM": "NA17-179_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA17-179_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA17-277_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-277.FCH5MYFDMXY_L1_R1_IGTGTCGGA-GCTTGCGC",
+        "fq2": "NA17-277.FCH5MYFDMXY_L1_R2_IGTGTCGGA-GCTTGCGC",
+        "shortName1": "NA17-277_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA17-277_FCH5MYFDMXY_L1_R2",
+        "ID": "NA17-277_FCH5MYFDMXY_L1",
+        "SM": "NA17-277_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA17-277_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA17-277_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-277.FCH5MYFDMXY_L2_R1_IGTGTCGGA-GCTTGCGC",
+        "fq2": "NA17-277.FCH5MYFDMXY_L2_R2_IGTGTCGGA-GCTTGCGC",
+        "shortName1": "NA17-277_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA17-277_FCH5MYFDMXY_L2_R2",
+        "ID": "NA17-277_FCH5MYFDMXY_L2",
+        "SM": "NA17-277_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA17-277_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA17-323_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-323.FCH5MYFDMXY_L1_R1_ICCGTGAAG-CAGTGGAT",
+        "fq2": "NA17-323.FCH5MYFDMXY_L1_R2_ICCGTGAAG-CAGTGGAT",
+        "shortName1": "NA17-323_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA17-323_FCH5MYFDMXY_L1_R2",
+        "ID": "NA17-323_FCH5MYFDMXY_L1",
+        "SM": "NA17-323_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA17-323_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA17-323_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-323.FCH5MYFDMXY_L2_R1_ICCGTGAAG-CAGTGGAT",
+        "fq2": "NA17-323.FCH5MYFDMXY_L2_R2_ICCGTGAAG-CAGTGGAT",
+        "shortName1": "NA17-323_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA17-323_FCH5MYFDMXY_L2_R2",
+        "ID": "NA17-323_FCH5MYFDMXY_L2",
+        "SM": "NA17-323_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA17-323_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA17-359_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-359.FCH5MYFDMXY_L1_R1_IGCTTGTCA-GAACATAC",
+        "fq2": "NA17-359.FCH5MYFDMXY_L1_R2_IGCTTGTCA-GAACATAC",
+        "shortName1": "NA17-359_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA17-359_FCH5MYFDMXY_L1_R2",
+        "ID": "NA17-359_FCH5MYFDMXY_L1",
+        "SM": "NA17-359_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA17-359_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA17-359_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-359.FCH5MYFDMXY_L2_R1_IGCTTGTCA-GAACATAC",
+        "fq2": "NA17-359.FCH5MYFDMXY_L2_R2_IGCTTGTCA-GAACATAC",
+        "shortName1": "NA17-359_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA17-359_FCH5MYFDMXY_L2_R2",
+        "ID": "NA17-359_FCH5MYFDMXY_L2",
+        "SM": "NA17-359_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA17-359_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA17-400_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-400.FCH5MYFDMXY_L1_R1_ITAAGGTCA-TGTCGTAG",
+        "fq2": "NA17-400.FCH5MYFDMXY_L1_R2_ITAAGGTCA-TGTCGTAG",
+        "shortName1": "NA17-400_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA17-400_FCH5MYFDMXY_L1_R2",
+        "ID": "NA17-400_FCH5MYFDMXY_L1",
+        "SM": "NA17-400_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA17-400_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA17-400_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA17-400.FCH5MYFDMXY_L2_R1_ITAAGGTCA-TGTCGTAG",
+        "fq2": "NA17-400.FCH5MYFDMXY_L2_R2_ITAAGGTCA-TGTCGTAG",
+        "shortName1": "NA17-400_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA17-400_FCH5MYFDMXY_L2_R2",
+        "ID": "NA17-400_FCH5MYFDMXY_L2",
+        "SM": "NA17-400_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA17-400_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-049_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-049.FCH5MYFDMXY_L1_R1_ICTACGACA-GAGTCCAA",
+        "fq2": "NA18-049.FCH5MYFDMXY_L1_R2_ICTACGACA-GAGTCCAA",
+        "shortName1": "NA18-049_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-049_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-049_FCH5MYFDMXY_L1",
+        "SM": "NA18-049_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-049_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-049_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-049.FCH5MYFDMXY_L2_R1_ICTACGACA-GAGTCCAA",
+        "fq2": "NA18-049.FCH5MYFDMXY_L2_R2_ICTACGACA-GAGTCCAA",
+        "shortName1": "NA18-049_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-049_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-049_FCH5MYFDMXY_L2",
+        "SM": "NA18-049_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-049_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-133_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-133.FCH5MYFDMXY_L1_R1_IATCCACTG-AGGTGCGT",
+        "fq2": "NA18-133.FCH5MYFDMXY_L1_R2_IATCCACTG-AGGTGCGT",
+        "shortName1": "NA18-133_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-133_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-133_FCH5MYFDMXY_L1",
+        "SM": "NA18-133_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-133_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-133_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-133.FCH5MYFDMXY_L2_R1_IATCCACTG-AGGTGCGT",
+        "fq2": "NA18-133.FCH5MYFDMXY_L2_R2_IATCCACTG-AGGTGCGT",
+        "shortName1": "NA18-133_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-133_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-133_FCH5MYFDMXY_L2",
+        "SM": "NA18-133_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-133_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-173_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-173.FCH5MYFDMXY_L1_R1_IAACGTTCC-GGAGTACT",
+        "fq2": "NA18-173.FCH5MYFDMXY_L1_R2_IAACGTTCC-GGAGTACT",
+        "shortName1": "NA18-173_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-173_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-173_FCH5MYFDMXY_L1",
+        "SM": "NA18-173_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-173_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-173_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-173.FCH5MYFDMXY_L2_R1_IAACGTTCC-GGAGTACT",
+        "fq2": "NA18-173.FCH5MYFDMXY_L2_R2_IAACGTTCC-GGAGTACT",
+        "shortName1": "NA18-173_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-173_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-173_FCH5MYFDMXY_L2",
+        "SM": "NA18-173_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-173_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-174_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-174.FCH5MYFDMXY_L1_R1_IGACGTCTT-GGTTCACC",
+        "fq2": "NA18-174.FCH5MYFDMXY_L1_R2_IGACGTCTT-GGTTCACC",
+        "shortName1": "NA18-174_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-174_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-174_FCH5MYFDMXY_L1",
+        "SM": "NA18-174_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-174_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-174_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-174.FCH5MYFDMXY_L2_R1_IGACGTCTT-GGTTCACC",
+        "fq2": "NA18-174.FCH5MYFDMXY_L2_R2_IGACGTCTT-GGTTCACC",
+        "shortName1": "NA18-174_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-174_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-174_FCH5MYFDMXY_L2",
+        "SM": "NA18-174_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-174_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-175_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-175.FCH5MYFDMXY_L1_R1_IAGTTCAGG-CCAACAGA",
+        "fq2": "NA18-175.FCH5MYFDMXY_L1_R2_IAGTTCAGG-CCAACAGA",
+        "shortName1": "NA18-175_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-175_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-175_FCH5MYFDMXY_L1",
+        "SM": "NA18-175_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-175_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-175_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-175.FCH5MYFDMXY_L2_R1_IAGTTCAGG-CCAACAGA",
+        "fq2": "NA18-175.FCH5MYFDMXY_L2_R2_IAGTTCAGG-CCAACAGA",
+        "shortName1": "NA18-175_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-175_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-175_FCH5MYFDMXY_L2",
+        "SM": "NA18-175_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-175_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-265_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-265.FCH5MYFDMXY_L1_R1_ITTACAGGA-TGACAAGC",
+        "fq2": "NA18-265.FCH5MYFDMXY_L1_R2_ITTACAGGA-TGACAAGC",
+        "shortName1": "NA18-265_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-265_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-265_FCH5MYFDMXY_L1",
+        "SM": "NA18-265_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-265_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-265_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-265.FCH5MYFDMXY_L2_R1_ITTACAGGA-TGACAAGC",
+        "fq2": "NA18-265.FCH5MYFDMXY_L2_R2_ITTACAGGA-TGACAAGC",
+        "shortName1": "NA18-265_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-265_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-265_FCH5MYFDMXY_L2",
+        "SM": "NA18-265_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-265_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-281_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-281.FCH5MYFDMXY_L1_R1_IGTTCCAAT-AATTCTGC",
+        "fq2": "NA18-281.FCH5MYFDMXY_L1_R2_IGTTCCAAT-AATTCTGC",
+        "shortName1": "NA18-281_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-281_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-281_FCH5MYFDMXY_L1",
+        "SM": "NA18-281_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-281_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-281_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-281.FCH5MYFDMXY_L2_R1_IGTTCCAAT-AATTCTGC",
+        "fq2": "NA18-281.FCH5MYFDMXY_L2_R2_IGTTCCAAT-AATTCTGC",
+        "shortName1": "NA18-281_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-281_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-281_FCH5MYFDMXY_L2",
+        "SM": "NA18-281_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-281_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-314_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-314.FCH5MYFDMXY_L1_R1_IAAGTCCAA-TATGAGTA",
+        "fq2": "NA18-314.FCH5MYFDMXY_L1_R2_IAAGTCCAA-TATGAGTA",
+        "shortName1": "NA18-314_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-314_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-314_FCH5MYFDMXY_L1",
+        "SM": "NA18-314_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-314_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-314_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-314.FCH5MYFDMXY_L2_R1_IAAGTCCAA-TATGAGTA",
+        "fq2": "NA18-314.FCH5MYFDMXY_L2_R2_IAAGTCCAA-TATGAGTA",
+        "shortName1": "NA18-314_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-314_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-314_FCH5MYFDMXY_L2",
+        "SM": "NA18-314_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-314_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-317_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-317.FCH5MYFDMXY_L1_R1_IGGTGAACC-GCGTTGGA",
+        "fq2": "NA18-317.FCH5MYFDMXY_L1_R2_IGGTGAACC-GCGTTGGA",
+        "shortName1": "NA18-317_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-317_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-317_FCH5MYFDMXY_L1",
+        "SM": "NA18-317_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-317_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-317_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-317.FCH5MYFDMXY_L2_R1_IGGTGAACC-GCGTTGGA",
+        "fq2": "NA18-317.FCH5MYFDMXY_L2_R2_IGGTGAACC-GCGTTGGA",
+        "shortName1": "NA18-317_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-317_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-317_FCH5MYFDMXY_L2",
+        "SM": "NA18-317_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-317_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-361_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-361.FCH5MYFDMXY_L1_R1_ITAAGTGGT-CTTAAGCC",
+        "fq2": "NA18-361.FCH5MYFDMXY_L1_R2_ITAAGTGGT-CTTAAGCC",
+        "shortName1": "NA18-361_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-361_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-361_FCH5MYFDMXY_L1",
+        "SM": "NA18-361_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-361_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-361_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-361.FCH5MYFDMXY_L2_R1_ITAAGTGGT-CTTAAGCC",
+        "fq2": "NA18-361.FCH5MYFDMXY_L2_R2_ITAAGTGGT-CTTAAGCC",
+        "shortName1": "NA18-361_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-361_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-361_FCH5MYFDMXY_L2",
+        "SM": "NA18-361_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-361_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-369_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-369.FCH5MYFDMXY_L1_R1_IGACCTGAA-TTGGTGAG",
+        "fq2": "NA18-369.FCH5MYFDMXY_L1_R2_IGACCTGAA-TTGGTGAG",
+        "shortName1": "NA18-369_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-369_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-369_FCH5MYFDMXY_L1",
+        "SM": "NA18-369_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-369_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-369_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-369.FCH5MYFDMXY_L2_R1_IGACCTGAA-TTGGTGAG",
+        "fq2": "NA18-369.FCH5MYFDMXY_L2_R2_IGACCTGAA-TTGGTGAG",
+        "shortName1": "NA18-369_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-369_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-369_FCH5MYFDMXY_L2",
+        "SM": "NA18-369_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-369_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-374_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-374.FCH5MYFDMXY_L1_R1_ICAACAATG-CTTCACGG",
+        "fq2": "NA18-374.FCH5MYFDMXY_L1_R2_ICAACAATG-CTTCACGG",
+        "shortName1": "NA18-374_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-374_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-374_FCH5MYFDMXY_L1",
+        "SM": "NA18-374_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-374_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-374_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-374.FCH5MYFDMXY_L2_R1_ICAACAATG-CTTCACGG",
+        "fq2": "NA18-374.FCH5MYFDMXY_L2_R2_ICAACAATG-CTTCACGG",
+        "shortName1": "NA18-374_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-374_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-374_FCH5MYFDMXY_L2",
+        "SM": "NA18-374_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-374_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-381_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-381.FCH5MYFDMXY_L1_R1_IGGACTTGG-CGCAGACG",
+        "fq2": "NA18-381.FCH5MYFDMXY_L1_R2_IGGACTTGG-CGCAGACG",
+        "shortName1": "NA18-381_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-381_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-381_FCH5MYFDMXY_L1",
+        "SM": "NA18-381_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-381_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-381_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-381.FCH5MYFDMXY_L2_R1_IGGACTTGG-CGCAGACG",
+        "fq2": "NA18-381.FCH5MYFDMXY_L2_R2_IGGACTTGG-CGCAGACG",
+        "shortName1": "NA18-381_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-381_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-381_FCH5MYFDMXY_L2",
+        "SM": "NA18-381_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-381_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-386_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-386.FCH5MYFDMXY_L1_R1_IATATCTCG-ATCTTAGT",
+        "fq2": "NA18-386.FCH5MYFDMXY_L1_R2_IATATCTCG-ATCTTAGT",
+        "shortName1": "NA18-386_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-386_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-386_FCH5MYFDMXY_L1",
+        "SM": "NA18-386_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-386_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-386_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-386.FCH5MYFDMXY_L2_R1_IATATCTCG-ATCTTAGT",
+        "fq2": "NA18-386.FCH5MYFDMXY_L2_R2_IATATCTCG-ATCTTAGT",
+        "shortName1": "NA18-386_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-386_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-386_FCH5MYFDMXY_L2",
+        "SM": "NA18-386_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-386_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-429_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-429.FCH5MYFDMXY_L1_R1_IACCTTGGC-GGCCTCAT",
+        "fq2": "NA18-429.FCH5MYFDMXY_L1_R2_IACCTTGGC-GGCCTCAT",
+        "shortName1": "NA18-429_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-429_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-429_FCH5MYFDMXY_L1",
+        "SM": "NA18-429_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-429_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-429_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-429.FCH5MYFDMXY_L2_R1_IACCTTGGC-GGCCTCAT",
+        "fq2": "NA18-429.FCH5MYFDMXY_L2_R2_IACCTTGGC-GGCCTCAT",
+        "shortName1": "NA18-429_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-429_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-429_FCH5MYFDMXY_L2",
+        "SM": "NA18-429_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-429_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA18-430_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-430.FCH5MYFDMXY_L1_R1_IGTCTACAC-GCCAAGGT",
+        "fq2": "NA18-430.FCH5MYFDMXY_L1_R2_IGTCTACAC-GCCAAGGT",
+        "shortName1": "NA18-430_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA18-430_FCH5MYFDMXY_L1_R2",
+        "ID": "NA18-430_FCH5MYFDMXY_L1",
+        "SM": "NA18-430_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA18-430_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA18-430_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA18-430.FCH5MYFDMXY_L2_R1_IGTCTACAC-GCCAAGGT",
+        "fq2": "NA18-430.FCH5MYFDMXY_L2_R2_IGTCTACAC-GCCAAGGT",
+        "shortName1": "NA18-430_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA18-430_FCH5MYFDMXY_L2_R2",
+        "ID": "NA18-430_FCH5MYFDMXY_L2",
+        "SM": "NA18-430_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA18-430_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-021_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-021.FCH5MYFDMXY_L1_R1_ITGGCCGGT-TAGAGCGC",
+        "fq2": "NA19-021.FCH5MYFDMXY_L1_R2_ITGGCCGGT-TAGAGCGC",
+        "shortName1": "NA19-021_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-021_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-021_FCH5MYFDMXY_L1",
+        "SM": "NA19-021_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-021_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-021_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-021.FCH5MYFDMXY_L2_R1_ITGGCCGGT-TAGAGCGC",
+        "fq2": "NA19-021.FCH5MYFDMXY_L2_R2_ITGGCCGGT-TAGAGCGC",
+        "shortName1": "NA19-021_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-021_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-021_FCH5MYFDMXY_L2",
+        "SM": "NA19-021_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-021_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-028_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-028.FCH5MYFDMXY_L1_R1_ITTATAACC-GATATCGA",
+        "fq2": "NA19-028.FCH5MYFDMXY_L1_R2_ITTATAACC-GATATCGA",
+        "shortName1": "NA19-028_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-028_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-028_FCH5MYFDMXY_L1",
+        "SM": "NA19-028_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-028_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-028_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-028.FCH5MYFDMXY_L2_R1_ITTATAACC-GATATCGA",
+        "fq2": "NA19-028.FCH5MYFDMXY_L2_R2_ITTATAACC-GATATCGA",
+        "shortName1": "NA19-028_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-028_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-028_FCH5MYFDMXY_L2",
+        "SM": "NA19-028_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-028_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-029_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-029.FCH5MYFDMXY_L1_R1_IAGTACTCC-AACCTGTT",
+        "fq2": "NA19-029.FCH5MYFDMXY_L1_R2_IAGTACTCC-AACCTGTT",
+        "shortName1": "NA19-029_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-029_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-029_FCH5MYFDMXY_L1",
+        "SM": "NA19-029_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-029_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-029_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-029.FCH5MYFDMXY_L2_R1_IAGTACTCC-AACCTGTT",
+        "fq2": "NA19-029.FCH5MYFDMXY_L2_R2_IAGTACTCC-AACCTGTT",
+        "shortName1": "NA19-029_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-029_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-029_FCH5MYFDMXY_L2",
+        "SM": "NA19-029_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-029_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-045_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-045.FCH5MYFDMXY_L1_R1_ITCGTAGTG-AGACTTGG",
+        "fq2": "NA19-045.FCH5MYFDMXY_L1_R2_ITCGTAGTG-AGACTTGG",
+        "shortName1": "NA19-045_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-045_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-045_FCH5MYFDMXY_L1",
+        "SM": "NA19-045_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-045_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-045_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-045.FCH5MYFDMXY_L2_R1_ITCGTAGTG-AGACTTGG",
+        "fq2": "NA19-045.FCH5MYFDMXY_L2_R2_ITCGTAGTG-AGACTTGG",
+        "shortName1": "NA19-045_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-045_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-045_FCH5MYFDMXY_L2",
+        "SM": "NA19-045_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-045_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-060_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-060.FCH5MYFDMXY_L1_R1_ITCCAACGC-TTGGACTT",
+        "fq2": "NA19-060.FCH5MYFDMXY_L1_R2_ITCCAACGC-TTGGACTT",
+        "shortName1": "NA19-060_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-060_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-060_FCH5MYFDMXY_L1",
+        "SM": "NA19-060_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-060_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-060_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-060.FCH5MYFDMXY_L2_R1_ITCCAACGC-TTGGACTT",
+        "fq2": "NA19-060.FCH5MYFDMXY_L2_R2_ITCCAACGC-TTGGACTT",
+        "shortName1": "NA19-060_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-060_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-060_FCH5MYFDMXY_L2",
+        "SM": "NA19-060_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-060_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-109_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-109.FCH5MYFDMXY_L1_R1_IACTCGTGT-ATTGGAAC",
+        "fq2": "NA19-109.FCH5MYFDMXY_L1_R2_IACTCGTGT-ATTGGAAC",
+        "shortName1": "NA19-109_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-109_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-109_FCH5MYFDMXY_L1",
+        "SM": "NA19-109_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-109_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-109_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-109.FCH5MYFDMXY_L2_R1_IACTCGTGT-ATTGGAAC",
+        "fq2": "NA19-109.FCH5MYFDMXY_L2_R2_IACTCGTGT-ATTGGAAC",
+        "shortName1": "NA19-109_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-109_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-109_FCH5MYFDMXY_L2",
+        "SM": "NA19-109_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-109_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-115_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-115.FCH5MYFDMXY_L1_R1_IAATGCCTC-TCGATCCA",
+        "fq2": "NA19-115.FCH5MYFDMXY_L1_R2_IAATGCCTC-TCGATCCA",
+        "shortName1": "NA19-115_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-115_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-115_FCH5MYFDMXY_L1",
+        "SM": "NA19-115_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-115_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-115_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-115.FCH5MYFDMXY_L2_R1_IAATGCCTC-TCGATCCA",
+        "fq2": "NA19-115.FCH5MYFDMXY_L2_R2_IAATGCCTC-TCGATCCA",
+        "shortName1": "NA19-115_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-115_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-115_FCH5MYFDMXY_L2",
+        "SM": "NA19-115_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-115_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-131_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-131.FCH5MYFDMXY_L1_R1_IAGCCTCAT-AGTAGAGA",
+        "fq2": "NA19-131.FCH5MYFDMXY_L1_R2_IAGCCTCAT-AGTAGAGA",
+        "shortName1": "NA19-131_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-131_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-131_FCH5MYFDMXY_L1",
+        "SM": "NA19-131_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-131_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-131_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-131.FCH5MYFDMXY_L2_R1_IAGCCTCAT-AGTAGAGA",
+        "fq2": "NA19-131.FCH5MYFDMXY_L2_R2_IAGCCTCAT-AGTAGAGA",
+        "shortName1": "NA19-131_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-131_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-131_FCH5MYFDMXY_L2",
+        "SM": "NA19-131_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-131_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-134_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-134.FCH5MYFDMXY_L1_R1_ICGTTAGAA-TTCAGGTC",
+        "fq2": "NA19-134.FCH5MYFDMXY_L1_R2_ICGTTAGAA-TTCAGGTC",
+        "shortName1": "NA19-134_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-134_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-134_FCH5MYFDMXY_L1",
+        "SM": "NA19-134_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-134_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-134_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-134.FCH5MYFDMXY_L2_R1_ICGTTAGAA-TTCAGGTC",
+        "fq2": "NA19-134.FCH5MYFDMXY_L2_R2_ICGTTAGAA-TTCAGGTC",
+        "shortName1": "NA19-134_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-134_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-134_FCH5MYFDMXY_L2",
+        "SM": "NA19-134_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-134_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-136_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-136.FCH5MYFDMXY_L1_R1_ITGCGAGAC-CATTGTTG",
+        "fq2": "NA19-136.FCH5MYFDMXY_L1_R2_ITGCGAGAC-CATTGTTG",
+        "shortName1": "NA19-136_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-136_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-136_FCH5MYFDMXY_L1",
+        "SM": "NA19-136_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-136_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-136_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-136.FCH5MYFDMXY_L2_R1_ITGCGAGAC-CATTGTTG",
+        "fq2": "NA19-136.FCH5MYFDMXY_L2_R2_ITGCGAGAC-CATTGTTG",
+        "shortName1": "NA19-136_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-136_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-136_FCH5MYFDMXY_L2",
+        "SM": "NA19-136_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-136_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-170_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-170.FCH5MYFDMXY_L1_R1_ICAATTAAC-CGAGATAT",
+        "fq2": "NA19-170.FCH5MYFDMXY_L1_R2_ICAATTAAC-CGAGATAT",
+        "shortName1": "NA19-170_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-170_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-170_FCH5MYFDMXY_L1",
+        "SM": "NA19-170_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-170_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-170_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-170.FCH5MYFDMXY_L2_R1_ICAATTAAC-CGAGATAT",
+        "fq2": "NA19-170.FCH5MYFDMXY_L2_R2_ICAATTAAC-CGAGATAT",
+        "shortName1": "NA19-170_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-170_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-170_FCH5MYFDMXY_L2",
+        "SM": "NA19-170_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-170_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-189_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-189.FCH5MYFDMXY_L1_R1_IGATTCTGC-GACGAGAG",
+        "fq2": "NA19-189.FCH5MYFDMXY_L1_R2_IGATTCTGC-GACGAGAG",
+        "shortName1": "NA19-189_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-189_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-189_FCH5MYFDMXY_L1",
+        "SM": "NA19-189_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-189_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-189_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-189.FCH5MYFDMXY_L2_R1_IGATTCTGC-GACGAGAG",
+        "fq2": "NA19-189.FCH5MYFDMXY_L2_R2_IGATTCTGC-GACGAGAG",
+        "shortName1": "NA19-189_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-189_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-189_FCH5MYFDMXY_L2",
+        "SM": "NA19-189_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-189_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-349_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-349.FCH5MYFDMXY_L1_R1_ITACCGAGG-CCTGAACT",
+        "fq2": "NA19-349.FCH5MYFDMXY_L1_R2_ITACCGAGG-CCTGAACT",
+        "shortName1": "NA19-349_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-349_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-349_FCH5MYFDMXY_L1",
+        "SM": "NA19-349_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-349_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-349_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-349.FCH5MYFDMXY_L2_R1_ITACCGAGG-CCTGAACT",
+        "fq2": "NA19-349.FCH5MYFDMXY_L2_R2_ITACCGAGG-CCTGAACT",
+        "shortName1": "NA19-349_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-349_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-349_FCH5MYFDMXY_L2",
+        "SM": "NA19-349_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-349_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-378_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-378.FCH5MYFDMXY_L1_R1_IAGCTCGCT-GCAGAATC",
+        "fq2": "NA19-378.FCH5MYFDMXY_L1_R2_IAGCTCGCT-GCAGAATC",
+        "shortName1": "NA19-378_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-378_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-378_FCH5MYFDMXY_L1",
+        "SM": "NA19-378_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-378_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-378_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-378.FCH5MYFDMXY_L2_R1_IAGCTCGCT-GCAGAATC",
+        "fq2": "NA19-378.FCH5MYFDMXY_L2_R2_IAGCTCGCT-GCAGAATC",
+        "shortName1": "NA19-378_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-378_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-378_FCH5MYFDMXY_L2",
+        "SM": "NA19-378_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-378_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA19-403_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-403.FCH5MYFDMXY_L1_R1_IAAGATACT-ACTTACAT",
+        "fq2": "NA19-403.FCH5MYFDMXY_L1_R2_IAAGATACT-ACTTACAT",
+        "shortName1": "NA19-403_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA19-403_FCH5MYFDMXY_L1_R2",
+        "ID": "NA19-403_FCH5MYFDMXY_L1",
+        "SM": "NA19-403_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA19-403_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA19-403_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA19-403.FCH5MYFDMXY_L2_R1_IAAGATACT-ACTTACAT",
+        "fq2": "NA19-403.FCH5MYFDMXY_L2_R2_IAAGATACT-ACTTACAT",
+        "shortName1": "NA19-403_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA19-403_FCH5MYFDMXY_L2_R2",
+        "ID": "NA19-403_FCH5MYFDMXY_L2",
+        "SM": "NA19-403_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA19-403_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA20-002_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA20-002.FCH5MYFDMXY_L1_R1_IAGGCAGAG-AGAATGCC",
+        "fq2": "NA20-002.FCH5MYFDMXY_L1_R2_IAGGCAGAG-AGAATGCC",
+        "shortName1": "NA20-002_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA20-002_FCH5MYFDMXY_L1_R2",
+        "ID": "NA20-002_FCH5MYFDMXY_L1",
+        "SM": "NA20-002_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA20-002_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA20-002_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA20-002.FCH5MYFDMXY_L2_R1_IAGGCAGAG-AGAATGCC",
+        "fq2": "NA20-002.FCH5MYFDMXY_L2_R2_IAGGCAGAG-AGAATGCC",
+        "shortName1": "NA20-002_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA20-002_FCH5MYFDMXY_L2_R2",
+        "ID": "NA20-002_FCH5MYFDMXY_L2",
+        "SM": "NA20-002_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA20-002_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA20-037_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA20-037.FCH5MYFDMXY_L1_R1_ICCGCGGTT-AGCGCTAG",
+        "fq2": "NA20-037.FCH5MYFDMXY_L1_R2_ICCGCGGTT-AGCGCTAG",
+        "shortName1": "NA20-037_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA20-037_FCH5MYFDMXY_L1_R2",
+        "ID": "NA20-037_FCH5MYFDMXY_L1",
+        "SM": "NA20-037_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA20-037_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA20-037_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA20-037.FCH5MYFDMXY_L2_R1_ICCGCGGTT-AGCGCTAG",
+        "fq2": "NA20-037.FCH5MYFDMXY_L2_R2_ICCGCGGTT-AGCGCTAG",
+        "shortName1": "NA20-037_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA20-037_FCH5MYFDMXY_L2_R2",
+        "ID": "NA20-037_FCH5MYFDMXY_L2",
+        "SM": "NA20-037_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA20-037_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA20-436_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA20-436.FCH5MYFDMXY_L1_R1_IGGCATTCT-CTAGCTTG",
+        "fq2": "NA20-436.FCH5MYFDMXY_L1_R2_IGGCATTCT-CTAGCTTG",
+        "shortName1": "NA20-436_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA20-436_FCH5MYFDMXY_L1_R2",
+        "ID": "NA20-436_FCH5MYFDMXY_L1",
+        "SM": "NA20-436_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA20-436_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA20-436_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA20-436.FCH5MYFDMXY_L2_R1_IGGCATTCT-CTAGCTTG",
+        "fq2": "NA20-436.FCH5MYFDMXY_L2_R2_IGGCATTCT-CTAGCTTG",
+        "shortName1": "NA20-436_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA20-436_FCH5MYFDMXY_L2_R2",
+        "ID": "NA20-436_FCH5MYFDMXY_L2",
+        "SM": "NA20-436_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA20-436_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA99-167_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA99-167.FCH5MYFDMXY_L1_R1_ITTCCTGTT-AGTATCTT",
+        "fq2": "NA99-167.FCH5MYFDMXY_L1_R2_ITTCCTGTT-AGTATCTT",
+        "shortName1": "NA99-167_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA99-167_FCH5MYFDMXY_L1_R2",
+        "ID": "NA99-167_FCH5MYFDMXY_L1",
+        "SM": "NA99-167_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA99-167_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA99-167_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA99-167.FCH5MYFDMXY_L2_R1_ITTCCTGTT-AGTATCTT",
+        "fq2": "NA99-167.FCH5MYFDMXY_L2_R2_ITTCCTGTT-AGTATCTT",
+        "shortName1": "NA99-167_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA99-167_FCH5MYFDMXY_L2_R2",
+        "ID": "NA99-167_FCH5MYFDMXY_L2",
+        "SM": "NA99-167_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA99-167_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        },
+
+    "NA99-224_FCH5MYFDMXY_L1":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA99-224.FCH5MYFDMXY_L1_R1_ICTCTCGTC-TATAACCT",
+        "fq2": "NA99-224.FCH5MYFDMXY_L1_R2_ICTCTCGTC-TATAACCT",
+        "shortName1": "NA99-224_FCH5MYFDMXY_L1_R1",
+        "shortName2": "NA99-224_FCH5MYFDMXY_L1_R2",
+        "ID": "NA99-224_FCH5MYFDMXY_L1",
+        "SM": "NA99-224_FCH5MYFDMXY_L1",
+        "PU": "H5MYFDMXY.1",
+        "LB": "NA99-224_FCH5MYFDMXY_L1",
+        "PL": "Illumina"
+        },
+
+    "NA99-224_FCH5MYFDMXY_L2":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
+        "fq1": "NA99-224.FCH5MYFDMXY_L2_R1_ICTCTCGTC-TATAACCT",
+        "fq2": "NA99-224.FCH5MYFDMXY_L2_R2_ICTCTCGTC-TATAACCT",
+        "shortName1": "NA99-224_FCH5MYFDMXY_L2_R1",
+        "shortName2": "NA99-224_FCH5MYFDMXY_L2_R2",
+        "ID": "NA99-224_FCH5MYFDMXY_L2",
+        "SM": "NA99-224_FCH5MYFDMXY_L2",
+        "PU": "H5MYFDMXY.2",
+        "LB": "NA99-224_FCH5MYFDMXY_L2",
+        "PL": "Illumina"
+        }
+}
