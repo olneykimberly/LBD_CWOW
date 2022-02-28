@@ -2,3 +2,4 @@ rawQC/
 starAligned/
 trimmedQC/
 trimmedReads/
+scripts/snakemake/.snakemake/*/*

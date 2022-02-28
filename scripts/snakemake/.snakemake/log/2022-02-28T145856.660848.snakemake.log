@@ -1080,3 +1080,107 @@ rule STAR_bam_sort:
     wildcards: sample=NA19-189_FCH5MYFDMXY_L2
 
 Submitted job 794 with external jobid 'Your job 3169598 ("snakejob.STAR_bam_sort.794.sh") has been submitted'.
+[Mon Feb 28 15:07:19 2022]
+Finished job 580.
+27 of 1135 steps (2%) done
+Select jobs to execute...
+[Mon Feb 28 15:07:19 2022]
+Finished job 554.
+28 of 1135 steps (2%) done
+
+[Mon Feb 28 15:07:19 2022]
+rule STAR_bam_sort:
+    input: ../../starAligned/NA18-133_FCH5MYFDMXY_L2_STAR.bam
+    output: ../../starAligned/NA18-133_FCH5MYFDMXY_L2_STAR_sort.bam
+    jobid: 742
+    wildcards: sample=NA18-133_FCH5MYFDMXY_L2
+
+Submitted job 742 with external jobid 'Your job 3169599 ("snakejob.STAR_bam_sort.742.sh") has been submitted'.
+Select jobs to execute...
+
+[Mon Feb 28 15:07:19 2022]
+rule STAR_paired:
+    input: ../../trimmedReads/NA16-297_FCH5MYFDMXY_L1_trimmed_R1.fastq.gz, ../../trimmedReads/NA16-297_FCH5MYFDMXY_L1_trimmed_R2.fastq.gz
+    output: ../../starAligned/NA16-297_FCH5MYFDMXY_L1_STAR.bam
+    jobid: 565
+    wildcards: sample=NA16-297_FCH5MYFDMXY_L1
+
+Submitted job 565 with external jobid 'Your job 3169600 ("snakejob.STAR_paired.565.sh") has been submitted'.
+[Mon Feb 28 15:07:20 2022]
+Finished job 556.
+29 of 1135 steps (3%) done
+Select jobs to execute...
+
+[Mon Feb 28 15:07:20 2022]
+rule STAR_paired:
+    input: ../../trimmedReads/NA18-361_FCH5MYFDMXY_L1_trimmed_R1.fastq.gz, ../../trimmedReads/NA18-361_FCH5MYFDMXY_L1_trimmed_R2.fastq.gz
+    output: ../../starAligned/NA18-361_FCH5MYFDMXY_L1_STAR.bam
+    jobid: 595
+    wildcards: sample=NA18-361_FCH5MYFDMXY_L1
+
+Submitted job 595 with external jobid 'Your job 3169601 ("snakejob.STAR_paired.595.sh") has been submitted'.
+[Mon Feb 28 15:07:38 2022]
+Finished job 523.
+30 of 1135 steps (3%) done
+Select jobs to execute...
+
+[Mon Feb 28 15:07:38 2022]
+rule STAR_bam_sort:
+    input: ../../starAligned/NA08-234_FCH5MYFDMXY_L1_STAR.bam
+    output: ../../starAligned/NA08-234_FCH5MYFDMXY_L1_STAR_sort.bam
+    jobid: 687
+    wildcards: sample=NA08-234_FCH5MYFDMXY_L1
+
+Submitted job 687 with external jobid 'Your job 3169602 ("snakejob.STAR_bam_sort.687.sh") has been submitted'.
+[Mon Feb 28 15:07:39 2022]
+Finished job 587.
+31 of 1135 steps (3%) done
+Select jobs to execute...
+[Mon Feb 28 15:07:39 2022]
+Finished job 558.
+32 of 1135 steps (3%) done
+[Mon Feb 28 15:07:39 2022]
+Finished job 603.
+33 of 1135 steps (3%) done
+[Mon Feb 28 15:07:39 2022]
+Finished job 633.
+34 of 1135 steps (3%) done
+
+[Mon Feb 28 15:07:39 2022]
+rule STAR_paired:
+    input: ../../trimmedReads/NA05-038_FCH5MYFDMXY_L1_trimmed_R1.fastq.gz, ../../trimmedReads/NA05-038_FCH5MYFDMXY_L1_trimmed_R2.fastq.gz
+    output: ../../starAligned/NA05-038_FCH5MYFDMXY_L1_STAR.bam
+    jobid: 505
+    wildcards: sample=NA05-038_FCH5MYFDMXY_L1
+
+Submitted job 505 with external jobid 'Your job 3169603 ("snakejob.STAR_paired.505.sh") has been submitted'.
+Select jobs to execute...
+
+[Mon Feb 28 15:07:39 2022]
+rule STAR_bam_sort:
+    input: ../../starAligned/NA11-339_FCH5MYFDMXY_L1_STAR.bam
+    output: ../../starAligned/NA11-339_FCH5MYFDMXY_L1_STAR_sort.bam
+    jobid: 705
+    wildcards: sample=NA11-339_FCH5MYFDMXY_L1
+
+Submitted job 705 with external jobid 'Your job 3169604 ("snakejob.STAR_bam_sort.705.sh") has been submitted'.
+
+[Mon Feb 28 15:07:39 2022]
+rule STAR_paired:
+    input: ../../trimmedReads/NA20-436_FCH5MYFDMXY_L1_trimmed_R1.fastq.gz, ../../trimmedReads/NA20-436_FCH5MYFDMXY_L1_trimmed_R2.fastq.gz
+    output: ../../starAligned/NA20-436_FCH5MYFDMXY_L1_STAR.bam
+    jobid: 643
+    wildcards: sample=NA20-436_FCH5MYFDMXY_L1
+
+Submitted job 643 with external jobid 'Your job 3169605 ("snakejob.STAR_paired.643.sh") has been submitted'.
+
+[Mon Feb 28 15:07:39 2022]
+rule STAR_paired:
+    input: ../../trimmedReads/NA18-374_FCH5MYFDMXY_L2_trimmed_R1.fastq.gz, ../../trimmedReads/NA18-374_FCH5MYFDMXY_L2_trimmed_R2.fastq.gz
+    output: ../../starAligned/NA18-374_FCH5MYFDMXY_L2_STAR.bam
+    jobid: 600
+    wildcards: sample=NA18-374_FCH5MYFDMXY_L2
+
+Submitted job 600 with external jobid 'Your job 3169606 ("snakejob.STAR_paired.600.sh") has been submitted'.
+Select jobs to execute...
+Select jobs to execute...
