@@ -4,3 +4,4 @@ trimmedQC/
 trimmedReads/
 scripts/snakemake/.snakemake/*/*
 scripts/snakemake/.snakemake/*
+scripts/R/glimma-plots/*
