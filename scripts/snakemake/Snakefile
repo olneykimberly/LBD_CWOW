@@ -25,14 +25,40 @@ rule all:
         	expand(config["trimmedQC"]+"{sample}_trimmed_fq1_fastqc.html", sample = config["sample_names"]),
         	expand(config["trimmedQC"]+"{sample}_trimmed_fq2_fastqc.html", sample = config["sample_names"]),
         	        	
-        	expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"]),
-        	expand(config["starAligned"]+"{sample}_STAR_sort.bam", sample = config["sample_names"]),    	
-        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup.bam", sample = config["sample_names"]),   	
-        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam", sample = config["sample_names"]),   	
-        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam.bai", sample = config["sample_names"]),  	
-        	expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats.txt", sample = config["sample_names"]),  
+        	#expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"]),
+        	#expand(config["starAligned"]+"{sample}_STAR_sort.bam", sample = config["sample_names"]),    	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup.bam", sample = config["sample_names"]),   	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam", sample = config["sample_names"]),   	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam.bai", sample = config["sample_names"]),  	
+        	#expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats.txt", sample = config["sample_names"]),  
 
-        	expand(config["featureCounts"]+"{sample}_STAR.txt", sample = config["sample_names"])
+        	#expand(config["featureCounts"]+"{sample}_STAR.txt", sample = config["sample_names"]),
+        	#expand(config["featureCounts"]+"{sample}_countsOnly.txt", sample = config["sample_names"]),
+        	#expand(config["featureCounts"]+"LBD_81.counts"),
+
+        	#expand(config["starAligned"]+"{sample}_STAR_XX.bam", sample = config["female_names"]),
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_XX.bam", sample = config["female_names"]), 
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_XX.bam.bai", sample = config["female_names"]),  	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_XX.bam", sample = config["female_names"]),   	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam", sample = config["female_names"]),   	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam.bai", sample = config["female_names"]),  	
+        	#expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats_XX.txt", sample = config["female_names"]),  
+
+        	#expand(config["featureCounts"]+"{sample}_STAR_XX.txt", sample = config["female_names"]),
+        	#expand(config["featureCounts"]+"{sample}_countsOnly_XX.txt", sample = config["female_names"]),
+        	#expand(config["featureCounts"]+"LBD_XX.counts"),
+
+        	expand(config["starAligned"]+"{sample}_STAR_XY.bam", sample = config["male_names"]),
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_XY.bam", sample = config["male_names"]),  
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_XY.bam.bai", sample = config["male_names"]),  	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_XY.bam", sample = config["male_names"]),   	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam", sample = config["male_names"]),   	
+        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai", sample = config["male_names"]),  	
+        	#expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats_XY.txt", sample = config["male_names"]),  
+
+        	expand(config["featureCounts"]+"{sample}_STAR_XY.txt", sample = config["male_names"]),
+        	expand(config["featureCounts"]+"{sample}_countsOnly_XY.txt", sample = config["male_names"]),
+        	expand(config["featureCounts"]+"LBD_XY.counts")
 
 #---------------------
 # Reference genome and annotation were downloaded prior to running snakemake. 
@@ -275,7 +301,7 @@ rule STAR_feautreCounts_gene_name:
         featureCounts = featureCounts_path,
         GTF = (config["GRCh38.gtf"]+".gtf"),
     shell:
-        "{params.featureCounts} -T 8 -p -s 2 -t exon -g gene_name -a {params.GTF} -o {output.counts} {input.BAM}"
+        "{params.featureCounts} -T 8 -p -s 2 -t exon -g gene_id -a {params.GTF} -o {output.counts} {input.BAM}"
 
 # KEY
 #-T (nthreads). Specify the number of threads/CPUs used for mapping. (nthreads) The value should be between 1 and 32. 1 by default.
@@ -288,4 +314,256 @@ rule STAR_feautreCounts_gene_name:
 #Each entry in the provided annotation file is taken as a feature (e.g. an exon). A meta-feature is the aggregation of a set of features (e.g. a gene). The featureCounts program uses the gene_id attribute available in the GTF format annotation (or the GeneID column in the SAF format annotation) to group features into meta-features, ie. features belonging to the same meta-feature have the same gene identifier.
 #featureCounts can count reads at either feature level or at meta-feature level. When summarizing reads at meta-feature level, read counts obtained for features included in the same meta-feature will be added up to yield the read count for the corresponding meta-feature.
 #---------------------
+
+#---------------------
+# rule reformat counts: 
+#---------------------
+rule reformat_counts:
+    input:
+        counts = (config["featureCounts"]+"{sample}_STAR.txt")
+    output:
+        counts_only = (config["featureCounts"]+"{sample}_countsOnly.txt")
+    shell:
+        """
+        cut -f7 {input.counts} | sed 1d > {output.counts_only};
+        sed -i 's,../../starAligned/,,g' {output.counts_only};
+        sed -i 's,_STAR_sort_mkdup_rdgrp.bam,,g' {output.counts_only}
+        """
+#---------------------
+#rule make tissue counts file: 
+#---------------------
+rule brain_tissue_counts:
+    input:
+        counts_only = expand(config["featureCounts"]+"{sample}_countsOnly.txt", sample = config["sample_names"])
+    output:
+        tissue_counts = config["featureCounts"]+"LBD_81.counts"
+    shell:
+        """
+        paste {input.counts_only} > {output.tissue_counts}
+        """
+
+#-----------------------------------------------------------------------------------------
+# Female XX only samples
+#-----------------------------------------------------------------------------------------
+
+rule STAR_paired_XX:
+	input:
+		fq1_trim = (config["trimmedReads"]+"{sample}_trimmed_R1.fastq.gz"),
+		fq2_trim = (config["trimmedReads"]+"{sample}_trimmed_R2.fastq.gz")
+	output:
+		out_1 = (config["starAligned"]+"{sample}_STAR_XX.bam")
+	params:
+		star = star_path,
+		STAR_Index = (config["GRCh38.Ymasked.star"]+"_STAR/"),
+		STAR_GTF = (config["GRCh38.gtf"]+".gtf"),
+	shell:
+		"""
+		{params.star} --runThreadN 8 --genomeDir {params.STAR_Index} --sjdbGTFfile {params.STAR_GTF} --readFilesCommand zcat --readFilesIn {input.fq1_trim} {input.fq2_trim} --outSAMtype BAM Unsorted --outFileNamePrefix {output.out_1};
+		mv {output.out_1}Aligned.out.bam {output.out_1}
+		"""
+
+rule STAR_bam_sort_XX:    
+    input:
+    	IN_BAM = (config["starAligned"]+"{sample}_STAR_XX.bam")
+    output:
+        sort_BAM = (config["starAligned"]+"{sample}_STAR_sort_XX.bam")
+    shell:
+        "bamtools sort -in {input.IN_BAM} -out {output.sort_BAM}"
+
+
+rule STAR_MarkDups_XX:
+    input:
+        sort_BAM = (config["starAligned"]+"{sample}_STAR_sort_XX.bam")
+    output:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_XX.bam"),
+        metrics = (config["starAligned"]+"{sample}.picard_sort_mkdup_metrics_XX.txt")
+    params:
+        picard = picard_path
+    shell:
+        "{params.picard} -Xmx14g MarkDuplicates I={input.sort_BAM} O={output.BAM} "
+        "M={output.metrics} VALIDATION_STRINGENCY=LENIENT"
+
+
+rule STAR_AddReadGrps_XX:
+    input:
+        mkdup_BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_XX.bam")
+    output:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam")
+    params:
+        id = lambda wildcards: config[wildcards.sample]["ID"],
+        sm = lambda wildcards: config[wildcards.sample]["SM"],
+        lb = lambda wildcards: config[wildcards.sample]["LB"],
+        pu = lambda wildcards: config[wildcards.sample]["PU"],
+        pl = lambda wildcards: config[wildcards.sample]["PL"],
+        picard = picard_path
+    shell:
+        "{params.picard} -Xmx14g AddOrReplaceReadGroups I={input.mkdup_BAM} O={output.BAM} "
+        "RGID={params.id} RGPU={params.pu} RGSM={params.sm} RGPL={params.pl} RGLB={params.lb} VALIDATION_STRINGENCY=LENIENT"
+
+rule STAR_index_bam_XX:
+    input:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam")
+    output:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam.bai")
+    params:
+        bamtools = bamtools_path
+    shell:
+        "{params.bamtools} index -in {input.BAM}"
+
+
+rule STAR_stats_bam_XX:
+    input:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam")
+    output:
+        stats = (config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats_XX.txt")
+    params:
+        bamtools = bamtools_path
+    shell:
+        "{params.bamtools} stats -in {input.BAM} > {output.stats}"
+
+rule STAR_feautreCounts_XX:
+    input:
+        BAM = (config["starAligned"]+"{sample}_STAR_XX.bam")
+    output:
+        counts = (config["featureCounts"]+"{sample}_STAR_XX.txt")
+    params:
+        featureCounts = featureCounts_path,
+        GTF = (config["GRCh38.gtf"]+".gtf"),
+    shell:
+        "{params.featureCounts} -T 8 -p -s 2 -t exon -g gene_id -a {params.GTF} -o {output.counts} {input.BAM}"
+
+rule reformat_counts_XX:
+    input:
+        counts = (config["featureCounts"]+"{sample}_STAR_XX.txt")
+    output:
+        counts_only = (config["featureCounts"]+"{sample}_countsOnly_XX.txt")
+    shell:
+        """
+        cut -f7 {input.counts} | sed 1d > {output.counts_only};
+        sed -i 's,../../starAligned/,,g' {output.counts_only};
+        sed -i 's,_STAR_sort_mkdup_rdgrp_XX.bam,,g' {output.counts_only}
+        """
+
+rule counts_XX:
+    input:
+        counts_only = expand(config["featureCounts"]+"{sample}_countsOnly_XX.txt", sample = config["female_names"])
+    output:
+        tissue_counts = config["featureCounts"]+"LBD_XX.counts"
+    shell:
+        """
+        paste {input.counts_only} > {output.tissue_counts}
+        """
+
+#-----------------------------------------------------------------------------------------
+# Male XY only samples
+#-----------------------------------------------------------------------------------------
+
+rule STAR_paired_XY:
+	input:
+		fq1_trim = (config["trimmedReads"]+"{sample}_trimmed_R1.fastq.gz"),
+		fq2_trim = (config["trimmedReads"]+"{sample}_trimmed_R2.fastq.gz")
+	output:
+		out_1 = (config["starAligned"]+"{sample}_STAR_XY.bam")
+	params:
+		star = star_path,
+		STAR_Index = (config["GRCh38.YPARs_masked.star"]+"_STAR/"),
+		STAR_GTF = (config["GRCh38.gtf"]+".gtf"),
+	shell:
+		"""
+		{params.star} --runThreadN 8 --genomeDir {params.STAR_Index} --sjdbGTFfile {params.STAR_GTF} --readFilesCommand zcat --readFilesIn {input.fq1_trim} {input.fq2_trim} --outSAMtype BAM Unsorted --outFileNamePrefix {output.out_1};
+		mv {output.out_1}Aligned.out.bam {output.out_1}
+		"""
+
+rule STAR_bam_sort_XY:    
+    input:
+    	IN_BAM = (config["starAligned"]+"{sample}_STAR_XY.bam")
+    output:
+        sort_BAM = (config["starAligned"]+"{sample}_STAR_sort_XY.bam")
+    shell:
+        "bamtools sort -in {input.IN_BAM} -out {output.sort_BAM}"
+
+
+rule STAR_MarkDups_XY:
+    input:
+        sort_BAM = (config["starAligned"]+"{sample}_STAR_sort_XY.bam")
+    output:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_XY.bam"),
+        metrics = (config["starAligned"]+"{sample}.picard_sort_mkdup_metrics_XY.txt")
+    params:
+        picard = picard_path
+    shell:
+        "{params.picard} -Xmx14g MarkDuplicates I={input.sort_BAM} O={output.BAM} "
+        "M={output.metrics} VALIDATION_STRINGENCY=LENIENT"
+
+
+rule STAR_AddReadGrps_XY:
+    input:
+        mkdup_BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_XY.bam")
+    output:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam")
+    params:
+        id = lambda wildcards: config[wildcards.sample]["ID"],
+        sm = lambda wildcards: config[wildcards.sample]["SM"],
+        lb = lambda wildcards: config[wildcards.sample]["LB"],
+        pu = lambda wildcards: config[wildcards.sample]["PU"],
+        pl = lambda wildcards: config[wildcards.sample]["PL"],
+        picard = picard_path
+    shell:
+        "{params.picard} -Xmx14g AddOrReplaceReadGroups I={input.mkdup_BAM} O={output.BAM} "
+        "RGID={params.id} RGPU={params.pu} RGSM={params.sm} RGPL={params.pl} RGLB={params.lb} VALIDATION_STRINGENCY=LENIENT"
+
+rule STAR_index_bam_XY:
+    input:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam")
+    output:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai")
+    params:
+        bamtools = bamtools_path
+    shell:
+        "{params.bamtools} index -in {input.BAM}"
+
+
+rule STAR_stats_bam_XY:
+    input:
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam")
+    output:
+        stats = (config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats_XY.txt")
+    params:
+        bamtools = bamtools_path
+    shell:
+        "{params.bamtools} stats -in {input.BAM} > {output.stats}"
+
+rule STAR_feautreCounts_XY:
+    input:
+        BAM = (config["starAligned"]+"{sample}_STAR_XY.bam")
+    output:
+        counts = (config["featureCounts"]+"{sample}_STAR_XY.txt")
+    params:
+        featureCounts = featureCounts_path,
+        GTF = (config["GRCh38.gtf"]+".gtf"),
+    shell:
+        "{params.featureCounts} -T 8 -p -s 2 -t exon -g gene_id -a {params.GTF} -o {output.counts} {input.BAM}"
+
+rule reformat_counts_XY:
+    input:
+        counts = (config["featureCounts"]+"{sample}_STAR_XY.txt")
+    output:
+        counts_only = (config["featureCounts"]+"{sample}_countsOnly_XY.txt")
+    shell:
+        """
+        cut -f7 {input.counts} | sed 1d > {output.counts_only};
+        sed -i 's,../../starAligned/,,g' {output.counts_only};
+        sed -i 's,_STAR_sort_mkdup_rdgrp_XY.bam,,g' {output.counts_only}
+        """
+
+rule counts_XY:
+    input:
+        counts_only = expand(config["featureCounts"]+"{sample}_countsOnly_XY.txt", sample = config["female_names"])
+    output:
+        tissue_counts = config["featureCounts"]+"LBD_XY.counts"
+    shell:
+        """
+        paste {input.counts_only} > {output.tissue_counts}
+        """
+
 

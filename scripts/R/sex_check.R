@@ -3,36 +3,18 @@ library(ggplot2)
 library(reshape2)
 #----------- plot JITTER
 #which tissue?
-x <- "Brain"
 
-# read in CPM data
-geneticSEXgenes_Jitter <-
-  read.delim(
-    paste0("genelists/fpkm_cpm/", x, "_lcpm_beforeFilter.txt"),
-    header = TRUE,
-    sep = "\t"
-  )
+genes_counts <- melt(genes_and_counts)
+names(genes_counts)[names(genes_counts) == "variable"] <- "counts_id"
 
-# reformat column names to have "-" rather an "."
-colnames(geneticSEXgenes_Jitter) <-
-  str_replace_all(colnames(geneticSEXgenes_Jitter), pattern = "\\.", "-")
-metadata <-
-  read.delim(paste0("metadata/", x, "_metadata.txt"),
-             header = TRUE,
-             sep = "\t")
-geneticSEXgenes_Jitter$Chr <- NULL
-geneticSEXgenes_Jitter$Start <- NULL
-geneticSEXgenes_Jitter$End <- NULL
-
-genes_counts <- melt(geneticSEXgenes_Jitter)
-names(genes_counts)[names(genes_counts) == "variable"] <- "sampleID"
-
-df <- cbind(metadata$sampleID, metadata$gender)
+df <- cbind(counts_metadata$counts_id, counts_metadata$Sex)
 df <- as.data.frame(df)
-names(df)[names(df) == "V1"] <- "sampleID"
-names(df)[names(df) == "V2"] <- "gender"
+names(df)[names(df) == "V1"] <- "counts_id"
+names(df)[names(df) == "V2"] <- "Sex"
 
-data <- merge(genes_counts, df, by = "sampleID")
+data <- merge(genes_counts, df, by = "counts_id")
+names(data)[names(data) == "genes.gtf$gene_name"] <- "Geneid"
+
 sexGenes <- c("DDX3X, DDX3Y")
 SelectGenes_counts <-
   subset(
@@ -132,13 +114,14 @@ SelectGenes_counts$group <-
 # Plot
 data <- SelectGenes_counts
 data$Geneid <- factor(data$Geneid, as.character(data$Geneid))
+data$Geneid
 data$geneComb <- factor(data$geneComb, as.character(data$geneComb))
-data$gender <- factor(data$sex, as.character(data$gender))
+data$Sex <- factor(data$sex, as.character(data$Sex))
 
 leg_lab <- "reported sex"
 cbPaletteJITTER = c("darkorange", "blue")
 geneticSEXgenes_plot <- ggplot(data, aes(x = Geneid, y = value)) +
-  geom_jitter(aes(color = gender, shape = gender),
+  geom_jitter(aes(color = Sex, shape = Sex),
               width = 0.25,
               size = 3.0) +
   scale_color_manual(leg_lab, values = cbPaletteJITTER) + # Jitter color palette
