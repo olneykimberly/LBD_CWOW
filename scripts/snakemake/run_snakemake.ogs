@@ -18,7 +18,7 @@ CWD="/research/labs/neurology/fryer/m239830/LBD_CWOW//scripts/snakemake"
 cd $CWD
 
 # run snakemake
-snakemake -s Snakefile -j 80 --rerun-incomplete --latency-wait 15 --cluster "qsub -l h_vmem=8G -q 1-day,4-day,lg-mem -pe threaded 6"
+snakemake -s Snakefile -j 250 --rerun-incomplete --latency-wait 15 --cluster "qsub -l h_vmem=8G -q 1-day,4-day,lg-mem -pe threaded 6"
 
 # The submitted job will submit 28 sub-jobs (-j 28). You will see 29 jobs total with qstat.
 # The main job requests 2 GB memory.
