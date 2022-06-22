@@ -163,7 +163,7 @@ saveToPNG <- function(...) {
 # set colors and get data
 table(dge$samples$TYPE)
 dge$samples$TYPE <- as.factor(dge$samples$TYPE)
-group_colors <- c("black","red")[dge$samples$TYPE]
+group_colors <- c("black","gray")[dge$samples$TYPE]
 lcpm <- edgeR::cpm(dge$counts, log = TRUE)
 par(bg = 'white')
 
@@ -171,23 +171,23 @@ par(bg = 'white')
 plotMDS(
   lcpm,
   top = 100, 
-  labels = dge$samples$NPID,
-  cex = 0.8, 
+  labels = dge$samples$Sex,
+  cex = 2, 
   dim.plot = c(1,2), 
   plot = TRUE, 
   col = group_colors, gene.selection = "common"
 )
-title(expression('Top 100 Genes - Raw (Log'[2]~'CPM)'))
-legend(
-  "bottomleft",
-  legend = c(control, condition),
-  pch = 16,
-  col = c("black","red"),
-  cex = 0.8
-)
+title(expression('Top 100 Genes (Log'[2]~'CPM)'))
+#legend(
+#  "bottomleft",
+ # legend = c(control, condition),
+#  pch = 16,
+#  col = c("black","red"),
+#  cex = 0.8
+#)
 # save
-path <- paste0("../../results/", tool, "/MDS/", condition,"_gene_MDS_techreps")
-saveToPDF(paste0(path, ".pdf"), width = 4, height = 4)
+path <- paste0("../../results/", tool, "/MDS/", condition,"_gene_MDS_techreps_label_sex")
+saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 saveToPNG(paste0(path, ".png"), width = 4, height = 4, unit = "in", res = 300)
 ```
 # Sex check
@@ -304,13 +304,14 @@ SelectGenes_counts$group <-
   )
 # Plot
 data <- SelectGenes_counts
-
+not_male <- subset(data, counts_id == "5510_FCH5MYFDMXY_L1" | counts_id ==  "5510_FCH5MYFDMXY_L2" )
+not_male$Sex <- c()
 leg_lab <- "reported sex"
 cbPaletteJITTER = c("darkorange", "blue")
 geneticSEXgenes_plot <- ggplot(data, aes(x = Geneid, y = value)) +
   geom_jitter(aes(color = Sex, shape = Sex),
               width = 0.25,
-              size = 3.0) +
+              size = 2.0) +
   scale_color_manual(leg_lab, values = cbPaletteJITTER) + # Jitter color palette
   scale_shape_manual(leg_lab, values = c(19, 15)) +
   labs(x = "", y = "", title = "") +
@@ -826,6 +827,8 @@ saveToPNG(paste0(path, ".png"), width = 23, height = 25, unit = "in", res = 300)
 # Save R object
 ```{r}
 #saveRDS(dge.filtered.norm, file = paste0("../../rObjects/LBD_dge.filtered.norm.rds"))
+dge.filtered.norm <- readRDS(paste0("../../rObjects/LBD_dge.filtered.norm.rds"))
+
 ```
 
 ```{r variance_partition, message=FALSE}
@@ -1005,6 +1008,7 @@ saveToPNG(paste0(path, ".png"), width = 4, height = 4, unit = "in", res = 300)
 
 ```{r save_EList}
 saveRDS(v, file = paste0("../../rObjects/LBD_gene_voom.rds"))
+v <- readRDS(paste0("../../rObjects/LBD_gene_voom.rds"))
 ```
 
 # Number of DEGs
@@ -1125,7 +1129,7 @@ p_vol <-
          aes(x = logFC,  # x-axis is logFC
              y = -log10(P.Value),  # y-axis will be -log10 of P.Value
              color = color_p0.05)) +  # color is based on factored color column
-  geom_point(alpha = 0.8, size = 1.7) +  # create scatterplot, alpha makes points transparent
+  geom_point(alpha = 1.5, size = 1.7) +  # create scatterplot, alpha makes points transparent
   theme_bw() +  # set color theme
   theme(legend.position = "none") +  # no legend
   scale_color_manual(values = c("red", "blue","grey")) +  # set factor colors
@@ -1147,23 +1151,23 @@ p_vol <-
                   aes(x = logFC, y= -log10(P.Value), label = gene_name), 
                   color = "maroon", 
                   fontface="italic",
-                  size = 3, 
+                  size = 4, 
                   max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
                   ) +
   geom_text_repel(data = down10,
                   aes(x = logFC, y= -log10(P.Value), label = gene_name), 
                   color = "navyblue", 
                   fontface="italic",
-                  size = 3, 
+                  size = 4, 
                   max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
-                  ) # +
- # scale_y_continuous(breaks = seq(0,12,by=1), limits = c(0,12)) +
- # scale_x_continuous(breaks = seq(-8,8,by=2), limits = c(-8,8))
+                  )  +
+  scale_y_continuous(breaks = seq(0,8,by=1), limits = c(0,8)) +
+  scale_x_continuous(breaks = seq(-3,3,by=1), limits = c(-3,3))
 p_vol
 
 # save
 path <- paste0("../../results/", tool, "/volcano/LBD_gene_volcano_FDRq0.05")
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 6)
+saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 saveToPNG(paste0(path, ".png"), width = 8, height = 6, unit = "in", res = 300)
 ```
 # Bar plot gene of interest
