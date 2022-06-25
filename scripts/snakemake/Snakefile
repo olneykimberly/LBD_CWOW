@@ -25,16 +25,16 @@ rule all:
         	expand(config["trimmedQC"]+"{sample}_trimmed_fq1_fastqc.html", sample = config["sample_names"]),
         	expand(config["trimmedQC"]+"{sample}_trimmed_fq2_fastqc.html", sample = config["sample_names"]),
         	        	
-        	#expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"]),
-        	#expand(config["starAligned"]+"{sample}_STAR_sort.bam", sample = config["sample_names"]),    	
-        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup.bam", sample = config["sample_names"]),   	
-        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam", sample = config["sample_names"]),   	
-        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam.bai", sample = config["sample_names"]),  	
-        	#expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats.txt", sample = config["sample_names"]),  
+        	expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"]),
+        	expand(config["starAligned"]+"{sample}_STAR_sort.bam", sample = config["sample_names"]),    	
+        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup.bam", sample = config["sample_names"]),   	
+        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam", sample = config["sample_names"]),   	
+        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam.bai", sample = config["sample_names"]),  	
+        	expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats.txt", sample = config["sample_names"]),  
 
-        	#expand(config["featureCounts"]+"{sample}_STAR.txt", sample = config["sample_names"]),
-        	#expand(config["featureCounts"]+"{sample}_countsOnly.txt", sample = config["sample_names"]),
-        	#expand(config["featureCounts"]+"LBD_81.counts"),
+        	expand(config["featureCounts"]+"{sample}_STAR.txt", sample = config["sample_names"]),
+        	expand(config["featureCounts"]+"{sample}_countsOnly.txt", sample = config["sample_names"]),
+        	expand(config["featureCounts"]+"LBD.counts")
 
         	#expand(config["starAligned"]+"{sample}_STAR_XX.bam", sample = config["female_names"]),
         	#expand(config["starAligned"]+"{sample}_STAR_sort_XX.bam", sample = config["female_names"]), 
@@ -48,7 +48,7 @@ rule all:
         	#expand(config["featureCounts"]+"{sample}_countsOnly_XX.txt", sample = config["female_names"]),
         	#expand(config["featureCounts"]+"LBD_XX.counts"),
 
-        	expand(config["starAligned"]+"{sample}_STAR_XY.bam", sample = config["male_names"]),
+        	#expand(config["starAligned"]+"{sample}_STAR_XY.bam", sample = config["male_names"]),
         	#expand(config["starAligned"]+"{sample}_STAR_sort_XY.bam", sample = config["male_names"]),  
         	#expand(config["starAligned"]+"{sample}_STAR_sort_XY.bam.bai", sample = config["male_names"]),  	
         	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_XY.bam", sample = config["male_names"]),   	
@@ -56,9 +56,9 @@ rule all:
         	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai", sample = config["male_names"]),  	
         	#expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats_XY.txt", sample = config["male_names"]),  
 
-        	expand(config["featureCounts"]+"{sample}_STAR_XY.txt", sample = config["male_names"]),
-        	expand(config["featureCounts"]+"{sample}_countsOnly_XY.txt", sample = config["male_names"]),
-        	expand(config["featureCounts"]+"LBD_XY.counts")
+        	#expand(config["featureCounts"]+"{sample}_STAR_XY.txt", sample = config["male_names"]),
+        	#expand(config["featureCounts"]+"{sample}_countsOnly_XY.txt", sample = config["male_names"]),
+        	#expand(config["featureCounts"]+"LBD_XY.counts")
 
 #---------------------
 # Reference genome and annotation were downloaded prior to running snakemake. 
@@ -336,7 +336,7 @@ rule brain_tissue_counts:
     input:
         counts_only = expand(config["featureCounts"]+"{sample}_countsOnly.txt", sample = config["sample_names"])
     output:
-        tissue_counts = config["featureCounts"]+"LBD_81.counts"
+        tissue_counts = config["featureCounts"]+"LBD.counts"
     shell:
         """
         paste {input.counts_only} > {output.tissue_counts}

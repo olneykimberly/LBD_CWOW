@@ -11,7 +11,7 @@
 # activate conda environment
 source $HOME/.bash_profile
 module load python
-conda activate pigs
+conda activate LBD
 
 # change directory to where Snakefile is located
 CWD="/research/labs/neurology/fryer/m239830/LBD_CWOW//scripts/snakemake"
