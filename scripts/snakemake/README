@@ -1,0 +1,7 @@
+# README
+
+# steps: 
+sh get_read_group_info.sh
+python create_config.py
+qsub run_snakemake.ogs
+

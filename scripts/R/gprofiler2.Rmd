@@ -1,0 +1,333 @@
+---
+title: "gprofiler2"
+author: "Kimberly Olney"
+date: "06/09/2022"
+output: html_document
+---
+# gprofiler for gene enrichment analysis
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_knit$set(root.dir = ".")
+```
+```{r, echo=FALSE}
+saveToPDF <- function(...) {
+    d = dev.copy(pdf,...)
+    dev.off(d)
+}
+
+saveToPNG <- function(...) {
+    d = dev.copy(png,...)
+    dev.off(d)
+}
+```
+
+```{r packages, echo=FALSE, message=FALSE}
+library(gprofiler2)
+library(DESeq2)
+library(airway)
+library(enrichplot)
+library(DOSE) 
+library(plyr)
+library(ggplot2)
+require(gridExtra)
+library(ggpubr)
+library(scales)
+library(forcats)
+```
+
+```{r set_variables, echo=FALSE}
+tissue <- c("Brain") # Kidney or Brain
+control <- "Control"
+treatment <- "DLB"
+control_color <- "gray29"
+treatment_color <- "red"
+tool = c("star")
+```
+
+# Read in DEGs
+The DEGs are already ordered by smallest to largest adjusted p-value.
+```{r}
+star_all  <- read.delim("../../results/star/DEGs/LBD_gene_DEGs_FDRq0.05.txt", 
+                    header = TRUE, sep = "\t")
+star_XX <- read.delim("../../results/star/DEGs/LBD_gene_DEGs_FDRq0.05_XX.txt", 
+                    header = TRUE, sep = "\t")
+star_XY <- read.delim("../../results/star/DEGs/LBD_gene_DEGs_FDRq0.05_XY.txt", 
+                     header = TRUE, sep = "\t")
+```
+
+# Subset lists
+sort = FALSE so that the order of the DEGs remains. The DEGs are ordered by adjusted p-value
+May also order by log2FC
+```{r}
+# sort by fold change. Biggest fold change is the first gene
+star_all_sort_positiveFC <- star_XY[order(-star_all$adj.P.Val),]
+# now repeat for negative fold changes
+star_all_sort_negativeFC <- star_XY[order(star_all$adj.P.Val),]
+
+star_XX_sort_positiveFC <- star_XX[order(-star_XX$adj.P.Val),]
+star_XX_sort_negativeFC <- star_XX[order(star_XX$adj.P.Val),]
+
+star_XY_sort_positiveFC <- star_XY[order(-star_XY$adj.P.Val),]
+star_XY_sort_negativeFC <- star_XY[order(star_XY$adj.P.Val),]
+
+# when subsetting, keep the order. I.e sort = FALSE. Do not resort 
+up_star_all <- subset(star_all_sort_positiveFC$gene_name, 
+                      star_all_sort_positiveFC$logFC > 0, sort = FALSE)
+down_star_all <- subset(star_all_sort_negativeFC$gene_name, 
+                        star_all_sort_negativeFC$logFC < 0, sort = FALSE)
+
+up_star_XX <- subset(star_XX_sort_positiveFC$gene_name, 
+                     star_XX_sort_positiveFC$logFC > 0, sort = FALSE)
+down_star_XX <- subset(star_XX_sort_negativeFC$gene_name, 
+                       star_XX_sort_negativeFC$logFC < 0, sort = FALSE)
+
+up_star_XY <- subset(star_XY_sort_positiveFC$gene_name, 
+                     star_XY_sort_positiveFC$logFC > 0, sort = FALSE)
+down_star_XY <- subset(star_XY_sort_negativeFC$gene_name, 
+                       star_XY_sort_negativeFC$logFC < 0, sort = FALSE)
+```
+# All samples (XX and XY)
+### Enrichment analysis
+ordered_query = TRUE specify that the genes are in a meaningful order. 
+Ordered by adjusted p-value. 
+```{r}
+gp_up <- gost(up_star_all, ordered_query = TRUE, organism = "hsapiens")
+gp_down <- gost(down_star_all, ordered_query = TRUE, organism = "hsapiens")
+
+# inspect
+head(gp_up$result)
+head(gp_down$result)
+```
+
+```{r, echo=FALSE}
+# up-regulated 
+gostplot(gp_up, interactive = TRUE) # , capped = FALSE
+p_up = gostplot(gp_up, interactive = FALSE)
+publish_gostplot(p_up) #, highlight_terms = c("GO:0002376", "GO:0006952","GO:0034097", "KEGG:05169", "KEGG04668"))
+
+path <- paste0("../../results/", tool, "/gprofiler/", treatment, "_",tolower(tissue),"_up_gprofiler")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 6)
+saveToPNG(paste0(path, ".png"), width = 8, height = 6, unit = "in", res = 300)
+
+# down-regulated 
+gostplot(gp_down, interactive = TRUE) # , capped = FALSE
+p_down = gostplot(gp_down, interactive = FALSE)
+publish_gostplot(p_down) #, highlight_terms = c("GO:0035633"))
+```
+
+```{r eval =FALSE, echo=FALSE}
+path <- paste0("../../results/", tool, "/gprofiler/", treatment, "_",tolower(tissue),"_down_gprofiler")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 6)
+saveToPNG(paste0(path, ".png"), width = 8, height = 6, unit = "in", res = 300)
+```
+### Plot up and down enrichment together 
+```{r}
+multi_gp = gost(list("down-regulated" = down_star_all, 
+                     "up-regulated" = up_star_all), ordered_query = TRUE, 
+                     organism = "hsapiens")
+
+# rearrange so that up-regualted is on top 
+neworder <- c("up-regulated","down-regulated")
+multi_gp$result <- arrange(transform(multi_gp$result,
+             query=factor(query,levels=neworder)),query)
+
+# interactive plot 
+gostplot(multi_gp, interactive = TRUE)
+```
+
+```{r, echo=FALSE}
+# needed to convert to enrichResult object
+up_names = gconvert(up_star_all, organism = "hsapiens") 
+down_names = gconvert(down_star_all,organism = "hsapiens")
+
+# enrichment analysis using gene names
+multi_gp = gost(list("up-regulated" = up_names$name, "down-regulated" = down_names$name), multi_query = FALSE, evcodes = TRUE, ordered_query = TRUE, 
+                organism = "hsapiens")
+
+#subset(multi_gp$result, term_id == "GO:0035633")
+# reorder so that up-regulated is on top
+neworder <- c("up-regulated","down-regulated")
+multi_gp$result <- arrange(transform(multi_gp$result,
+             query=factor(query,levels=neworder)),query)
+
+# modify the g:Profiler data frame
+gp_mod = multi_gp$result[,c("query", "source", "term_id", "term_name", "p_value", 
+                            "query_size", "intersection_size","term_size", 
+                            "effective_domain_size","intersection")] 
+# get the gene name size for each GO 
+gp_mod$GeneRatio = paste0(gp_mod$intersection_size, "/", gp_mod$query_size)
+gp_mod$BgRatio = paste0(gp_mod$term_size, "/", gp_mod$effective_domain_size) 
+names(gp_mod) = c("Cluster", "Category", "ID", "Description", "p.adjust",
+"query_size", "Count", "term_size", "effective_domain_size",
+"geneID", "GeneRatio", "BgRatio") 
+gp_mod$geneID = gsub(",", "/", gp_mod$geneID)
+row.names(gp_mod) = make.names(gp_mod$ID, unique = TRUE)
+
+# define as compareClusterResult object
+gp_mod_cluster = new("compareClusterResult", compareClusterResult = gp_mod)
+# define as enrichResult object
+gp_mod_enrich = new("enrichResult", result = gp_mod)
+
+# output table 
+write.table(gp_mod_enrich@result, paste0("../../results/", tool, "/gprofiler/", treatment, "_",tolower(tissue),"_up_and_down_gp_mod_enrich.txt"), sep = "\t", quote = FALSE, row.names = FALSE)
+```
+# XX only
+### Enrichment analysis
+```{r}
+#gp_up <- gost(up_star_XX, ordered_query = TRUE, organism = "hsapiens")
+gp_down <- gost(down_star_XX, ordered_query = TRUE, organism = "hsapiens")
+
+# inspect
+#head(gp_up$result)
+head(gp_down$result)
+```
+
+### Plot enrichment analysis 
+interactive = TRUE means the plot is interactive. You can select a point of interest to see what it is. \
+interactive = FALSE is needed when saving the plot
+capped = FALSE indicates if the Y-asix p-value should be capped at 16 or not. 
+```{r, echo=FALSE}
+# up-regulated 
+#gostplot(gp_up, interactive = TRUE) # , capped = FALSE
+#p_up = gostplot(gp_up, interactive = FALSE)
+#publish_gostplot(p_up) #, highlight_terms = c("GO:0002376", "GO:0006952","GO:0034097", "KEGG:05169", "KEGG04668"))
+
+# down-regulated 
+gostplot(gp_down, interactive = TRUE) # , capped = FALSE
+p_down = gostplot(gp_down, interactive = FALSE)
+publish_gostplot(p_down) #, highlight_terms = c("GO:0035633"))
+```
+
+### Plot up and down enrichment together 
+```{r, eval=FALSE, echo=FALSE}
+multi_gp = gost(list("down-regulated" = down_star_XX, 
+                     "up-regulated" = up_star_XX), ordered_query = TRUE, 
+                     organism = "hsapiens")
+
+# rearrange so that up-regualted is on top 
+neworder <- c("up-regulated","down-regulated")
+multi_gp$result <- arrange(transform(multi_gp$result,
+             query=factor(query,levels=neworder)),query)
+
+# interactive plot 
+gostplot(multi_gp, interactive = TRUE)
+```
+
+```{r echo=FALSE}
+# needed to convert to enrichResult object
+up_names = gconvert(up_star_XX, organism = "hsapiens") 
+down_names = gconvert(down_star_XX,organism = "hsapiens")
+
+# enrichment analysis using gene names
+multi_gp = gost(list("up-regulated" = up_names$name, "down-regulated" = down_names$name), multi_query = FALSE, evcodes = TRUE, ordered_query = TRUE, 
+                organism = "hsapiens")
+
+# reorder so that up-regulated is on top
+neworder <- c("up-regulated","down-regulated")
+multi_gp$result <- arrange(transform(multi_gp$result,
+             query=factor(query,levels=neworder)),query)
+
+# modify the g:Profiler data frame
+gp_mod = multi_gp$result[,c("query", "source", "term_id", "term_name", "p_value", 
+                            "query_size", "intersection_size","term_size", 
+                            "effective_domain_size","intersection")] 
+# get the gene name size for each GO 
+gp_mod$GeneRatio = paste0(gp_mod$intersection_size, "/", gp_mod$query_size)
+gp_mod$BgRatio = paste0(gp_mod$term_size, "/", gp_mod$effective_domain_size) 
+names(gp_mod) = c("Cluster", "Category", "ID", "Description", "p.adjust",
+"query_size", "Count", "term_size", "effective_domain_size",
+"geneID", "GeneRatio", "BgRatio") 
+gp_mod$geneID = gsub(",", "/", gp_mod$geneID)
+row.names(gp_mod) = make.names(gp_mod$ID, unique = TRUE)
+
+# define as compareClusterResult object
+gp_mod_cluster = new("compareClusterResult", compareClusterResult = gp_mod)
+# define as enrichResult object
+gp_mod_enrich = new("enrichResult", result = gp_mod)
+
+# output table 
+write.table(gp_mod_enrich@result, paste0("../../results/", tool, "/gprofiler/", treatment, "_",tolower(tissue),"_up_and_down_gp_mod_enrich_XX.txt"), sep = "\t", quote = FALSE, row.names = FALSE)
+```
+# XY only
+### Enrichment analysis
+```{r}
+gp_up <- gost(up_star_XY, ordered_query = TRUE, organism = "hsapiens")
+gp_down <- gost(down_star_XY, ordered_query = TRUE, organism = "hsapiens")
+
+# inspect
+head(gp_up$result)
+head(gp_down$result)
+```
+
+### Plot enrichment analysis 
+```{r echo=FALSE}
+# up-regulated 
+gostplot(gp_up, interactive = TRUE) # , capped = FALSE
+p_up = gostplot(gp_up, interactive = FALSE)
+publish_gostplot(p_up)
+
+path <- paste0("../../results/", tool, "/gprofiler/", treatment, "_",tolower(tissue),"_up_gprofiler_XY")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 6)
+saveToPNG(paste0(path, ".png"), width = 8, height = 6, unit = "in", res = 300)
+
+# down-regulated 
+gostplot(gp_down, interactive = TRUE) # , capped = FALSE
+p_down = gostplot(gp_down, interactive = FALSE)
+publish_gostplot(p_down) #, highlight_terms = c("GO:0035633"))
+```
+
+```{r eval=FALSE, echo=FALSE}
+path <- paste0("../../results/", tool, "/gprofiler/", treatment, "_",tolower(tissue),"_down_gprofiler_XY")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 6)
+saveToPNG(paste0(path, ".png"), width = 8, height = 6, unit = "in", res = 300)
+```
+### Plot up and down enrichment together 
+```{r}
+multi_gp = gost(list("down-regulated" = down_star_XY, 
+                     "up-regulated" = up_star_XY), ordered_query = TRUE, 
+                     organism = "hsapiens")
+
+# rearrange so that up-regualted is on top 
+neworder <- c("up-regulated","down-regulated")
+multi_gp$result <- arrange(transform(multi_gp$result,
+             query=factor(query,levels=neworder)),query)
+
+# interactive plot 
+gostplot(multi_gp, interactive = TRUE)
+```
+
+```{r echo=FALSE}
+# needed to convert to enrichResult object
+up_names = gconvert(up_star_XY, organism = "hsapiens") 
+down_names = gconvert(down_star_XY,organism = "hsapiens")
+
+# enrichment analysis using gene names
+multi_gp = gost(list("up-regulated" = up_names$name, "down-regulated" = down_names$name), multi_query = FALSE, evcodes = TRUE, ordered_query = TRUE, 
+                organism = "hsapiens")
+
+# reorder so that up-regulated is on top
+neworder <- c("up-regulated","down-regulated")
+multi_gp$result <- arrange(transform(multi_gp$result,
+             query=factor(query,levels=neworder)),query)
+
+# modify the g:Profiler data frame
+gp_mod = multi_gp$result[,c("query", "source", "term_id", "term_name", "p_value", 
+                            "query_size", "intersection_size","term_size", 
+                            "effective_domain_size","intersection")] 
+# get the gene name size for each GO 
+gp_mod$GeneRatio = paste0(gp_mod$intersection_size, "/", gp_mod$query_size)
+gp_mod$BgRatio = paste0(gp_mod$term_size, "/", gp_mod$effective_domain_size) 
+names(gp_mod) = c("Cluster", "Category", "ID", "Description", "p.adjust",
+"query_size", "Count", "term_size", "effective_domain_size",
+"geneID", "GeneRatio", "BgRatio") 
+gp_mod$geneID = gsub(",", "/", gp_mod$geneID)
+row.names(gp_mod) = make.names(gp_mod$ID, unique = TRUE)
+
+# define as compareClusterResult object
+gp_mod_cluster = new("compareClusterResult", compareClusterResult = gp_mod)
+# define as enrichResult object
+gp_mod_enrich = new("enrichResult", result = gp_mod)
+
+# output table 
+write.table(gp_mod_enrich@result, paste0("../../results/", tool, "/gprofiler/", treatment, "_",tolower(tissue),"_up_and_down_gp_mod_enrich_XY.txt"), sep = "\t", quote = FALSE, row.names = FALSE)
+```
+
