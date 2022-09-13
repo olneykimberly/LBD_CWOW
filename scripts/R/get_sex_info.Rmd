@@ -43,7 +43,7 @@ RIN$NPID <- RIN$Sample
 metadata <- merge(metadata, RIN, by = "NPID")
 # read in counts data
 counts <- read.delim(
-  paste0("../../featureCounts/LBD_81.counts"),
+  paste0("../../featureCounts/LBD.counts"),
   header = TRUE,
   sep = "\t", check.names=FALSE)
 # get the sampleID from the counts file to match with metadata
