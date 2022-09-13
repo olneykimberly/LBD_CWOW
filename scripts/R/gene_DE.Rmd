@@ -163,7 +163,11 @@ saveToPNG <- function(...) {
 # set colors and get data
 table(dge$samples$TYPE)
 dge$samples$TYPE <- as.factor(dge$samples$TYPE)
+<<<<<<< HEAD
 group_colors <- c("black","red")[dge$samples$TYPE]
+=======
+group_colors <- c("grey","purple")[dge$samples$TYPE]
+>>>>>>> 9a2159299556bf35b077222e26b92b195137d848
 lcpm <- edgeR::cpm(dge$counts, log = TRUE)
 cpm <- edgeR::cpm(dge$counts, log = FALSE)
 
@@ -522,7 +526,7 @@ plotMDS(
   top = 100, 
   labels = dge.tech$samples$NPID,
   cex = .8, 
-  dim.plot = c(1,2), 
+  dim.plot = c(4,5), 
   plot = TRUE, 
   col = group_colors,
   gene.selection = "common"
