@@ -1,6 +1,6 @@
 import os
 
-configfile: "config.json"
+configfile: "RNA.config.json"
 
 #Tools
 fastqc_path = "fastqc"
@@ -25,11 +25,11 @@ rule all:
         	expand(config["trimmedQC"]+"{sample}_trimmed_fq1_fastqc.html", sample = config["sample_names"]),
         	expand(config["trimmedQC"]+"{sample}_trimmed_fq2_fastqc.html", sample = config["sample_names"]),
         	        	
-        	expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"])
-        	#expand(config["starAligned"]+"{sample}_STAR_sort.bam", sample = config["sample_names"]),    	
-        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup.bam", sample = config["sample_names"]),   	
-        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam", sample = config["sample_names"]),   	
-        	#expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam.bai", sample = config["sample_names"]),  	
+        	expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"]),
+        	expand(config["starAligned"]+"{sample}_STAR_sort.bam", sample = config["sample_names"]),    	
+        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup.bam", sample = config["sample_names"]),   	
+        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam", sample = config["sample_names"]),   	
+        	expand(config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bai", sample = config["sample_names"])  	
         	#expand(config["bamstats"]+"{sample}_STAR_sort_mkdup_rdgrp_stats.txt", sample = config["sample_names"])  
 
         	#expand(config["starAligned"]+"{sample}_STAR_XX.bam", sample = config["female_names"]),
@@ -189,9 +189,13 @@ rule STAR_bam_sort:
     	IN_BAM = (config["starAligned"]+"{sample}_STAR.bam")
     output:
         sort_BAM = temporary(config["starAligned"]+"{sample}_STAR_sort.bam")
+    params:
+        picard = picard_path
     shell:
-        "bamtools sort -in {input.IN_BAM} -out {output.sort_BAM}"
+        "{params.picard} -Xmx14g SortSam I={input.IN_BAM} O={output.sort_BAM} SORT_ORDER=coordinate"
 
+#---- bamtools sorting alternative
+#        "bamtools sort -in {input.IN_BAM} -out {output.sort_BAM}"
 # KEY
 # sort. Sort bam by coordinates
 # -in. input bam file
@@ -254,11 +258,14 @@ rule STAR_index_bam:
     input:
         BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam")
     output:
-        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam.bai")
+        BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bai")
     params:
-        bamtools = bamtools_path
+        picard = picard_path
     shell:
-        "{params.bamtools} index -in {input.BAM}"
+        "{params.picard} -Xmx14g BuildBamIndex -I {input.BAM}"
+
+#------ bamtools index alternative
+# "{params.bamtools} index -in {input.BAM}"
 
 # KEY
 #index. Index a coordinate-sorted BGZIP-compressed SAM, BAM or CRAM file for fast random access.

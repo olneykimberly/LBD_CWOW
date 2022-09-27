@@ -30,6 +30,7 @@ header = '''{{
     "trimmedReads" : "../../trimmedReads/",
     "trimmedQC" : "../../trimmedQC/",
     "starAligned" : "../../starAligned/",
+    "starAligned_SCC" : "../../startAligned_SCC/",
     "bamstats" : "../../bamstats/",
     "featureCounts" : "../../featureCounts/",
     "kallisto" : "../../kallisto/",

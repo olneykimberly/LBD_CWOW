@@ -1,539 +1,1251 @@
-reported	observed	counts_id
-male	male	5282_FCH7T3VDMXY_L1
-male	male	5282_FCH7T3VDMXY_L2
-male	male	5421_FCH5MYFDMXY_L1
-male	male	5421_FCH5MYFDMXY_L2
-male	male	5510_FCH5MYFDMXY_L1
-male	male	5510_FCH5MYFDMXY_L2
-female	female	NA00-190_FCH5MYFDMXY_L1
-female	female	NA00-190_FCH5MYFDMXY_L2
-female	female	NA01-135_FCH5MYFDMXY_L1
-female	female	NA01-135_FCH5MYFDMXY_L2
-male	male	NA02-171_FCH7TM5DMXY_L1
-male	male	NA02-171_FCH7TM5DMXY_L2
-female	female	NA02-220_FCHCLTJDMXY_L1
-female	female	NA02-220_FCHCLTJDMXY_L2
-female	female	NA03-011_FCH7T3VDMXY_L1
-female	female	NA03-011_FCH7T3VDMXY_L2
-male	male	NA03-024_FCH7T3VDMXY_L1
-male	male	NA03-024_FCH7T3VDMXY_L2
-male	male	NA03-082_FCH5MYFDMXY_L1
-male	male	NA03-082_FCH5MYFDMXY_L2
-female	female	NA03-151_FCH7T3VDMXY_L1
-female	female	NA03-151_FCH7T3VDMXY_L2
-female	female	NA03-235_FCHCLTJDMXY_L1
-female	female	NA03-235_FCHCLTJDMXY_L2
-female	female	NA03-236_FCH7TM5DMXY_L1
-female	female	NA03-236_FCH7TM5DMXY_L2
-male	male	NA03-247_FCH5MYFDMXY_L1
-male	male	NA03-247_FCH5MYFDMXY_L2
-female	female	NA03-248_FCH7T3VDMXY_L1
-female	female	NA03-248_FCH7T3VDMXY_L2
-male	male	NA03-264_FCHCLTJDMXY_L1
-male	male	NA03-264_FCHCLTJDMXY_L2
-male	male	NA03-267_FCH5MYFDMXY_L1
-male	male	NA03-267_FCH5MYFDMXY_L2
-male	male	NA03-269_FCHCLTJDMXY_L1
-male	male	NA03-269_FCHCLTJDMXY_L2
-female	male	NA04-053_FCH5MYFDMXY_L1
-female	male	NA04-053_FCH5MYFDMXY_L2
-male	male	NA04-057_FCH7T3VDMXY_L1
-male	male	NA04-057_FCH7T3VDMXY_L2
-male	male	NA04-064_FCHCLTJDMXY_L1
-male	male	NA04-064_FCHCLTJDMXY_L2
-male	male	NA04-244_FCH7TM5DMXY_L1
-male	male	NA04-244_FCH7TM5DMXY_L2
-male	male	NA04-249_FCHCLTJDMXY_L1
-male	male	NA04-249_FCHCLTJDMXY_L2
-male	male	NA04-322_FCH7T3VDMXY_L1
-male	male	NA04-322_FCH7T3VDMXY_L2
-female	female	NA04-324_FCH5MYFDMXY_L1
-female	female	NA04-324_FCH5MYFDMXY_L2
-female	female	NA05-038_FCH5MYFDMXY_L1
-female	female	NA05-038_FCH5MYFDMXY_L2
-male	male	NA05-052_FCH7TM5DMXY_L1
-male	male	NA05-052_FCH7TM5DMXY_L2
-male	male	NA05-079_FCH5MYFDMXY_L1
-male	male	NA05-079_FCH5MYFDMXY_L2
-male	male	NA05-130_FCH5MYFDMXY_L1
-male	male	NA05-130_FCH5MYFDMXY_L2
-female	female	NA05-205_FCHCLTJDMXY_L1
-female	female	NA05-205_FCHCLTJDMXY_L2
-male	male	NA05-273_FCH7T3VDMXY_L1
-male	male	NA05-273_FCH7T3VDMXY_L2
-female	female	NA05-308_FCHCLTJDMXY_L1
-female	female	NA05-308_FCHCLTJDMXY_L2
-male	male	NA06-013_FCH7TM5DMXY_L1
-male	male	NA06-013_FCH7TM5DMXY_L2
-female	female	NA06-047_FCH5MYFDMXY_L1
-female	female	NA06-047_FCH5MYFDMXY_L2
-female	female	NA06-092_FCH7T3VDMXY_L1
-female	female	NA06-092_FCH7T3VDMXY_L2
-female	female	NA06-150_FCH7T3VDMXY_L1
-female	female	NA06-150_FCH7T3VDMXY_L2
-male	male	NA06-210_FCH7T3VDMXY_L1
-male	male	NA06-210_FCH7T3VDMXY_L2
-female	female	NA06-235_FCHCLTJDMXY_L1
-female	female	NA06-235_FCHCLTJDMXY_L2
-male	male	NA06-243_FCH5MYFDMXY_L1
-male	male	NA06-243_FCH5MYFDMXY_L2
-male	male	NA06-244_FCH7T3VDMXY_L1
-male	male	NA06-244_FCH7T3VDMXY_L2
-female	female	NA06-299_FCH5MYFDMXY_L1
-female	female	NA06-299_FCH5MYFDMXY_L2
-female	female	NA07-046_FCHCLTJDMXY_L1
-female	female	NA07-046_FCHCLTJDMXY_L2
-male	male	NA07-147_FCH7TM5DMXY_L1
-male	male	NA07-147_FCH7TM5DMXY_L2
-male	male	NA07-161_FCHCLTJDMXY_L1
-male	male	NA07-161_FCHCLTJDMXY_L2
-male	male	NA07-177_FCH7TM5DMXY_L1
-male	male	NA07-177_FCH7TM5DMXY_L2
-male	male	NA07-178_FCH5MYFDMXY_L1
-male	male	NA07-178_FCH5MYFDMXY_L2
-male	male	NA07-261_FCHCLTJDMXY_L1
-male	male	NA07-261_FCHCLTJDMXY_L2
-female	female	NA07-279_FCH7T3VDMXY_L1
-female	female	NA07-279_FCH7T3VDMXY_L2
-male	male	NA07-283_FCH5MYFDMXY_L1
-male	male	NA07-283_FCH5MYFDMXY_L2
-male	male	NA07-303_FCH7TM5DMXY_L1
-male	male	NA07-303_FCH7TM5DMXY_L2
-male	male	NA07-320_FCH7TM5DMXY_L1
-male	male	NA07-320_FCH7TM5DMXY_L2
-male	male	NA08-010_FCH7TM5DMXY_L1
-male	male	NA08-010_FCH7TM5DMXY_L2
-male	male	NA08-049_FCHCLTJDMXY_L1
-male	male	NA08-049_FCHCLTJDMXY_L2
-male	male	NA08-052_FCHCLTJDMXY_L1
-male	male	NA08-052_FCHCLTJDMXY_L2
-male	male	NA08-115_FCHCLTJDMXY_L1
-male	male	NA08-115_FCHCLTJDMXY_L2
-male	male	NA08-126_FCH5MYFDMXY_L1
-male	male	NA08-126_FCH5MYFDMXY_L2
-male	male	NA08-144_FCHCLTJDMXY_L1
-male	male	NA08-144_FCHCLTJDMXY_L2
-male	male	NA08-222_FCHCLTJDMXY_L1
-male	male	NA08-222_FCHCLTJDMXY_L2
-female	female	NA08-234_FCH5MYFDMXY_L1
-female	female	NA08-234_FCH5MYFDMXY_L2
-male	male	NA08-237_FCH7T3VDMXY_L1
-male	male	NA08-237_FCH7T3VDMXY_L2
-female	female	NA09-047_FCH5MYFDMXY_L1
-female	female	NA09-047_FCH5MYFDMXY_L2
-male	male	NA09-116_FCHCLTJDMXY_L1
-male	male	NA09-116_FCHCLTJDMXY_L2
-female	female	NA09-131_FCH7TM5DMXY_L1
-female	female	NA09-131_FCH7TM5DMXY_L2
-male	male	NA09-152_FCH7TM5DMXY_L1
-male	male	NA09-152_FCH7TM5DMXY_L2
-male	male	NA09-226_FCH7TM5DMXY_L1
-male	male	NA09-226_FCH7TM5DMXY_L2
-male	male	NA09-268_FCH7T3VDMXY_L1
-male	male	NA09-268_FCH7T3VDMXY_L2
-male	male	NA09-275_FCH7T3VDMXY_L1
-male	male	NA09-275_FCH7T3VDMXY_L2
-male	male	NA09-287_FCH5MYFDMXY_L1
-male	male	NA09-287_FCH5MYFDMXY_L2
-female	female	NA09-290_FCH7TM5DMXY_L1
-female	female	NA09-290_FCH7TM5DMXY_L2
-male	male	NA09-331_FCH7TM5DMXY_L1
-male	male	NA09-331_FCH7TM5DMXY_L2
-male	male	NA09-347_FCH5MYFDMXY_L1
-male	male	NA09-347_FCH5MYFDMXY_L2
-female	female	NA09-355_FCH7T3VDMXY_L1
-female	female	NA09-355_FCH7T3VDMXY_L2
-male	male	NA09-396_FCH7TM5DMXY_L1
-male	male	NA09-396_FCH7TM5DMXY_L2
-male	male	NA10-006_FCH7TM5DMXY_L1
-male	male	NA10-006_FCH7TM5DMXY_L2
-male	male	NA10-041_FCH5MYFDMXY_L1
-male	male	NA10-041_FCH5MYFDMXY_L2
-male	male	NA10-042_FCHCLTJDMXY_L1
-male	male	NA10-042_FCHCLTJDMXY_L2
-male	male	NA10-160_FCH7TM5DMXY_L1
-male	male	NA10-160_FCH7TM5DMXY_L2
-male	male	NA10-161_FCH5MYFDMXY_L1
-male	male	NA10-161_FCH5MYFDMXY_L2
-male	male	NA10-163_FCH7T3VDMXY_L1
-male	male	NA10-163_FCH7T3VDMXY_L2
-male	male	NA10-208_FCH7T3VDMXY_L1
-male	male	NA10-208_FCH7T3VDMXY_L2
-male	male	NA10-320_FCH7TM5DMXY_L1
-male	male	NA10-320_FCH7TM5DMXY_L2
-male	male	NA10-371_FCHCLTJDMXY_L1
-male	male	NA10-371_FCHCLTJDMXY_L2
-female	female	NA10-375_FCH5MYFDMXY_L1
-female	female	NA10-375_FCH5MYFDMXY_L2
-male	male	NA11-083_FCH7TM5DMXY_L1
-male	male	NA11-083_FCH7TM5DMXY_L2
-female	female	NA11-095_FCH7TM5DMXY_L1
-female	female	NA11-095_FCH7TM5DMXY_L2
-female	female	NA11-143_FCH5MYFDMXY_L1
-female	female	NA11-143_FCH5MYFDMXY_L2
-female	female	NA11-261_FCHCLTJDMXY_L1
-female	female	NA11-261_FCHCLTJDMXY_L2
-male	male	NA11-270_FCH7TM5DMXY_L1
-male	male	NA11-270_FCH7TM5DMXY_L2
-male	male	NA11-284_FCH7TM5DMXY_L1
-male	male	NA11-284_FCH7TM5DMXY_L2
-male	male	NA11-339_FCH5MYFDMXY_L1
-male	male	NA11-339_FCH5MYFDMXY_L2
-male	male	NA11-375_FCHCLTJDMXY_L1
-male	male	NA11-375_FCHCLTJDMXY_L2
-male	male	NA11-391_FCH5MYFDMXY_L1
-male	male	NA11-391_FCH5MYFDMXY_L2
-female	female	NA12-009_FCHCLTJDMXY_L1
-female	female	NA12-009_FCHCLTJDMXY_L2
-male	male	NA12-078_FCH7T3VDMXY_L1
-male	male	NA12-078_FCH7T3VDMXY_L2
-male	male	NA12-112_FCH5MYFDMXY_L1
-male	male	NA12-112_FCH5MYFDMXY_L2
-female	female	NA12-224_FCH7T3VDMXY_L1
-female	female	NA12-224_FCH7T3VDMXY_L2
-male	male	NA12-254_FCHCLTJDMXY_L1
-male	male	NA12-254_FCHCLTJDMXY_L2
-male	male	NA12-285_FCH7TM5DMXY_L1
-male	male	NA12-285_FCH7TM5DMXY_L2
-female	female	NA12-311_FCH7T3VDMXY_L1
-female	female	NA12-311_FCH7T3VDMXY_L2
-male	male	NA12-356_FCHCLTJDMXY_L1
-male	male	NA12-356_FCHCLTJDMXY_L2
-female	female	NA12-397_FCH7TM5DMXY_L1
-female	female	NA12-397_FCH7TM5DMXY_L2
-male	male	NA12-465_FCH7T3VDMXY_L1
-male	male	NA12-465_FCH7T3VDMXY_L2
-female	female	NA12-470_FCH7TM5DMXY_L1
-female	female	NA12-470_FCH7TM5DMXY_L2
-male	male	NA13-047_FCH5MYFDMXY_L1
-male	male	NA13-047_FCH5MYFDMXY_L2
-male	male	NA13-060_FCH5MYFDMXY_L1
-male	male	NA13-060_FCH5MYFDMXY_L2
-male	male	NA13-062_FCH7T3VDMXY_L1
-male	male	NA13-062_FCH7T3VDMXY_L2
-male	male	NA13-063_FCHCLTJDMXY_L1
-male	male	NA13-063_FCHCLTJDMXY_L2
-female	female	NA13-072_FCH7TM5DMXY_L1
-female	female	NA13-072_FCH7TM5DMXY_L2
-female	female	NA13-098_FCH7T3VDMXY_L1
-female	female	NA13-098_FCH7T3VDMXY_L2
-male	male	NA13-116_FCH7T3VDMXY_L1
-male	male	NA13-116_FCH7T3VDMXY_L2
-male	male	NA13-204_FCH7T3VDMXY_L1
-male	male	NA13-204_FCH7T3VDMXY_L2
-male	male	NA13-260_FCH7TM5DMXY_L1
-male	male	NA13-260_FCH7TM5DMXY_L2
-male	male	NA13-277_FCH7T3VDMXY_L1
-male	male	NA13-277_FCH7T3VDMXY_L2
-female	female	NA13-279_FCH5MYFDMXY_L1
-female	female	NA13-279_FCH5MYFDMXY_L2
-male	male	NA13-297_FCHCLTJDMXY_L1
-male	male	NA13-297_FCHCLTJDMXY_L2
-female	female	NA13-315_FCH7T3VDMXY_L1
-female	female	NA13-315_FCH7T3VDMXY_L2
-male	male	NA13-327_FCH5MYFDMXY_L1
-male	male	NA13-327_FCH5MYFDMXY_L2
-female	female	NA13-342_FCHCLTJDMXY_L1
-female	female	NA13-342_FCHCLTJDMXY_L2
-female	female	NA13-359_FCHCLTJDMXY_L1
-female	female	NA13-359_FCHCLTJDMXY_L2
-female	female	NA13-360_FCH7TM5DMXY_L1
-female	female	NA13-360_FCH7TM5DMXY_L2
-female	female	NA14-034_FCH5MYFDMXY_L1
-female	female	NA14-034_FCH5MYFDMXY_L2
-male	male	NA14-036_FCH7T3VDMXY_L1
-male	male	NA14-036_FCH7T3VDMXY_L2
-female	female	NA14-070_FCH7TM5DMXY_L1
-female	female	NA14-070_FCH7TM5DMXY_L2
-male	male	NA14-123_FCHCLTJDMXY_L1
-male	male	NA14-123_FCHCLTJDMXY_L2
-female	female	NA14-156_FCHCLTJDMXY_L1
-female	female	NA14-156_FCHCLTJDMXY_L2
-female	female	NA14-172_FCHCLTJDMXY_L1
-female	female	NA14-172_FCHCLTJDMXY_L2
-male	male	NA14-198_FCHCLTJDMXY_L1
-male	male	NA14-198_FCHCLTJDMXY_L2
-male	male	NA14-221_FCHCLTJDMXY_L1
-male	male	NA14-221_FCHCLTJDMXY_L2
-female	female	NA14-330_FCH7T3VDMXY_L1
-female	female	NA14-330_FCH7T3VDMXY_L2
-male	male	NA15-030_FCH7TM5DMXY_L1
-male	male	NA15-030_FCH7TM5DMXY_L2
-male	male	NA15-048_FCH7TM5DMXY_L1
-male	male	NA15-048_FCH7TM5DMXY_L2
-female	female	NA15-070_FCHCLTJDMXY_L1
-female	female	NA15-070_FCHCLTJDMXY_L2
-female	female	NA15-078_FCH7TM5DMXY_L1
-female	female	NA15-078_FCH7TM5DMXY_L2
-male	male	NA15-127_FCH5MYFDMXY_L1
-male	male	NA15-127_FCH5MYFDMXY_L2
-female	female	NA15-132_FCH7T3VDMXY_L1
-female	female	NA15-132_FCH7T3VDMXY_L2
-female	female	NA15-143_FCHCLTJDMXY_L1
-female	female	NA15-143_FCHCLTJDMXY_L2
-male	male	NA15-163_FCH7TM5DMXY_L1
-male	male	NA15-163_FCH7TM5DMXY_L2
-male	male	NA15-206_FCHCLTJDMXY_L1
-male	male	NA15-206_FCHCLTJDMXY_L2
-male	male	NA15-234_FCHCLTJDMXY_L1
-male	male	NA15-234_FCHCLTJDMXY_L2
-female	female	NA15-262_FCH7T3VDMXY_L1
-female	female	NA15-262_FCH7T3VDMXY_L2
-female	female	NA15-271_FCH7T3VDMXY_L1
-female	female	NA15-271_FCH7T3VDMXY_L2
-female	female	NA15-333_FCHCLTJDMXY_L1
-female	female	NA15-333_FCHCLTJDMXY_L2
-male	male	NA16-008_FCHCLTJDMXY_L1
-male	male	NA16-008_FCHCLTJDMXY_L2
-female	female	NA16-017_FCH5MYFDMXY_L1
-female	female	NA16-017_FCH5MYFDMXY_L2
-male	male	NA16-075_FCH5MYFDMXY_L1
-male	male	NA16-075_FCH5MYFDMXY_L2
-male	male	NA16-090_FCHCLTJDMXY_L1
-male	male	NA16-090_FCHCLTJDMXY_L2
-female	female	NA16-100_FCH7T3VDMXY_L1
-female	female	NA16-100_FCH7T3VDMXY_L2
-male	male	NA16-155_FCH7TM5DMXY_L1
-male	male	NA16-155_FCH7TM5DMXY_L2
-female	female	NA16-182_FCH7TM5DMXY_L1
-female	female	NA16-182_FCH7TM5DMXY_L2
-male	male	NA16-190_FCH7TM5DMXY_L1
-male	male	NA16-190_FCH7TM5DMXY_L2
-male	male	NA16-242_FCHCLTJDMXY_L1
-male	male	NA16-242_FCHCLTJDMXY_L2
-male	male	NA16-297_FCH5MYFDMXY_L1
-male	male	NA16-297_FCH5MYFDMXY_L2
-male	male	NA16-335_FCH7T3VDMXY_L1
-male	male	NA16-335_FCH7T3VDMXY_L2
-male	male	NA17-026_FCHCLTJDMXY_L1
-male	male	NA17-026_FCHCLTJDMXY_L2
-male	male	NA17-035_FCHCLTJDMXY_L1
-male	male	NA17-035_FCHCLTJDMXY_L2
-female	female	NA17-169_FCH7TM5DMXY_L1
-female	female	NA17-169_FCH7TM5DMXY_L2
-male	male	NA17-174_FCH7T3VDMXY_L1
-male	male	NA17-174_FCH7T3VDMXY_L2
-male	male	NA17-175_FCH7TM5DMXY_L1
-male	male	NA17-175_FCH7TM5DMXY_L2
-male	male	NA17-190_FCH7T3VDMXY_L1
-male	male	NA17-190_FCH7T3VDMXY_L2
-male	male	NA17-260_FCH7T3VDMXY_L1
-male	male	NA17-260_FCH7T3VDMXY_L2
-male	male	NA17-262_FCH7TM5DMXY_L1
-male	male	NA17-262_FCH7TM5DMXY_L2
-male	male	NA17-277_FCH5MYFDMXY_L1
-male	male	NA17-277_FCH5MYFDMXY_L2
-male	male	NA17-285_FCHCLTJDMXY_L1
-male	male	NA17-285_FCHCLTJDMXY_L2
-female	female	NA17-323_FCH5MYFDMXY_L1
-female	female	NA17-323_FCH5MYFDMXY_L2
-female	female	NA17-334_FCH7T3VDMXY_L1
-female	female	NA17-334_FCH7T3VDMXY_L2
-male	male	NA17-337_FCH7T3VDMXY_L1
-male	male	NA17-337_FCH7T3VDMXY_L2
-male	male	NA17-339_FCH7T3VDMXY_L1
-male	male	NA17-339_FCH7T3VDMXY_L2
-female	female	NA17-374_FCH7T3VDMXY_L1
-female	female	NA17-374_FCH7T3VDMXY_L2
-male	male	NA17-377_FCHCLTJDMXY_L1
-male	male	NA17-377_FCHCLTJDMXY_L2
-female	female	NA18-010_FCH7T3VDMXY_L1
-female	female	NA18-010_FCH7T3VDMXY_L2
-male	male	NA18-015_FCH7T3VDMXY_L1
-male	male	NA18-015_FCH7T3VDMXY_L2
-male	male	NA18-021_FCH7T3VDMXY_L1
-male	male	NA18-021_FCH7T3VDMXY_L2
-female	female	NA18-044_FCH7TM5DMXY_L1
-female	female	NA18-044_FCH7TM5DMXY_L2
-male	male	NA18-049_FCH5MYFDMXY_L1
-male	male	NA18-049_FCH5MYFDMXY_L2
-male	male	NA18-093_FCHCLTJDMXY_L1
-male	male	NA18-093_FCHCLTJDMXY_L2
-female	female	NA18-126_FCH7T3VDMXY_L1
-female	female	NA18-126_FCH7T3VDMXY_L2
-male	male	NA18-172_FCH7T3VDMXY_L1
-male	male	NA18-172_FCH7T3VDMXY_L2
-male	male	NA18-173_FCH5MYFDMXY_L1
-male	male	NA18-173_FCH5MYFDMXY_L2
-male	male	NA18-174_FCH5MYFDMXY_L1
-male	male	NA18-174_FCH5MYFDMXY_L2
-male	male	NA18-175_FCH5MYFDMXY_L1
-male	male	NA18-175_FCH5MYFDMXY_L2
-male	male	NA18-206_FCH7T3VDMXY_L1
-male	male	NA18-206_FCH7T3VDMXY_L2
-male	male	NA18-238_FCHCLTJDMXY_L1
-male	male	NA18-238_FCHCLTJDMXY_L2
-male	male	NA18-247_FCH7T3VDMXY_L1
-male	male	NA18-247_FCH7T3VDMXY_L2
-male	male	NA18-265_FCH5MYFDMXY_L1
-male	male	NA18-265_FCH5MYFDMXY_L2
-male	male	NA18-272_FCHCLTJDMXY_L1
-male	male	NA18-272_FCHCLTJDMXY_L2
-male	male	NA18-281_FCH5MYFDMXY_L1
-male	male	NA18-281_FCH5MYFDMXY_L2
-female	female	NA18-288_FCH7TM5DMXY_L1
-female	female	NA18-288_FCH7TM5DMXY_L2
-male	male	NA18-317_FCH5MYFDMXY_L1
-male	male	NA18-317_FCH5MYFDMXY_L2
-male	male	NA18-319_FCH7T3VDMXY_L1
-male	male	NA18-319_FCH7T3VDMXY_L2
-male	male	NA18-331_FCHCLTJDMXY_L1
-male	male	NA18-331_FCHCLTJDMXY_L2
-male	male	NA18-333_FCH7T3VDMXY_L1
-male	male	NA18-333_FCH7T3VDMXY_L2
-male	male	NA18-337_FCHCLTJDMXY_L1
-male	male	NA18-337_FCHCLTJDMXY_L2
-male	male	NA18-348_FCH7T3VDMXY_L1
-male	male	NA18-348_FCH7T3VDMXY_L2
-male	male	NA18-361_FCH5MYFDMXY_L1
-male	male	NA18-361_FCH5MYFDMXY_L2
-male	male	NA18-362_FCH7T3VDMXY_L1
-male	male	NA18-362_FCH7T3VDMXY_L2
-female	female	NA18-369_FCH5MYFDMXY_L1
-female	female	NA18-369_FCH5MYFDMXY_L2
-female	female	NA18-386_FCH5MYFDMXY_L1
-female	female	NA18-386_FCH5MYFDMXY_L2
-male	male	NA18-392_FCHCLTJDMXY_L1
-male	male	NA18-392_FCHCLTJDMXY_L2
-female	female	NA18-427_FCH7TM5DMXY_L1
-female	female	NA18-427_FCH7TM5DMXY_L2
-male	male	NA18-429_FCH5MYFDMXY_L1
-male	male	NA18-429_FCH5MYFDMXY_L2
-male	male	NA18-430_FCH5MYFDMXY_L1
-male	male	NA18-430_FCH5MYFDMXY_L2
-female	female	NA19-002_FCH7TM5DMXY_L1
-female	female	NA19-002_FCH7TM5DMXY_L2
-female	female	NA19-009_FCH7T3VDMXY_L1
-female	female	NA19-009_FCH7T3VDMXY_L2
-male	male	NA19-021_FCH5MYFDMXY_L1
-male	male	NA19-021_FCH5MYFDMXY_L2
-male	male	NA19-029_FCH5MYFDMXY_L1
-male	male	NA19-029_FCH5MYFDMXY_L2
-female	female	NA19-042_FCH7T3VDMXY_L1
-female	female	NA19-042_FCH7T3VDMXY_L2
-male	male	NA19-045_FCH5MYFDMXY_L1
-male	male	NA19-045_FCH5MYFDMXY_L2
-female	female	NA19-055_FCH7TM5DMXY_L1
-female	female	NA19-055_FCH7TM5DMXY_L2
-female	female	NA19-058_FCHCLTJDMXY_L1
-female	female	NA19-058_FCHCLTJDMXY_L2
-male	male	NA19-060_FCH5MYFDMXY_L1
-male	male	NA19-060_FCH5MYFDMXY_L2
-female	female	NA19-062_FCH7T3VDMXY_L1
-female	female	NA19-062_FCH7T3VDMXY_L2
-male	male	NA19-082_FCHCLTJDMXY_L1
-male	male	NA19-082_FCHCLTJDMXY_L2
-male	male	NA19-088_FCH7TM5DMXY_L1
-male	male	NA19-088_FCH7TM5DMXY_L2
-female	female	NA19-089_FCHCLTJDMXY_L1
-female	female	NA19-089_FCHCLTJDMXY_L2
-female	female	NA19-090_FCH7T3VDMXY_L1
-female	female	NA19-090_FCH7T3VDMXY_L2
-female	female	NA19-092_FCH7TM5DMXY_L1
-female	female	NA19-092_FCH7TM5DMXY_L2
-female	female	NA19-095_FCH7T3VDMXY_L1
-female	female	NA19-095_FCH7T3VDMXY_L2
-female	female	NA19-097_FCHCLTJDMXY_L1
-female	female	NA19-097_FCHCLTJDMXY_L2
-male	male	NA19-104_FCHCLTJDMXY_L1
-male	male	NA19-104_FCHCLTJDMXY_L2
-male	male	NA19-109_FCH5MYFDMXY_L1
-male	male	NA19-109_FCH5MYFDMXY_L2
-female	female	NA19-115_FCH5MYFDMXY_L1
-female	female	NA19-115_FCH5MYFDMXY_L2
-male	male	NA19-125_FCH7T3VDMXY_L1
-male	male	NA19-125_FCH7T3VDMXY_L2
-male	male	NA19-131_FCH5MYFDMXY_L1
-male	male	NA19-131_FCH5MYFDMXY_L2
-male	male	NA19-134_FCH5MYFDMXY_L1
-male	male	NA19-134_FCH5MYFDMXY_L2
-female	female	NA19-136_FCH5MYFDMXY_L1
-female	female	NA19-136_FCH5MYFDMXY_L2
-male	male	NA19-137_FCH7TM5DMXY_L1
-male	male	NA19-137_FCH7TM5DMXY_L2
-female	female	NA19-170_FCH5MYFDMXY_L1
-female	female	NA19-170_FCH5MYFDMXY_L2
-female	female	NA19-189_FCH5MYFDMXY_L1
-female	female	NA19-189_FCH5MYFDMXY_L2
-male	male	NA19-201_FCH7T3VDMXY_L1
-male	male	NA19-201_FCH7T3VDMXY_L2
-female	female	NA19-206_FCH7TM5DMXY_L1
-female	female	NA19-206_FCH7TM5DMXY_L2
-male	male	NA19-228_FCH7T3VDMXY_L1
-male	male	NA19-228_FCH7T3VDMXY_L2
-male	male	NA19-277_FCH7T3VDMXY_L1
-male	male	NA19-277_FCH7T3VDMXY_L2
-male	male	NA19-278_FCH7TM5DMXY_L1
-male	male	NA19-278_FCH7TM5DMXY_L2
-female	female	NA19-286_FCHCLTJDMXY_L1
-female	female	NA19-286_FCHCLTJDMXY_L2
-male	male	NA19-326_FCH7TM5DMXY_L1
-male	male	NA19-326_FCH7TM5DMXY_L2
-male	male	NA19-349_FCH5MYFDMXY_L1
-male	male	NA19-349_FCH5MYFDMXY_L2
-male	male	NA19-377_FCHCLTJDMXY_L1
-male	male	NA19-377_FCHCLTJDMXY_L2
-female	female	NA19-378_FCH5MYFDMXY_L1
-female	female	NA19-378_FCH5MYFDMXY_L2
-female	female	NA19-402_FCH7TM5DMXY_L1
-female	female	NA19-402_FCH7TM5DMXY_L2
-female	female	NA19-403_FCH5MYFDMXY_L1
-female	female	NA19-403_FCH5MYFDMXY_L2
-male	male	NA20-002_FCH5MYFDMXY_L1
-male	male	NA20-002_FCH5MYFDMXY_L2
-female	female	NA20-030_FCH7T3VDMXY_L1
-female	female	NA20-030_FCH7T3VDMXY_L2
-male	male	NA20-050_FCH7TM5DMXY_L1
-male	male	NA20-050_FCH7TM5DMXY_L2
-male	male	NA20-063_FCHCLTJDMXY_L1
-male	male	NA20-063_FCHCLTJDMXY_L2
-male	male	NA20-077_FCH7TM5DMXY_L1
-male	male	NA20-077_FCH7TM5DMXY_L2
-male	male	NA20-078_FCH7TM5DMXY_L1
-male	male	NA20-078_FCH7TM5DMXY_L2
-male	male	NA20-102_FCH7TM5DMXY_L1
-male	male	NA20-102_FCH7TM5DMXY_L2
-male	male	NA20-126_FCHCLTJDMXY_L1
-male	male	NA20-126_FCHCLTJDMXY_L2
-female	female	NA20-131_FCH7T3VDMXY_L1
-female	female	NA20-131_FCH7T3VDMXY_L2
-male	male	NA20-160_FCHCLTJDMXY_L1
-male	male	NA20-160_FCHCLTJDMXY_L2
-male	male	NA20-190_FCH7TM5DMXY_L1
-male	male	NA20-190_FCH7TM5DMXY_L2
-male	male	NA20-231_FCH7TM5DMXY_L1
-male	male	NA20-231_FCH7TM5DMXY_L2
-female	female	NA20-303_FCH7TM5DMXY_L1
-female	female	NA20-303_FCH7TM5DMXY_L2
-female	female	NA20-399_FCH7TM5DMXY_L1
-female	female	NA20-399_FCH7TM5DMXY_L2
-female	female	NA20-436_FCH5MYFDMXY_L1
-female	female	NA20-436_FCH5MYFDMXY_L2
-male	male	NA20-444_FCH7TM5DMXY_L1
-male	male	NA20-444_FCH7TM5DMXY_L2
-female	female	NA20-473_FCH7TM5DMXY_L1
-female	female	NA20-473_FCH7TM5DMXY_L2
-female	female	NA20-487_FCH7TM5DMXY_L1
-female	female	NA20-487_FCH7TM5DMXY_L2
-male	male	NA21-037_FCH7TM5DMXY_L1
-male	male	NA21-037_FCH7TM5DMXY_L2
-male	male	NA21-040_FCH7TM5DMXY_L1
-male	male	NA21-040_FCH7TM5DMXY_L2
-male	male	NA21-219_FCH7TM5DMXY_L1
-male	male	NA21-219_FCH7TM5DMXY_L2
-female	female	NA98-041_FCH7TM5DMXY_L1
-female	female	NA98-041_FCH7TM5DMXY_L2
-female	female	NA98-085_FCH7TM5DMXY_L1
-female	female	NA98-085_FCH7TM5DMXY_L2
-male	male	NA99-020_FCHCLTJDMXY_L1
-male	male	NA99-020_FCHCLTJDMXY_L2
-male	male	NA99-167_FCH5MYFDMXY_L1
-male	male	NA99-167_FCH5MYFDMXY_L2
-male	male	NA99-187_FCHCLTJDMXY_L1
-male	male	NA99-187_FCHCLTJDMXY_L2
-female	female	NA99-193_FCHCLTJDMXY_L1
-female	female	NA99-193_FCHCLTJDMXY_L2
-male	male	NA99-212_FCH7T3VDMXY_L1
-male	male	NA99-212_FCH7T3VDMXY_L2
-male	male	NA99-224_FCH5MYFDMXY_L1
-male	male	NA99-224_FCH5MYFDMXY_L2
+reported	observed	NPID	sex_check
+male	male	5282	Yes
+male	male	5282	Yes
+male	male	5421	Yes
+male	male	5421	Yes
+male	male	5510	Yes
+male	male	5510	Yes
+male	male	NA00-092	Yes
+male	male	NA00-092	Yes
+male	male	NA00-094	Yes
+male	male	NA00-094	Yes
+female	female	NA00-118	Yes
+female	female	NA00-118	Yes
+male	male	NA00-151	Yes
+male	male	NA00-151	Yes
+female	female	NA00-190	Yes
+female	female	NA00-190	Yes
+female	female	NA01-135	Yes
+female	female	NA01-135	Yes
+male	male	NA01-163	Yes
+male	male	NA01-163	Yes
+female	female	NA01-176	Yes
+female	female	NA01-176	Yes
+male	male	NA01-180	Yes
+male	male	NA01-180	Yes
+male	male	NA01-195	Yes
+male	male	NA01-195	Yes
+male	male	NA01-228	Yes
+male	male	NA01-228	Yes
+female	female	NA01-242	Yes
+female	female	NA01-242	Yes
+male	male	NA02-070	Yes
+male	male	NA02-070	Yes
+male	male	NA02-086	Yes
+male	male	NA02-086	Yes
+male	male	NA02-171	Yes
+male	male	NA02-171	Yes
+female	female	NA02-185	Yes
+female	female	NA02-185	Yes
+female	female	NA02-220	Yes
+female	female	NA02-220	Yes
+male	male	NA03-003	Yes
+male	male	NA03-003	Yes
+female	female	NA03-010	Yes
+female	female	NA03-010	Yes
+female	female	NA03-011	Yes
+female	female	NA03-011	Yes
+male	male	NA03-024	Yes
+male	male	NA03-024	Yes
+male	male	NA03-082	Yes
+male	male	NA03-082	Yes
+male	male	NA03-084	Yes
+male	male	NA03-084	Yes
+male	male	NA03-128	Yes
+male	male	NA03-128	Yes
+male	male	NA03-136	Yes
+male	male	NA03-136	Yes
+female	female	NA03-151	Yes
+female	female	NA03-151	Yes
+male	male	NA03-152	Yes
+male	male	NA03-152	Yes
+female	female	NA03-212	Yes
+female	female	NA03-212	Yes
+female	female	NA03-235	Yes
+female	female	NA03-235	Yes
+female	female	NA03-236	Yes
+female	female	NA03-236	Yes
+male	male	NA03-247	Yes
+male	male	NA03-247	Yes
+female	female	NA03-248	Yes
+female	female	NA03-248	Yes
+male	male	NA03-264	Yes
+male	male	NA03-264	Yes
+male	male	NA03-267	Yes
+male	male	NA03-267	Yes
+male	male	NA03-269	Yes
+male	male	NA03-269	Yes
+male	male	NA04-004	Yes
+male	male	NA04-004	Yes
+male	male	NA04-039	Yes
+male	male	NA04-039	Yes
+male	male	NA04-040	Yes
+male	male	NA04-040	Yes
+male	male	NA04-052	Yes
+male	male	NA04-052	Yes
+female	male	NA04-053	No
+female	male	NA04-053	No
+male	male	NA04-057	Yes
+male	male	NA04-057	Yes
+male	male	NA04-064	Yes
+male	male	NA04-064	Yes
+male	male	NA04-069	Yes
+male	male	NA04-069	Yes
+male	male	NA04-082	Yes
+male	male	NA04-082	Yes
+male	male	NA04-098	Yes
+male	male	NA04-098	Yes
+male	male	NA04-119	Yes
+male	male	NA04-119	Yes
+male	male	NA04-142	Yes
+male	male	NA04-142	Yes
+female	female	NA04-174	Yes
+female	female	NA04-174	Yes
+female	female	NA04-188	Yes
+female	female	NA04-188	Yes
+female	female	NA04-216	Yes
+female	female	NA04-216	Yes
+male	male	NA04-240	Yes
+male	male	NA04-240	Yes
+male	male	NA04-244	Yes
+male	male	NA04-244	Yes
+male	male	NA04-247	Yes
+male	male	NA04-247	Yes
+male	male	NA04-249	Yes
+male	male	NA04-249	Yes
+male	male	NA04-322	Yes
+male	male	NA04-322	Yes
+male	male	NA04-323	Yes
+male	male	NA04-323	Yes
+female	female	NA04-324	Yes
+female	female	NA04-324	Yes
+male	male	NA04-326	Yes
+male	male	NA04-326	Yes
+female	female	NA05-014	Yes
+female	female	NA05-014	Yes
+female	female	NA05-023	Yes
+female	female	NA05-023	Yes
+male	male	NA05-027	Yes
+male	male	NA05-027	Yes
+female	female	NA05-038	Yes
+female	female	NA05-038	Yes
+male	male	NA05-052	Yes
+male	male	NA05-052	Yes
+female	female	NA05-055	Yes
+female	female	NA05-055	Yes
+female	female	NA05-057	Yes
+female	female	NA05-057	Yes
+male	male	NA05-079	Yes
+male	male	NA05-079	Yes
+female	male	NA05-083	No
+female	male	NA05-083	No
+male	male	NA05-093	Yes
+male	male	NA05-093	Yes
+male	male	NA05-100	Yes
+male	male	NA05-100	Yes
+male	male	NA05-113	Yes
+male	male	NA05-113	Yes
+male	male	NA05-117	Yes
+male	male	NA05-117	Yes
+male	male	NA05-130	Yes
+male	male	NA05-130	Yes
+male	male	NA05-131	Yes
+male	male	NA05-131	Yes
+male	male	NA05-195	Yes
+male	male	NA05-195	Yes
+male	male	NA05-203	Yes
+male	male	NA05-203	Yes
+female	female	NA05-204	Yes
+female	female	NA05-204	Yes
+female	female	NA05-205	Yes
+female	female	NA05-205	Yes
+male	male	NA05-214	Yes
+male	male	NA05-214	Yes
+female	female	NA05-216	Yes
+female	female	NA05-216	Yes
+male	male	NA05-238	Yes
+male	male	NA05-238	Yes
+male	male	NA05-273	Yes
+male	male	NA05-273	Yes
+male	male	NA05-275	Yes
+male	male	NA05-275	Yes
+female	female	NA05-308	Yes
+female	female	NA05-308	Yes
+male	male	NA05-317	Yes
+male	male	NA05-317	Yes
+male	female	NA05-388	No
+male	female	NA05-388	No
+male	male	NA05-390	Yes
+male	male	NA05-390	Yes
+female	female	NA05-391	Yes
+female	female	NA05-391	Yes
+female	female	NA05-394	Yes
+female	female	NA05-394	Yes
+male	male	NA06-013	Yes
+male	male	NA06-013	Yes
+female	female	NA06-032	Yes
+female	female	NA06-032	Yes
+male	male	NA06-035	Yes
+male	male	NA06-035	Yes
+female	female	NA06-047	Yes
+female	female	NA06-047	Yes
+male	male	NA06-053	Yes
+male	male	NA06-053	Yes
+female	female	NA06-074	Yes
+female	female	NA06-074	Yes
+female	female	NA06-092	Yes
+female	female	NA06-092	Yes
+female	female	NA06-150	Yes
+female	female	NA06-150	Yes
+male	male	NA06-152	Yes
+male	male	NA06-152	Yes
+male	male	NA06-159	Yes
+male	male	NA06-159	Yes
+male	male	NA06-160	Yes
+male	male	NA06-160	Yes
+male	male	NA06-204	Yes
+male	male	NA06-204	Yes
+male	male	NA06-210	Yes
+male	male	NA06-210	Yes
+female	female	NA06-235	Yes
+female	female	NA06-235	Yes
+male	male	NA06-243	Yes
+male	male	NA06-243	Yes
+male	male	NA06-244	Yes
+male	male	NA06-244	Yes
+male	male	NA06-259	Yes
+male	male	NA06-259	Yes
+male	male	NA06-282	Yes
+male	male	NA06-282	Yes
+male	male	NA06-285	Yes
+male	male	NA06-285	Yes
+male	male	NA06-286	Yes
+male	male	NA06-286	Yes
+male	male	NA06-287	Yes
+male	male	NA06-287	Yes
+female	female	NA06-299	Yes
+female	female	NA06-299	Yes
+male	male	NA06-302	Yes
+male	male	NA06-302	Yes
+female	female	NA07-046	Yes
+female	female	NA07-046	Yes
+female	female	NA07-055	Yes
+female	female	NA07-055	Yes
+male	male	NA07-065	Yes
+male	male	NA07-065	Yes
+male	male	NA07-147	Yes
+male	male	NA07-147	Yes
+male	male	NA07-148	Yes
+male	male	NA07-148	Yes
+female	female	NA07-150	Yes
+female	female	NA07-150	Yes
+male	male	NA07-161	Yes
+male	male	NA07-161	Yes
+male	male	NA07-177	Yes
+male	male	NA07-177	Yes
+male	male	NA07-178	Yes
+male	male	NA07-178	Yes
+female	female	NA07-189	Yes
+female	female	NA07-189	Yes
+male	male	NA07-200	Yes
+male	male	NA07-200	Yes
+male	male	NA07-261	Yes
+male	male	NA07-261	Yes
+male	male	NA07-278	Yes
+male	male	NA07-278	Yes
+female	female	NA07-279	Yes
+female	female	NA07-279	Yes
+male	male	NA07-283	Yes
+male	male	NA07-283	Yes
+male	male	NA07-303	Yes
+male	male	NA07-303	Yes
+female	female	NA07-307	Yes
+female	female	NA07-307	Yes
+female	female	NA07-319	Yes
+female	female	NA07-319	Yes
+male	male	NA07-320	Yes
+male	male	NA07-320	Yes
+male	male	NA08-010	Yes
+male	male	NA08-010	Yes
+female	female	NA08-012	Yes
+female	female	NA08-012	Yes
+female	female	NA08-022	Yes
+female	female	NA08-022	Yes
+male	male	NA08-049	Yes
+male	male	NA08-049	Yes
+male	male	NA08-052	Yes
+male	male	NA08-052	Yes
+male	male	NA08-115	Yes
+male	male	NA08-115	Yes
+male	male	NA08-126	Yes
+male	male	NA08-126	Yes
+male	male	NA08-142	Yes
+male	male	NA08-142	Yes
+male	male	NA08-144	Yes
+male	male	NA08-144	Yes
+male	male	NA08-146	Yes
+male	male	NA08-146	Yes
+male	male	NA08-196	Yes
+male	male	NA08-196	Yes
+female	female	NA08-212	Yes
+female	female	NA08-212	Yes
+male	male	NA08-218	Yes
+male	male	NA08-218	Yes
+male	male	NA08-222	Yes
+male	male	NA08-222	Yes
+female	female	NA08-230	Yes
+female	female	NA08-230	Yes
+female	female	NA08-234	Yes
+female	female	NA08-234	Yes
+male	male	NA08-237	Yes
+male	male	NA08-237	Yes
+male	male	NA08-239	Yes
+male	male	NA08-239	Yes
+male	male	NA08-240	Yes
+male	male	NA08-240	Yes
+female	female	NA08-248	Yes
+female	female	NA08-248	Yes
+female	female	NA08-251	Yes
+female	female	NA08-251	Yes
+female	female	NA08-326	Yes
+female	female	NA08-326	Yes
+male	male	NA08-335	Yes
+male	male	NA08-335	Yes
+female	female	NA08-340	Yes
+female	female	NA08-340	Yes
+male	male	NA08-349	Yes
+male	male	NA08-349	Yes
+male	male	NA08-354	Yes
+male	male	NA08-354	Yes
+male	male	NA08-357	Yes
+male	male	NA08-357	Yes
+male	male	NA08-359	Yes
+male	male	NA08-359	Yes
+female	female	NA08-364	Yes
+female	female	NA08-364	Yes
+male	male	NA09-001	Yes
+male	male	NA09-001	Yes
+male	male	NA09-009	Yes
+male	male	NA09-009	Yes
+male	male	NA09-017	Yes
+male	male	NA09-017	Yes
+male	male	NA09-021	Yes
+male	male	NA09-021	Yes
+male	male	NA09-023	Yes
+male	male	NA09-023	Yes
+male	male	NA09-025	Yes
+male	male	NA09-025	Yes
+female	female	NA09-037	Yes
+female	female	NA09-037	Yes
+male	male	NA09-046	Yes
+male	male	NA09-046	Yes
+female	female	NA09-047	Yes
+female	female	NA09-047	Yes
+female	female	NA09-106	Yes
+female	female	NA09-106	Yes
+male	male	NA09-116	Yes
+male	male	NA09-116	Yes
+female	female	NA09-131	Yes
+female	female	NA09-131	Yes
+female	female	NA09-136	Yes
+female	female	NA09-136	Yes
+male	male	NA09-138	Yes
+male	male	NA09-138	Yes
+male	male	NA09-152	Yes
+male	male	NA09-152	Yes
+female	female	NA09-166	Yes
+female	female	NA09-166	Yes
+male	male	NA09-226	Yes
+male	male	NA09-226	Yes
+male	male	NA09-242	Yes
+male	male	NA09-242	Yes
+male	male	NA09-253	Yes
+male	male	NA09-253	Yes
+male	male	NA09-266	Yes
+male	male	NA09-266	Yes
+male	male	NA09-268	Yes
+male	male	NA09-268	Yes
+male	male	NA09-275	Yes
+male	male	NA09-275	Yes
+male	male	NA09-287	Yes
+male	male	NA09-287	Yes
+female	female	NA09-290	Yes
+female	female	NA09-290	Yes
+female	female	NA09-293	Yes
+female	female	NA09-293	Yes
+male	male	NA09-302	Yes
+male	male	NA09-302	Yes
+female	female	NA09-314	Yes
+female	female	NA09-314	Yes
+male	male	NA09-331	Yes
+male	male	NA09-331	Yes
+male	male	NA09-347	Yes
+male	male	NA09-347	Yes
+female	female	NA09-355	Yes
+female	female	NA09-355	Yes
+male	male	NA09-390	Yes
+male	male	NA09-390	Yes
+male	male	NA09-396	Yes
+male	male	NA09-396	Yes
+female	female	NA10-005	Yes
+female	female	NA10-005	Yes
+male	male	NA10-006	Yes
+male	male	NA10-006	Yes
+male	male	NA10-007	Yes
+male	male	NA10-007	Yes
+female	female	NA10-019	Yes
+female	female	NA10-019	Yes
+male	male	NA10-029	Yes
+male	male	NA10-029	Yes
+male	male	NA10-041	Yes
+male	male	NA10-041	Yes
+male	male	NA10-042	Yes
+male	male	NA10-042	Yes
+male	male	NA10-061	Yes
+male	male	NA10-061	Yes
+female	female	NA10-078	Yes
+female	female	NA10-078	Yes
+female	female	NA10-148	Yes
+female	female	NA10-148	Yes
+male	male	NA10-160	Yes
+male	male	NA10-160	Yes
+male	male	NA10-161	Yes
+male	male	NA10-161	Yes
+male	male	NA10-163	Yes
+male	male	NA10-163	Yes
+male	male	NA10-166	Yes
+male	male	NA10-166	Yes
+female	female	NA10-167	Yes
+female	female	NA10-167	Yes
+male	male	NA10-178	Yes
+male	male	NA10-178	Yes
+male	male	NA10-208	Yes
+male	male	NA10-208	Yes
+female	female	NA10-275	Yes
+female	female	NA10-275	Yes
+male	male	NA10-285	Yes
+male	male	NA10-285	Yes
+male	male	NA10-320	Yes
+male	male	NA10-320	Yes
+male	male	NA10-333	Yes
+male	male	NA10-333	Yes
+male	male	NA10-353	Yes
+male	male	NA10-353	Yes
+male	male	NA10-371	Yes
+male	male	NA10-371	Yes
+female	female	NA10-373	Yes
+female	female	NA10-373	Yes
+female	female	NA10-375	Yes
+female	female	NA10-375	Yes
+male	male	NA11-016	Yes
+male	male	NA11-016	Yes
+male	male	NA11-019	Yes
+male	male	NA11-019	Yes
+male	male	NA11-048	Yes
+male	male	NA11-048	Yes
+female	female	NA11-066	Yes
+female	female	NA11-066	Yes
+male	male	NA11-072	Yes
+male	male	NA11-072	Yes
+male	male	NA11-083	Yes
+male	male	NA11-083	Yes
+female	female	NA11-095	Yes
+female	female	NA11-095	Yes
+female	female	NA11-100	Yes
+female	female	NA11-100	Yes
+female	female	NA11-143	Yes
+female	female	NA11-143	Yes
+male	male	NA11-145	Yes
+male	male	NA11-145	Yes
+female	female	NA11-155	Yes
+female	female	NA11-155	Yes
+male	male	NA11-156	Yes
+male	male	NA11-156	Yes
+male	male	NA11-158	Yes
+male	male	NA11-158	Yes
+female	female	NA11-239	Yes
+female	female	NA11-239	Yes
+female	female	NA11-261	Yes
+female	female	NA11-261	Yes
+male	male	NA11-270	Yes
+male	male	NA11-270	Yes
+male	male	NA11-284	Yes
+male	male	NA11-284	Yes
+male	male	NA11-322	Yes
+male	male	NA11-322	Yes
+male	male	NA11-333	Yes
+male	male	NA11-333	Yes
+male	male	NA11-339	Yes
+male	male	NA11-339	Yes
+female	female	NA11-370	Yes
+female	female	NA11-370	Yes
+male	male	NA11-375	Yes
+male	male	NA11-375	Yes
+male	male	NA11-377	Yes
+male	male	NA11-377	Yes
+male	male	NA11-391	Yes
+male	male	NA11-391	Yes
+male	male	NA11-399	Yes
+male	male	NA11-399	Yes
+male	male	NA11-409	Yes
+male	male	NA11-409	Yes
+male	male	NA11-450	Yes
+male	male	NA11-450	Yes
+female	female	NA11-479	Yes
+female	female	NA11-479	Yes
+male	male	NA11-481	Yes
+male	male	NA11-481	Yes
+female	female	NA11-482	Yes
+female	female	NA11-482	Yes
+male	male	NA12-005	Yes
+male	male	NA12-005	Yes
+female	female	NA12-009	Yes
+female	female	NA12-009	Yes
+male	male	NA12-033	Yes
+male	male	NA12-033	Yes
+male	male	NA12-049	Yes
+male	male	NA12-049	Yes
+female	female	NA12-053	Yes
+female	female	NA12-053	Yes
+male	male	NA12-078	Yes
+male	male	NA12-078	Yes
+male	male	NA12-090	Yes
+male	male	NA12-090	Yes
+male	male	NA12-112	Yes
+male	male	NA12-112	Yes
+female	female	NA12-134	Yes
+female	female	NA12-134	Yes
+male	male	NA12-145	Yes
+male	male	NA12-145	Yes
+male	male	NA12-181	Yes
+male	male	NA12-181	Yes
+female	female	NA12-186	Yes
+female	female	NA12-186	Yes
+male	male	NA12-198	Yes
+male	male	NA12-198	Yes
+female	female	NA12-224	Yes
+female	female	NA12-224	Yes
+male	male	NA12-254	Yes
+male	male	NA12-254	Yes
+male	male	NA12-260	Yes
+male	male	NA12-260	Yes
+male	male	NA12-281	Yes
+male	male	NA12-281	Yes
+male	male	NA12-285	Yes
+male	male	NA12-285	Yes
+male	male	NA12-306	Yes
+male	male	NA12-306	Yes
+female	female	NA12-311	Yes
+female	female	NA12-311	Yes
+female	female	NA12-346	Yes
+female	female	NA12-346	Yes
+male	male	NA12-356	Yes
+male	male	NA12-356	Yes
+female	female	NA12-387	Yes
+female	female	NA12-387	Yes
+female	female	NA12-397	Yes
+female	female	NA12-397	Yes
+male	male	NA12-399	Yes
+male	male	NA12-399	Yes
+male	male	NA12-400	Yes
+male	male	NA12-400	Yes
+male	male	NA12-430	Yes
+male	male	NA12-430	Yes
+male	male	NA12-463	Yes
+male	male	NA12-463	Yes
+male	male	NA12-465	Yes
+male	male	NA12-465	Yes
+female	female	NA12-470	Yes
+female	female	NA12-470	Yes
+male	male	NA13-024	Yes
+male	male	NA13-024	Yes
+female	female	NA13-042	Yes
+female	female	NA13-042	Yes
+male	male	NA13-047	Yes
+male	male	NA13-047	Yes
+male	male	NA13-060	Yes
+male	male	NA13-060	Yes
+male	male	NA13-062	Yes
+male	male	NA13-062	Yes
+male	male	NA13-063	Yes
+male	male	NA13-063	Yes
+female	female	NA13-065	Yes
+female	female	NA13-065	Yes
+female	female	NA13-072	Yes
+female	female	NA13-072	Yes
+male	male	NA13-093	Yes
+male	male	NA13-093	Yes
+female	female	NA13-098	Yes
+female	female	NA13-098	Yes
+male	male	NA13-116	Yes
+male	male	NA13-116	Yes
+male	male	NA13-129	Yes
+male	male	NA13-129	Yes
+male	male	NA13-204	Yes
+male	male	NA13-204	Yes
+male	male	NA13-209	Yes
+male	male	NA13-209	Yes
+male	male	NA13-214	Yes
+male	male	NA13-214	Yes
+male	male	NA13-218	Yes
+male	male	NA13-218	Yes
+female	female	NA13-252	Yes
+female	female	NA13-252	Yes
+male	male	NA13-260	Yes
+male	male	NA13-260	Yes
+female	female	NA13-271	Yes
+female	female	NA13-271	Yes
+male	male	NA13-277	Yes
+male	male	NA13-277	Yes
+female	female	NA13-279	Yes
+female	female	NA13-279	Yes
+female	female	NA13-285	Yes
+female	female	NA13-285	Yes
+male	male	NA13-297	Yes
+male	male	NA13-297	Yes
+female	female	NA13-315	Yes
+female	female	NA13-315	Yes
+male	male	NA13-327	Yes
+male	male	NA13-327	Yes
+female	female	NA13-335	Yes
+female	female	NA13-335	Yes
+female	female	NA13-342	Yes
+female	female	NA13-342	Yes
+male	male	NA13-344	Yes
+male	male	NA13-344	Yes
+male	male	NA13-351	Yes
+male	male	NA13-351	Yes
+male	male	NA13-355	Yes
+male	male	NA13-355	Yes
+female	female	NA13-359	Yes
+female	female	NA13-359	Yes
+female	female	NA13-360	Yes
+female	female	NA13-360	Yes
+male	male	NA14-025	Yes
+male	male	NA14-025	Yes
+female	female	NA14-034	Yes
+female	female	NA14-034	Yes
+male	male	NA14-036	Yes
+male	male	NA14-036	Yes
+male	male	NA14-054	Yes
+male	male	NA14-054	Yes
+female	female	NA14-064	Yes
+female	female	NA14-064	Yes
+female	female	NA14-070	Yes
+female	female	NA14-070	Yes
+male	male	NA14-123	Yes
+male	male	NA14-123	Yes
+male	male	NA14-136	Yes
+male	male	NA14-136	Yes
+female	female	NA14-150	Yes
+female	female	NA14-150	Yes
+female	female	NA14-156	Yes
+female	female	NA14-156	Yes
+male	male	NA14-159	Yes
+male	male	NA14-159	Yes
+female	female	NA14-161	Yes
+female	female	NA14-161	Yes
+male	male	NA14-162	Yes
+male	male	NA14-162	Yes
+female	female	NA14-172	Yes
+female	female	NA14-172	Yes
+male	male	NA14-198	Yes
+male	male	NA14-198	Yes
+male	male	NA14-204	Yes
+male	male	NA14-204	Yes
+female	female	NA14-217	Yes
+female	female	NA14-217	Yes
+female	female	NA14-219	Yes
+female	female	NA14-219	Yes
+male	male	NA14-221	Yes
+male	male	NA14-221	Yes
+female	female	NA14-233	Yes
+female	female	NA14-233	Yes
+female	female	NA14-253	Yes
+female	female	NA14-253	Yes
+female	female	NA14-282	Yes
+female	female	NA14-282	Yes
+male	male	NA14-289	Yes
+male	male	NA14-289	Yes
+male	male	NA14-322	Yes
+male	male	NA14-322	Yes
+male	male	NA14-324	Yes
+male	male	NA14-324	Yes
+female	female	NA14-330	Yes
+female	female	NA14-330	Yes
+female	female	NA14-333	Yes
+female	female	NA14-333	Yes
+female	female	NA14-346	Yes
+female	female	NA14-346	Yes
+male	male	NA14-360	Yes
+male	male	NA14-360	Yes
+male	male	NA15-030	Yes
+male	male	NA15-030	Yes
+female	female	NA15-031	Yes
+female	female	NA15-031	Yes
+male	male	NA15-042	Yes
+male	male	NA15-042	Yes
+male	male	NA15-048	Yes
+male	male	NA15-048	Yes
+male	male	NA15-052	Yes
+male	male	NA15-052	Yes
+female	female	NA15-058	Yes
+female	female	NA15-058	Yes
+male	male	NA15-066	Yes
+male	male	NA15-066	Yes
+male	male	NA15-068	Yes
+male	male	NA15-068	Yes
+female	female	NA15-070	Yes
+female	female	NA15-070	Yes
+female	female	NA15-078	Yes
+female	female	NA15-078	Yes
+female	female	NA15-120	Yes
+female	female	NA15-120	Yes
+male	male	NA15-127	Yes
+male	male	NA15-127	Yes
+female	female	NA15-132	Yes
+female	female	NA15-132	Yes
+female	female	NA15-143	Yes
+female	female	NA15-143	Yes
+male	male	NA15-161	Yes
+male	male	NA15-161	Yes
+male	male	NA15-163	Yes
+male	male	NA15-163	Yes
+male	male	NA15-187	Yes
+male	male	NA15-187	Yes
+male	male	NA15-206	Yes
+male	male	NA15-206	Yes
+male	male	NA15-207	Yes
+male	male	NA15-207	Yes
+male	male	NA15-234	Yes
+male	male	NA15-234	Yes
+female	female	NA15-262	Yes
+female	female	NA15-262	Yes
+female	female	NA15-267	Yes
+female	female	NA15-267	Yes
+female	female	NA15-269	Yes
+female	female	NA15-269	Yes
+female	female	NA15-271	Yes
+female	female	NA15-271	Yes
+male	male	NA15-273	Yes
+male	male	NA15-273	Yes
+male	male	NA15-301	Yes
+male	male	NA15-301	Yes
+male	male	NA15-305	Yes
+male	male	NA15-305	Yes
+female	female	NA15-333	Yes
+female	female	NA15-333	Yes
+male	male	NA16-008	Yes
+male	male	NA16-008	Yes
+female	female	NA16-017	Yes
+female	female	NA16-017	Yes
+male	male	NA16-045	Yes
+male	male	NA16-045	Yes
+male	male	NA16-069	Yes
+male	male	NA16-069	Yes
+male	male	NA16-075	Yes
+male	male	NA16-075	Yes
+male	male	NA16-090	Yes
+male	male	NA16-090	Yes
+male	male	NA16-098	Yes
+male	male	NA16-098	Yes
+female	female	NA16-100	Yes
+female	female	NA16-100	Yes
+male	male	NA16-155	Yes
+male	male	NA16-155	Yes
+male	male	NA16-176	Yes
+male	male	NA16-176	Yes
+female	female	NA16-182	Yes
+female	female	NA16-182	Yes
+male	male	NA16-190	Yes
+male	male	NA16-190	Yes
+female	female	NA16-208	Yes
+female	female	NA16-208	Yes
+male	male	NA16-217	Yes
+male	male	NA16-217	Yes
+male	male	NA16-242	Yes
+male	male	NA16-242	Yes
+female	female	NA16-267	Yes
+female	female	NA16-267	Yes
+male	male	NA16-273	Yes
+male	male	NA16-273	Yes
+female	female	NA16-280	Yes
+female	female	NA16-280	Yes
+male	male	NA16-297	Yes
+male	male	NA16-297	Yes
+male	male	NA16-300	Yes
+male	male	NA16-300	Yes
+male	male	NA16-332	Yes
+male	male	NA16-332	Yes
+male	male	NA16-335	Yes
+male	male	NA16-335	Yes
+male	male	NA16-362	Yes
+male	male	NA16-362	Yes
+female	female	NA16-365	Yes
+female	female	NA16-365	Yes
+female	female	NA16-395	Yes
+female	female	NA16-395	Yes
+female	female	NA16-410	Yes
+female	female	NA16-410	Yes
+male	male	NA16-424	Yes
+male	male	NA16-424	Yes
+male	male	NA17-026	Yes
+male	male	NA17-026	Yes
+male	male	NA17-035	Yes
+male	male	NA17-035	Yes
+male	male	NA17-045	Yes
+male	male	NA17-045	Yes
+male	male	NA17-058	Yes
+male	male	NA17-058	Yes
+male	male	NA17-065	Yes
+male	male	NA17-065	Yes
+female	female	NA17-079	Yes
+female	female	NA17-079	Yes
+male	male	NA17-107	Yes
+male	male	NA17-107	Yes
+female	female	NA17-169	Yes
+female	female	NA17-169	Yes
+male	male	NA17-174	Yes
+male	male	NA17-174	Yes
+male	male	NA17-175	Yes
+male	male	NA17-175	Yes
+female	female	NA17-179	Yes
+female	female	NA17-179	Yes
+male	male	NA17-190	Yes
+male	male	NA17-190	Yes
+female	female	NA17-200	Yes
+female	female	NA17-200	Yes
+male	male	NA17-228	Yes
+male	male	NA17-228	Yes
+male	male	NA17-245	Yes
+male	male	NA17-245	Yes
+male	male	NA17-260	Yes
+male	male	NA17-260	Yes
+male	male	NA17-262	Yes
+male	male	NA17-262	Yes
+female	female	NA17-274	Yes
+female	female	NA17-274	Yes
+male	male	NA17-277	Yes
+male	male	NA17-277	Yes
+male	male	NA17-285	Yes
+male	male	NA17-285	Yes
+female	female	NA17-311	Yes
+female	female	NA17-311	Yes
+male	male	NA17-322	Yes
+male	male	NA17-322	Yes
+female	female	NA17-323	Yes
+female	female	NA17-323	Yes
+female	female	NA17-334	Yes
+female	female	NA17-334	Yes
+female	female	NA17-335	Yes
+female	female	NA17-335	Yes
+male	male	NA17-337	Yes
+male	male	NA17-337	Yes
+female	female	NA17-338	Yes
+female	female	NA17-338	Yes
+male	male	NA17-339	Yes
+male	male	NA17-339	Yes
+male	male	NA17-342	Yes
+male	male	NA17-342	Yes
+male	male	NA17-355	Yes
+male	male	NA17-355	Yes
+female	female	NA17-359	Yes
+female	female	NA17-359	Yes
+male	male	NA17-371	Yes
+male	male	NA17-371	Yes
+female	female	NA17-374	Yes
+female	female	NA17-374	Yes
+male	male	NA17-377	Yes
+male	male	NA17-377	Yes
+male	male	NA17-400	Yes
+male	male	NA17-400	Yes
+male	male	NA17-406	Yes
+male	male	NA17-406	Yes
+female	female	NA17-408	Yes
+female	female	NA17-408	Yes
+female	female	NA18-010	Yes
+female	female	NA18-010	Yes
+male	male	NA18-015	Yes
+male	male	NA18-015	Yes
+female	female	NA18-019	Yes
+female	female	NA18-019	Yes
+male	male	NA18-021	Yes
+male	male	NA18-021	Yes
+female	female	NA18-029	Yes
+female	female	NA18-029	Yes
+female	female	NA18-044	Yes
+female	female	NA18-044	Yes
+male	male	NA18-049	Yes
+male	male	NA18-049	Yes
+male	male	NA18-053	Yes
+male	male	NA18-053	Yes
+female	female	NA18-058	Yes
+female	female	NA18-058	Yes
+male	male	NA18-070	Yes
+male	male	NA18-070	Yes
+male	male	NA18-077	Yes
+male	male	NA18-077	Yes
+male	male	NA18-093	Yes
+male	male	NA18-093	Yes
+male	male	NA18-095	Yes
+male	male	NA18-095	Yes
+female	female	NA18-114	Yes
+female	female	NA18-114	Yes
+female	female	NA18-126	Yes
+female	female	NA18-126	Yes
+male	male	NA18-132	Yes
+male	male	NA18-132	Yes
+male	male	NA18-133	Yes
+male	male	NA18-133	Yes
+male	male	NA18-139	Yes
+male	male	NA18-139	Yes
+male	male	NA18-143	Yes
+male	male	NA18-143	Yes
+male	male	NA18-148	Yes
+male	male	NA18-148	Yes
+male	male	NA18-172	Yes
+male	male	NA18-172	Yes
+male	male	NA18-173	Yes
+male	male	NA18-173	Yes
+male	male	NA18-174	Yes
+male	male	NA18-174	Yes
+male	male	NA18-175	Yes
+male	male	NA18-175	Yes
+male	male	NA18-177	Yes
+male	male	NA18-177	Yes
+male	male	NA18-203	Yes
+male	male	NA18-203	Yes
+male	male	NA18-206	Yes
+male	male	NA18-206	Yes
+male	male	NA18-214	Yes
+male	male	NA18-214	Yes
+male	male	NA18-224	Yes
+male	male	NA18-224	Yes
+male	male	NA18-238	Yes
+male	male	NA18-238	Yes
+male	male	NA18-247	Yes
+male	male	NA18-247	Yes
+male	male	NA18-255	Yes
+male	male	NA18-255	Yes
+male	male	NA18-265	Yes
+male	male	NA18-265	Yes
+male	male	NA18-272	Yes
+male	male	NA18-272	Yes
+female	female	NA18-274	Yes
+female	female	NA18-274	Yes
+male	male	NA18-279	Yes
+male	male	NA18-279	Yes
+male	male	NA18-281	Yes
+male	male	NA18-281	Yes
+female	female	NA18-285	Yes
+female	female	NA18-285	Yes
+female	female	NA18-288	Yes
+female	female	NA18-288	Yes
+male	male	NA18-300	Yes
+male	male	NA18-300	Yes
+female	female	NA18-314	Yes
+female	female	NA18-314	Yes
+male	male	NA18-317	Yes
+male	male	NA18-317	Yes
+male	male	NA18-319	Yes
+male	male	NA18-319	Yes
+male	male	NA18-331	Yes
+male	male	NA18-331	Yes
+male	male	NA18-333	Yes
+male	male	NA18-333	Yes
+male	male	NA18-337	Yes
+male	male	NA18-337	Yes
+male	male	NA18-338	Yes
+male	male	NA18-338	Yes
+male	male	NA18-348	Yes
+male	male	NA18-348	Yes
+male	male	NA18-358	Yes
+male	male	NA18-358	Yes
+male	male	NA18-361	Yes
+male	male	NA18-361	Yes
+male	male	NA18-362	Yes
+male	male	NA18-362	Yes
+female	female	NA18-369	Yes
+female	female	NA18-369	Yes
+male	male	NA18-374	Yes
+male	male	NA18-374	Yes
+male	male	NA18-381	Yes
+male	male	NA18-381	Yes
+male	male	NA18-385	Yes
+male	male	NA18-385	Yes
+female	female	NA18-386	Yes
+female	female	NA18-386	Yes
+male	male	NA18-390	Yes
+male	male	NA18-390	Yes
+male	male	NA18-392	Yes
+male	male	NA18-392	Yes
+male	male	NA18-394	Yes
+male	male	NA18-394	Yes
+male	male	NA18-418	Yes
+male	male	NA18-418	Yes
+male	male	NA18-419	Yes
+male	male	NA18-419	Yes
+male	male	NA18-422	Yes
+male	male	NA18-422	Yes
+female	female	NA18-427	Yes
+female	female	NA18-427	Yes
+male	male	NA18-429	Yes
+male	male	NA18-429	Yes
+male	male	NA18-430	Yes
+male	male	NA18-430	Yes
+female	female	NA19-002	Yes
+female	female	NA19-002	Yes
+female	female	NA19-009	Yes
+female	female	NA19-009	Yes
+male	male	NA19-021	Yes
+male	male	NA19-021	Yes
+male	male	NA19-024	Yes
+male	male	NA19-024	Yes
+female	female	NA19-028	Yes
+female	female	NA19-028	Yes
+male	male	NA19-029	Yes
+male	male	NA19-029	Yes
+female	female	NA19-042	Yes
+female	female	NA19-042	Yes
+male	male	NA19-045	Yes
+male	male	NA19-045	Yes
+female	female	NA19-050	Yes
+female	female	NA19-050	Yes
+female	female	NA19-052	Yes
+female	female	NA19-052	Yes
+female	female	NA19-055	Yes
+female	female	NA19-055	Yes
+female	female	NA19-058	Yes
+female	female	NA19-058	Yes
+male	male	NA19-060	Yes
+male	male	NA19-060	Yes
+female	female	NA19-062	Yes
+female	female	NA19-062	Yes
+male	male	NA19-082	Yes
+male	male	NA19-082	Yes
+male	male	NA19-088	Yes
+male	male	NA19-088	Yes
+female	female	NA19-089	Yes
+female	female	NA19-089	Yes
+female	female	NA19-090	Yes
+female	female	NA19-090	Yes
+female	female	NA19-092	Yes
+female	female	NA19-092	Yes
+female	female	NA19-095	Yes
+female	female	NA19-095	Yes
+male	male	NA19-096	Yes
+male	male	NA19-096	Yes
+female	female	NA19-097	Yes
+female	female	NA19-097	Yes
+male	male	NA19-104	Yes
+male	male	NA19-104	Yes
+male	male	NA19-105	Yes
+male	male	NA19-105	Yes
+male	male	NA19-109	Yes
+male	male	NA19-109	Yes
+male	male	NA19-111	Yes
+male	male	NA19-111	Yes
+female	female	NA19-115	Yes
+female	female	NA19-115	Yes
+male	male	NA19-117	Yes
+male	male	NA19-117	Yes
+male	male	NA19-120	Yes
+male	male	NA19-120	Yes
+male	male	NA19-125	Yes
+male	male	NA19-125	Yes
+male	male	NA19-131	Yes
+male	male	NA19-131	Yes
+male	male	NA19-132	Yes
+male	male	NA19-132	Yes
+male	male	NA19-134	Yes
+male	male	NA19-134	Yes
+female	female	NA19-136	Yes
+female	female	NA19-136	Yes
+male	male	NA19-137	Yes
+male	male	NA19-137	Yes
+male	male	NA19-141	Yes
+male	male	NA19-141	Yes
+male	male	NA19-156	Yes
+male	male	NA19-156	Yes
+female	female	NA19-167	Yes
+female	female	NA19-167	Yes
+male	male	NA19-169	Yes
+male	male	NA19-169	Yes
+female	female	NA19-170	Yes
+female	female	NA19-170	Yes
+male	male	NA19-188	Yes
+male	male	NA19-188	Yes
+female	female	NA19-189	Yes
+female	female	NA19-189	Yes
+male	male	NA19-198	Yes
+male	male	NA19-198	Yes
+male	male	NA19-201	Yes
+male	male	NA19-201	Yes
+female	female	NA19-206	Yes
+female	female	NA19-206	Yes
+female	female	NA19-224	Yes
+female	female	NA19-224	Yes
+male	male	NA19-228	Yes
+male	male	NA19-228	Yes
+male	male	NA19-229	Yes
+male	male	NA19-229	Yes
+female	female	NA19-258	Yes
+female	female	NA19-258	Yes
+male	male	NA19-262	Yes
+male	male	NA19-262	Yes
+male	male	NA19-270	Yes
+male	male	NA19-270	Yes
+female	female	NA19-271	Yes
+female	female	NA19-271	Yes
+male	male	NA19-272	Yes
+male	male	NA19-272	Yes
+female	female	NA19-274	Yes
+female	female	NA19-274	Yes
+female	female	NA19-275	Yes
+female	female	NA19-275	Yes
+male	male	NA19-276	Yes
+male	male	NA19-276	Yes
+male	male	NA19-277	Yes
+male	male	NA19-277	Yes
+male	male	NA19-278	Yes
+male	male	NA19-278	Yes
+female	female	NA19-286	Yes
+female	female	NA19-286	Yes
+female	female	NA19-290	Yes
+female	female	NA19-290	Yes
+male	male	NA19-326	Yes
+male	male	NA19-326	Yes
+male	male	NA19-349	Yes
+male	male	NA19-349	Yes
+female	female	NA19-352	Yes
+female	female	NA19-352	Yes
+male	male	NA19-377	Yes
+male	male	NA19-377	Yes
+female	female	NA19-378	Yes
+female	female	NA19-378	Yes
+male	male	NA19-381	Yes
+male	male	NA19-381	Yes
+male	male	NA19-383	Yes
+male	male	NA19-383	Yes
+female	female	NA19-402	Yes
+female	female	NA19-402	Yes
+female	female	NA19-403	Yes
+female	female	NA19-403	Yes
+male	male	NA20-002	Yes
+male	male	NA20-002	Yes
+female	female	NA20-030	Yes
+female	female	NA20-030	Yes
+male	male	NA20-037	Yes
+male	male	NA20-037	Yes
+male	male	NA20-040	Yes
+male	male	NA20-040	Yes
+male	male	NA20-050	Yes
+male	male	NA20-050	Yes
+male	male	NA20-063	Yes
+male	male	NA20-063	Yes
+male	male	NA20-072	Yes
+male	male	NA20-072	Yes
+male	male	NA20-077	Yes
+male	male	NA20-077	Yes
+male	male	NA20-078	Yes
+male	male	NA20-078	Yes
+male	male	NA20-102	Yes
+male	male	NA20-102	Yes
+male	male	NA20-104	Yes
+male	male	NA20-104	Yes
+male	male	NA20-119	Yes
+male	male	NA20-119	Yes
+female	female	NA20-121	Yes
+female	female	NA20-121	Yes
+male	male	NA20-123	Yes
+male	male	NA20-123	Yes
+male	male	NA20-126	Yes
+male	male	NA20-126	Yes
+male	male	NA20-127	Yes
+male	male	NA20-127	Yes
+female	female	NA20-131	Yes
+female	female	NA20-131	Yes
+male	male	NA20-144	Yes
+male	male	NA20-144	Yes
+male	male	NA20-153	Yes
+male	male	NA20-153	Yes
+male	male	NA20-160	Yes
+male	male	NA20-160	Yes
+male	male	NA20-162	Yes
+male	male	NA20-162	Yes
+male	male	NA20-177	Yes
+male	male	NA20-177	Yes
+male	male	NA20-190	Yes
+male	male	NA20-190	Yes
+male	male	NA20-200	Yes
+male	male	NA20-200	Yes
+male	male	NA20-210	Yes
+male	male	NA20-210	Yes
+male	male	NA20-216	Yes
+male	male	NA20-216	Yes
+male	male	NA20-231	Yes
+male	male	NA20-231	Yes
+female	female	NA20-234	Yes
+female	female	NA20-234	Yes
+male	male	NA20-246	Yes
+male	male	NA20-246	Yes
+male	male	NA20-252	Yes
+male	male	NA20-252	Yes
+male	male	NA20-266	Yes
+male	male	NA20-266	Yes
+female	female	NA20-271	Yes
+female	female	NA20-271	Yes
+male	male	NA20-278	Yes
+male	male	NA20-278	Yes
+female	female	NA20-303	Yes
+female	female	NA20-303	Yes
+female	female	NA20-345	Yes
+female	female	NA20-345	Yes
+female	female	NA20-363	Yes
+female	female	NA20-363	Yes
+female	female	NA20-399	Yes
+female	female	NA20-399	Yes
+female	female	NA20-436	Yes
+female	female	NA20-436	Yes
+male	male	NA20-444	Yes
+male	male	NA20-444	Yes
+female	female	NA20-446	Yes
+female	female	NA20-446	Yes
+male	male	NA20-451	Yes
+male	male	NA20-451	Yes
+female	female	NA20-473	Yes
+female	female	NA20-473	Yes
+female	female	NA20-487	Yes
+female	female	NA20-487	Yes
+male	male	NA21-004	Yes
+male	male	NA21-004	Yes
+male	male	NA21-037	Yes
+male	male	NA21-037	Yes
+male	male	NA21-040	Yes
+male	male	NA21-040	Yes
+female	female	NA21-074	Yes
+female	female	NA21-074	Yes
+male	male	NA21-219	Yes
+male	male	NA21-219	Yes
+female	female	NA98-041	Yes
+female	female	NA98-041	Yes
+female	female	NA98-085	Yes
+female	female	NA98-085	Yes
+male	male	NA98-146	Yes
+male	male	NA98-146	Yes
+male	male	NA99-020	Yes
+male	male	NA99-020	Yes
+female	female	NA99-131	Yes
+female	female	NA99-131	Yes
+male	male	NA99-167	Yes
+male	male	NA99-167	Yes
+male	male	NA99-187	Yes
+male	male	NA99-187	Yes
+female	female	NA99-193	Yes
+female	female	NA99-193	Yes
+male	male	NA99-212	Yes
+male	male	NA99-212	Yes
+male	male	NA99-213	Yes
+male	male	NA99-213	Yes
+male	male	NA99-224	Yes
+male	male	NA99-224	Yes
