@@ -44,8 +44,8 @@ header = '''{{
     "GRCh38.Ymasked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX.fa",
     "GRCh38.YPARs_masked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY.fa",
 
-    "GRCh38.Ymasked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY_STAR",
-    "GRCh38.YPARs_masked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY_STAR",
+    "GRCh38.Ymasked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX",
+    "GRCh38.YPARs_masked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY",
 
     "Comment_Sample_Info": "The following section lists the samples that are to be analyzed",
     "sample_names": {0},
