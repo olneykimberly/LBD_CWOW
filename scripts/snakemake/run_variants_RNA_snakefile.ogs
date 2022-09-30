@@ -1,0 +1,22 @@
+#!/bin/sh
+#$ -cwd
+#$ -N callingVariantsRNA
+#$ -m abe
+#$ -M olneykimberly@mayo.edu
+#$ -l h_vmem=2G
+#$ -q 1-day,4-day,lg-mem
+#$ -notify
+
+
+# activate conda environment
+source $HOME/.bash_profile
+module load python
+conda activate gatk
+
+# change directory to where Snakefile is located
+CWD="/research/labs/neurology/fryer/m239830/LBD_CWOW/scripts/snakemake"
+cd $CWD
+
+# run snakemake
+snakemake -s variants.RNA.Snakefile -j 4 --rerun-incomplete --latency-wait 25 --cluster "qsub -l h_vmem=8G -q 1-day,4-day,lg-mem -pe threaded 6"
+
