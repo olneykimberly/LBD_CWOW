@@ -135,6 +135,6 @@ rule haplotype_XX:
         XX_reference = (config["GRCh38.Ymasked.fa"]),
         gatk = gatk_path
     shell:
-        "{params.gatk} --java-options -Xmx4g HaplotypeCaller -R {params.XX_reference} -I {input.bam} -O {output.vcf} -bamout {output.BAM}"
+        "{params.gatk} --java-options -Xmx4g HaplotypeCaller -R {params.XX_reference} -I {input.BAM} -O {output.VCF} -bamout {output.BAM}"
 
 #-----------------------
