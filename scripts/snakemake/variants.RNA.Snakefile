@@ -18,8 +18,9 @@ rule all:
         	expand(config["RNA_variants"]+"{sample}_splitNCigar_XX.bam", sample = config["female_names"]), 	
         	expand(config["RNA_variants"]+"{sample}_XX_recal_data.table", sample = config["female_names"]),	
         	expand(config["RNA_variants"]+"{sample}_bqsr_recal_XX.bam", sample = config["female_names"]), 
-        	expand(config["RNA_variants"]+"{sample}_raw_XX.vcf", sample = config["female_names"])
-  		
+        	expand(config["RNA_variants"]+"{sample}_raw_XX.vcf", sample = config["female_names"]),
+         	expand(config["RNA_variants"]+"{sample}_raw_snps_XX.vcf", sample = config["female_names"])
+ 		
 
 #---------------------
 # Inferring APOE variants from RNAseq data 
@@ -136,5 +137,17 @@ rule haplotype_XX:
         gatk = gatk_path
     shell:
         "{params.gatk} --java-options -Xmx4g HaplotypeCaller -R {params.XX_reference} -I {input.BAM} -O {output.VCF} -bamout {output.BAM}"
+
+# select variants
+rule select_snps_XX:
+    input:
+        VCF = (config["RNA_variants"]+"{sample}_raw_XX.vcf")
+    output:
+        VCF = (config["RNA_variants"]+"{sample}_raw_snps_XX.vcf")
+    params:
+        XX_reference = (config["GRCh38.Ymasked.fa"]),
+        gatk = gatk_path
+    shell:
+        "{params.gatk} SelectVariants -R {params.XX_reference} -V {input.VCF} --select-type-to-include SNP -O {output.VCF}"
 
 #-----------------------

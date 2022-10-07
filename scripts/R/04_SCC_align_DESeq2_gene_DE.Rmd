@@ -1,0 +1,186 @@
+---
+title: "Differential expression in LBD samples"
+author: "Kimberly Olney, Ph.D."
+date: "09/30/2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+params:
+  args: myarg
+---
+Samples have already been sex checked and realigned to the SCC reference. 
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(DESeq2)
+library(DEGreport)
+library(pheatmap)
+library(viridis)
+library(factoextra)
+library(ggsci)
+```
+# User defined variables
+```{r set_variables}
+control <- "CONTROL"
+LBD <- "LBD"
+control_AD <- "CONTROL_AD"
+control_PA <- "CONTROL_PA"
+control_color <- "#666666" # gray
+control_AD_color <- "#E6AB02" # yellow gold
+control_PA_color <- "#A6761D" # brown gold
+LBD_color <- "#66A61E" # green 
+control_shape <- c(15) # square
+control_AD_shape <- c(16) # circle
+control_PA_shape <- c(17) # triangle
+LBD_shape <- c(18) # diamond 
+# colors from # Hexadecimal color specification 
+# brewer.pal(n = 8, name = "Dark2")
+myContrasts <- c("LBD - CONTROL")
+tool = c("star")
+typeOfCount <-  c(".bamReadsPerGene.out.tab")
+pathToRef = c("/research/labs/neurology/fryer/projects/references/human/")
+pathToRawData = c("/research/labs/neurology/fryer/projects/LBD_CWOW/")
+```
+# read in data 
+```{r}
+# read in metadata
+# the expanded metadata contains inferred sex, RIN, and WGS sample IDs
+metadata <- vroom(paste0(pathToRawData, "metadata_expanded.tsv"))
+# remove duplicates if any 
+metadata <- metadata[!duplicated(metadata[,c('RNA.config.ID')]),]
+metadata$TYPE <- gsub(" - ", "_", metadata$TYPE) 
+
+metadata <- metadata %>% mutate(sex_chr = case_when(
+  startsWith(sex_inferred, "female") ~ "XX", 
+  startsWith(sex_inferred, "male") ~ "XY"))
+
+# remove rows with no inferred sex.
+# No counts data for this samples because there is no RNAseq data for that individual
+metadata <- metadata[!is.na(metadata$sex_inferred),]
+
+# example of file naming:
+# NA12-254_FCHCLTJDMXY_L1_STAR_XY.bamReadsPerGene.out.tab
+# path to counts files
+count_files <-
+  file.path(paste0(
+    "../../starAligned_SCC/",
+    metadata$NPID,
+    "_FC",
+    metadata$flowcell_and_lane,
+    "_STAR_",
+    metadata$sex_chr,
+    typeOfCount
+  ))
+# add sample name to counts files
+names(count_files) <- paste0(metadata$NPID)
+# add sample count path information to metadata
+metadata$path <- count_files
+# make sure there is only unique paths
+
+counts <- data.frame(fread(count_files[1]))[c(1, 2)]
+# Loop and read the 2nd column remaining files
+for (i in 2:length(count_files)) {
+  counts <- cbind(counts, data.frame(fread(count_files[i]))[2])
+}
+# remove star metric information
+counts <- counts[!grepl("N_", counts$V1),]
+# set gene_id (i.e. V1) as the row name
+row.names(counts) <- counts$V1
+counts$V1 <- NULL
+# set column names to NPID sample ID
+colnames(counts) <- metadata$RNA.config.ID
+```
+# create DESeq object
+```{r}
+rownames(metadata) <- metadata$RNA.config.ID
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~TYPE)
+
+ddsColl <- collapseReplicates(dds, dds$NPID)
+ddsColl_DE <- DESeq(ddsColl)
+saveRDS(dds, file = paste0("../../rObjects/LBD_SCC_DESeq.reps_collapse.raw.rds"))
+```
+# filter counts
+```{r}
+filter_count <- DEGreport::degFilter(counts = counts(ddsColl_DE),
+                                     metadata = as.data.frame(colData(ddsColl_DE)),
+                                     group = "TYPE",
+                                     min = 1, # All samples in group must have more than expr > 0
+                                     minreads = 0) 
+cat("Genes in final count matrix: ", nrow(filter_count))
+```
+# vst
+```{r}
+vsd <- vst(object = ddsColl_DE, 
+           blind = TRUE # blind to experimental design   
+)
+```
+# compute sample distances
+Transpose transformed count matrix, such that samples now rows.
+Compute distances between rows of the matrix i.e. sample-to-sample distance.
+Convert to matrix.
+Define row names. 
+```{r}
+sampleDists <- vsd %>% 
+  assay() %>% 
+  t() %>% 
+  dist(method = "euclidean")  
+
+sampleDistMatrix <- sampleDists %>% 
+  as.matrix() 
+
+rownames(sampleDistMatrix) <- str_c(vsd$sample_id, ": ", vsd$TYPE, ", ", vsd$sex_inferred)
+colnames(sampleDistMatrix) <- NULL
+```
+# heatmap
+```{r, eval = FALSE}
+pheatmap <- pheatmap(sampleDistMatrix,
+                     clustering_distance_rows=sampleDists,
+                     clustering_distance_cols=sampleDists,
+                     col= viridis(n = 20), 
+                     main = "Heatmap: uncorrected data")
+```
+
+# pca & tree
+```{r}
+pca_vsd <- prcomp(t(assay(vsd)))
+
+tibble(PC = c(1:24), 
+       sdev = pca_vsd$sdev) %>% 
+  dplyr::mutate(d = sdev^2, 
+                pev = d/sum(d), 
+                cev = cumsum(d)/sum(d))
+ggarrange(pcascree(pca_vsd, type = "pev"),
+          pcascree(pca_vsd, type = "cev"), 
+          nrow = 2,
+          labels = c("a", "b"))
+```
+# compare between models
+```{r}
+list_vsd <- list(pca_vsd)
+plot_list <- vector(mode = "list", length = 1)
+titles <- c("Uncorrected")
+
+for(i in 1:length(list_vsd)){
+  
+  plot_list[[i]] <- fviz_pca_ind(list_vsd[[i]],
+                                 geom.ind = "point", # show points only (nbut not "text")
+                                 col.ind = colData(vsd)[,c("TYPE")], # color by groups
+                                 addEllipses = TRUE, ellipse.type = "confidence", # Confidence ellipses
+                                 palette =  pal_jco("default", alpha = 0.9)(10)[c(3,9,1,2)],
+                                 mean.point = FALSE,
+                                 legend.title = "Disease group", 
+                                 title = titles[i]
+  )
+  
+}
+
+ggarrange(plotlist = plot_list,
+          labels = c("a"),
+          nrow = 1)
+```
