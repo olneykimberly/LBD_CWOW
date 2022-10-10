@@ -1,0 +1,110 @@
+---
+title: "Examine clinical stats"
+author: "Kimberly Olney, Ph.D"
+date: "10/07/2022"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Setup
+```{r setup}
+# Also do Session > Set Working Directory > Choose Directory
+knitr::opts_knit$set(root.dir = ".")
+```
+# libraries
+```{r}
+library(gtools)
+library(tidyr)
+library(wesanderson) # colors
+```
+# User defined variables
+```{r set_variables}
+pathToRef = c("/research/labs/neurology/fryer/projects/references/human/")
+pathToRawData = c("/research/labs/neurology/fryer/projects/LBD_CWOW/")
+
+# color theme
+TypeColors <- c("#4682B4", "#B4464B","#B4AF46", "gray35")
+```
+
+# Read data
+```{r read_data}
+# read in metadata
+metadata <- read.delim(paste0(pathToRawData, "metadata_expanded.tsv"), 
+                       header = TRUE,
+                       sep = "\t")
+# remove technical replicates (i.e lane 1 and lane 2)
+metadata <- metadata[!duplicated(metadata[,c('NPID')]),]
+# remove samples that don't have RNA data
+metadata <- metadata %>% drop_na(flowcell_and_lane)
+```
+# Create bar plots for catrogical variables 
+```{r bar_plot, cache=FALSE}
+# create bar plot showing number of samples for each end point criteria
+df <- data.frame(metadata$TYPE, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "sex inferred") # rename column 
+bar_plot <- ggplot(df, aes(`Disease group`, ..count.., fill = `Disease group`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("Disease group") + 
+  geom_text(stat='count', aes(label=..count..), vjust=1.6, color="white", size=3.5) + 
+  scale_fill_manual(values=TypeColors) 
+
+```
+# side by side sex 
+```{r}
+ggplot(df, aes(x = `Disease group`, fill = `sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge")+ scale_fill_manual(values = alpha(TypeColors), .3)
+```
+
+```{r}
+pheno_df <- data.frame(metadata$weight_kg, metadata$dose_ml_per_hr, metadata$duration_min, metadata$start_heart_rate, metadata$end_heart_rate, metadata$start_temp, metadata$end_temp, metadata$start_MAP, metadata$end_MAP, metadata$age_days)
+c_pheno_df <- colnames(df)
+labels <-
+  c(
+    "Weight (kg)",
+    "Dose mL per hour",
+    "Mins from injection till sacrifice", 
+    "Initial heart rate", 
+    "Final heart rate", 
+    "Initial body temperature",
+    "Final body temperature", 
+    "Initial MAP", 
+    "Final  MAP", 
+    "Days old" 
+  )
+vio_Func_ttest <- function(j, i, k) {
+  ggplot(metadata, aes(x = group, y = i, color = group)) + ylab(j)  +
+    geom_violin() + scale_color_manual(values = c("black", "purple")) +
+    geom_boxplot(width = 0.1, outlier.size = -1, outlier.shape = NA) + 
+    stat_compare_means(method = "t.test", size = 4, label.x = 1.25) +
+    geom_sina(aes(shape = factor(group)),
+                size = 3) +
+    theme(legend.position = "none") + ggtitle(k) + ylab(k) + scale_shape_manual(
+      values = c(14, 10)) +
+    theme(
+      axis.title.x = element_text(size = 12),
+      axis.text.x =
+        element_text(size = 12)
+    ) +
+    theme(
+      axis.title.y = element_text(size = 12),
+      axis.text.y =
+        element_text(size = 12) 
+    ) +
+    theme(
+      title = element_text(size = 12)
+    )
+}
+all_plots <- Map(vio_Func_ttest, i = pheno_df, j = c_pheno_df, k = labels)
+all_plots
+plotnames = imap(all_plots, ~paste0("", .y, "_ttest.pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, all_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 4))
+```
