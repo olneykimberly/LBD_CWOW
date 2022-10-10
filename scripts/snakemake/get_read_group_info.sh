@@ -4,7 +4,7 @@
 cd /research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA
 
 # create file with list of R1 samples
-ls -1 | grep _R1_ > R1_samples.txt
+ls -1 | grep L1_R1_ > R1_samples.txt
 
 # change directory 
 
@@ -22,3 +22,4 @@ cd /research/labs/neurology/fryer/m239830/LBD_CWOW/scripts/snakemake/
 paste -d "\t" R1_samples.txt sample_read_info.txt > sample_read_group_info.txt
 rm R1_samples.txt
 rm sample_read_info.txt
+
