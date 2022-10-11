@@ -207,6 +207,44 @@ ggplot(df, aes(x = `AD subtype`, fill = `Sex inferred`)) +
               vjust=1.25, color="white", size=3.5) + 
   scale_fill_manual(values = SexColors)
 ```
+# APOE
+```{r}
+df <- data.frame(metadata$TYPE, metadata$APOE, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "APOE", "Sex inferred") # rename column 
+df$`APOE` <- as.factor(df$`APOE`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `APOE`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("APOE") +
+  geom_text(stat='count', aes(label=..count..), position = position_stack(vjust = 0.5), color="white", size=3.5)
+
+data <- df %>% 
+  group_by(`APOE`) %>%
+  dplyr::count() %>% 
+  ungroup(`APOE`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `APOE`)) +
+  geom_col(color = "black") +
+    geom_label(aes(label = labels), color = c("white"),
+            position = position_stack(vjust = 0.5),
+            show.legend = FALSE) +
+  guides(fill = guide_legend(title = "APOE")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+
+ggplot(df, aes(x = `APOE`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("APOE") + 
+  geom_text(stat='count', aes(x = `APOE`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
 
 
 
@@ -289,7 +327,291 @@ ggplot(df, aes(x = `Braak.NFT`, fill = `Sex inferred`)) +
               vjust=1.25, color="white", size=3.5) + 
   scale_fill_manual(values = SexColors)
 ```
+# Thal amyloid
+```{r}
+df <- data.frame(metadata$TYPE, metadata$Thal.amyloid, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "Thal amyloid", "Sex inferred") # rename column 
+df$`Thal amyloid` <- as.factor(df$`Thal amyloid`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `Thal amyloid`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("Thal amyloid") + 
+  geom_text(stat='count', aes(label=..count..), position = position_stack(vjust=.5), color="black", size=3.5) + 
+  scale_fill_brewer(palette="YlGn")
 
+data <- df %>% 
+  group_by(`Thal amyloid`) %>%
+  dplyr::count() %>% 
+  ungroup(`Thal amyloid`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `Thal amyloid`)) +
+  geom_col(color = "black") +
+  geom_label(aes(label = labels), color = c("black"),
+            position = position_stack(vjust = 0.5),
+            show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Thal amyloid")) +
+  scale_fill_brewer(palette="YlGn") +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+ggplot(df, aes(x = `Thal amyloid`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("Thal amyloid") + 
+  geom_text(stat='count', aes(x = `Thal amyloid`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
+# MF SP
+```{r}
+df <- data.frame(metadata$TYPE, metadata$MF.SP, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "MF SP", "Sex inferred") # rename column 
+df$`MF SP` <- as.factor(df$`MF SP`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `MF SP`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("MF SP") #+ 
+
+data <- df %>% 
+  group_by(`MF SP`) %>%
+  dplyr::count() %>% 
+  ungroup(`MF SP`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `MF SP`)) +
+  geom_col(color = "black") +
+  guides(fill = guide_legend(title = "MF SP")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+ggplot(df, aes(x = `MF SP`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("MF SP") + 
+  geom_text(stat='count', aes(x = `MF SP`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
+# MF NFT
+```{r}
+df <- data.frame(metadata$TYPE, metadata$MF.NFT, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "MF NFT", "Sex inferred") # rename column 
+df$`MF NFT` <- as.factor(df$`MF NFT`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `MF NFT`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("MF NFT") #+ 
+
+data <- df %>% 
+  group_by(`MF NFT`) %>%
+  dplyr::count() %>% 
+  ungroup(`MF NFT`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `MF NFT`)) +
+  geom_col(color = "black") +
+  guides(fill = guide_legend(title = "MF NFT")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+ggplot(df, aes(x = `MF NFT`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("MF NFT") + 
+  geom_text(stat='count', aes(x = `MF NFT`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
+# MF LB
+```{r}
+df <- data.frame(metadata$TYPE, metadata$MF.LB, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "MF LB", "Sex inferred") # rename column 
+df$`MF LB` <- as.factor(df$`MF LB`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `MF LB`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("MF LB") #+ 
+
+data <- df %>% 
+  group_by(`MF LB`) %>%
+  dplyr::count() %>% 
+  ungroup(`MF LB`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `MF LB`)) +
+  geom_col(color = "black") +
+  guides(fill = guide_legend(title = "MF LB")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+ggplot(df, aes(x = `MF LB`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("MF LB") + 
+  geom_text(stat='count', aes(x = `MF LB`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
+# Cing LB
+```{r}
+df <- data.frame(metadata$TYPE, metadata$Cing.LB, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "Cing LB", "Sex inferred") # rename column 
+df$`Cing LB` <- as.factor(df$`Cing LB`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `Cing LB`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("Cing LB") #+ 
+
+data <- df %>% 
+  group_by(`Cing LB`) %>%
+  dplyr::count() %>% 
+  ungroup(`Cing LB`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `Cing LB`)) +
+  geom_col(color = "black") +
+  guides(fill = guide_legend(title = "Cing LB")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+ggplot(df, aes(x = `Cing LB`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("Cing LB") + 
+  geom_text(stat='count', aes(x = `Cing LB`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
+# MF Amyloid
+```{r}
+df <- data.frame(metadata$TYPE, metadata$MF.Amyloid, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "MF Amyloid", "Sex inferred") # rename column 
+df$`MF Amyloid` <- as.factor(df$`MF Amyloid`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `MF Amyloid`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("MF Amyloid") +
+  geom_text(stat='count', aes(label=..count..), position = position_stack(vjust = 0.5), color="white", size=3.5)
+
+data <- df %>% 
+  group_by(`MF Amyloid`) %>%
+  dplyr::count() %>% 
+  ungroup(`MF Amyloid`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `MF Amyloid`)) +
+  geom_col(color = "black") +
+    geom_label(aes(label = labels), color = c("white"),
+            position = position_stack(vjust = 0.5),
+            show.legend = FALSE) +
+  guides(fill = guide_legend(title = "MF Amyloid")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+
+ggplot(df, aes(x = `MF Amyloid`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("MF Amyloid") + 
+  geom_text(stat='count', aes(x = `MF Amyloid`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
+# Cing Synuclein
+```{r}
+df <- data.frame(metadata$TYPE, metadata$Cing.Synuclein, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "Cing Synuclein", "Sex inferred") # rename column 
+df$`Cing Synuclein` <- as.factor(df$`Cing Synuclein`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `Cing Synuclein`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("Cing Synuclein") +
+  geom_text(stat='count', aes(label=..count..), position = position_stack(vjust = 0.5), color="white", size=3.5)
+
+data <- df %>% 
+  group_by(`Cing Synuclein`) %>%
+  dplyr::count() %>% 
+  ungroup(`Cing Synuclein`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `Cing Synuclein`)) +
+  geom_col(color = "black") +
+    geom_label(aes(label = labels), color = c("white"),
+            position = position_stack(vjust = 0.5),
+            show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Cing Synuclein")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+
+ggplot(df, aes(x = `Cing Synuclein`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("Cing Synuclein") + 
+  geom_text(stat='count', aes(x = `Cing Synuclein`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
+# MF Tau
+```{r}
+df <- data.frame(metadata$TYPE, metadata$MF.Tau, metadata$sex_inferred)# create dataframe of endpoint criteria 
+colnames(df) <- c("Disease group", "MF Tau", "Sex inferred") # rename column 
+df$`MF Tau` <- as.factor(df$`MF Tau`)
+ggplot(df, aes(`Disease group`, ..count.., fill = `MF Tau`)) + 
+  geom_bar() +
+  theme_bw() + 
+  ggtitle("MF Tau") +
+  geom_text(stat='count', aes(label=..count..), position = position_stack(vjust = 0.5), color="white", size=3.5)
+
+data <- df %>% 
+  group_by(`MF Tau`) %>%
+  dplyr::count() %>% 
+  ungroup(`MF Tau`) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+
+ggplot(data, aes(x = "", y = perc, fill = `MF Tau`)) +
+  geom_col(color = "black") +
+    geom_label(aes(label = labels), color = c("white"),
+            position = position_stack(vjust = 0.5),
+            show.legend = FALSE) +
+  guides(fill = guide_legend(title = "MF Tau")) +
+  coord_polar(theta = "y") + 
+  theme_void()
+
+
+ggplot(df, aes(x = `MF Tau`, fill = `Sex inferred`)) + 
+  geom_bar(aes(y = ..count..), position = "dodge") + 
+  theme_bw() + 
+  ggtitle("MF Tau") + 
+  geom_text(stat='count', aes(x = `MF Tau`, label=..count..), 
+            position = position_dodge(width = 1), 
+              vjust=1.25, color="white", size=3.5) + 
+  scale_fill_manual(values = SexColors)
+```
 
 
 ```{r}

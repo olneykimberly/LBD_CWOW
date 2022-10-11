@@ -6,17 +6,17 @@
     "trimmedReads" : "../../trimmedReads/",
     "trimmedQC" : "../../trimmedQC/",
     "starAligned" : "../../starAligned/",
-    "starAligned_SCC" : "../../startAligned_SCC/",
+    "starAligned_SCC" : "../../starAligned_SCC/",
     "bamstats" : "../../bamstats/",
-
+    "RNA_variants" : "../../RNA_variants/",
 
     "Comment_Reference" : "This section specifies the location of the Sus scrofa, Ensembl reference genome",
-    "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome",
+    "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome.fa",
     "GRCh38.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_def",
     "GRCh38.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation",
     
-    "GRCh38.Ymasked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX",
-    "GRCh38.YPARs_masked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY",
+    "GRCh38.Ymasked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX.fa",
+    "GRCh38.YPARs_masked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY.fa",
 
     "GRCh38.Ymasked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX",
     "GRCh38.YPARs_masked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY",

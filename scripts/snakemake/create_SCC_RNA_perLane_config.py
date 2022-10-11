@@ -19,7 +19,7 @@ with open('sample_read_group_info.txt', 'r') as infile:
         split = line.split()
         sampleAttributes = split[0].split('_') # NA00-190.FCH5MYFDMXY_L1_R1_ITCTCTACT-CGCGGTTC.fastq.gz 
         # create a shorter sample name
-        stemName = sampleAttributes[0]
+        stemName = sampleAttributes[0] + '_' + sampleAttributes[1] + '_' + sampleAttributes[2]
         allSamples.append(stemName)
 
 # create header and write to outfile
@@ -32,17 +32,17 @@ header = '''{{
     "starAligned" : "../../starAligned/",
     "starAligned_SCC" : "../../startAligned_SCC/",
     "bamstats" : "../../bamstats/",
-    "RNA_variants" : "../../RNA_variants/",
+    "featureCounts" : "../../featureCounts/",
     "kallisto" : "../../kallisto/",
     "salmon" : "../../salmon/", 
 
     "Comment_Reference" : "This section specifies the location of the Sus scrofa, Ensembl reference genome",
-    "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome.fa",
+    "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome",
     "GRCh38.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_def",
     "GRCh38.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation",
     
-    "GRCh38.Ymasked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX.fa",
-    "GRCh38.YPARs_masked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY.fa",
+    "GRCh38.Ymasked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX",
+    "GRCh38.YPARs_masked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY",
 
     "GRCh38.Ymasked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX",
     "GRCh38.YPARs_masked.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY",
@@ -69,8 +69,6 @@ with open('sample_read_group_info.txt', 'r') as infile:
         base = base.replace(".fastq.gz", "")
         sampleName1 = base
         sampleName2 = sampleName1.replace("R1","R2")
-        sampleName3 = sampleName1.replace("L1","L2")
-        sampleName4 = sampleName3.replace("R1","R2")
         base = base.replace("_R1_", "")
         sampleInfo = split[1]
 
@@ -81,9 +79,9 @@ with open('sample_read_group_info.txt', 'r') as infile:
         # uniqueNum-number_sequencer_lane_read.fastq.gz
 
         # create a shorter sample name
-        stemName = sampleAttributes[0]
+        stemName = sampleAttributes[0] + '_' + sampleAttributes[1] + '_' + sampleAttributes[2]
         sampleID = sampleAttributes[0] 
-        shortName = stemName
+        shortName1 = stemName + '_R1'
         shortName2 = stemName + '_R2'
 
         # break down fastq file info
@@ -97,7 +95,7 @@ with open('sample_read_group_info.txt', 'r') as infile:
         lane = sampleInfo[3]
         ID = stemName  # ID tag identifies which read group each read belongs to, so each read group's ID must be unique
         SM = sampleID  # Sample
-        PU = flowcellID  # Platform Unit
+        PU = flowcellID + "." + lane  # Platform Unit
         LB = stemName
 
         out = '''
@@ -105,19 +103,17 @@ with open('sample_read_group_info.txt', 'r') as infile:
         "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/bulkRNA/",
         "fq1": "{1}",
         "fq2": "{2}",
-        "fq3": "{3}",
-        "fq4": "{4}",
-        "shortName": "{5}",
-        "ID": "{6}",
-        "SM": "{7}",
-        "PU": "{8}",
-        "LB": "{9}",
+        "shortName1": "{3}",
+        "shortName2": "{4}",
+        "ID": "{5}",
+        "SM": "{6}",
+        "PU": "{7}",
+        "LB": "{8}",
         "PL": "Illumina"
         '''
-        outfile.write(out.format(stemName, sampleName1, sampleName2, sampleName3, sampleName4, shortName, stemName, sampleID, PU, LB))
+        outfile.write(out.format(stemName, sampleName1, sampleName2, shortName1, shortName2, stemName, sampleID, PU, LB))
         if (counter == numSamples):
             outfile.write("}\n}")
         else:
             outfile.write("},\n")
 outfile.close()
-

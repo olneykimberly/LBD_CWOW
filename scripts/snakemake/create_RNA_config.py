@@ -32,12 +32,12 @@ header = '''{{
     "starAligned" : "../../starAligned/",
     "starAligned_SCC" : "../../startAligned_SCC/",
     "bamstats" : "../../bamstats/",
-    "featureCounts" : "../../featureCounts/",
+    "RNA_variants" : "../../RNA_variants", 
     "kallisto" : "../../kallisto/",
     "salmon" : "../../salmon/", 
 
     "Comment_Reference" : "This section specifies the location of the Sus scrofa, Ensembl reference genome",
-    "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome",
+    "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome.fa",
     "GRCh38.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_def",
     "GRCh38.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation",
     
