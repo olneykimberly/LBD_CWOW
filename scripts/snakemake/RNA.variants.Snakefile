@@ -49,7 +49,7 @@ rule split_cigar_XX:
     input:
         BAM = (config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam")
     output:
-        BAM = temporary(config["RNA_variants"]+"{sample}_splitNCigar_XX.bam")
+        BAM = (config["RNA_variants"]+"{sample}_splitNCigar_XX.bam")
     params:
         XX_reference = (config["GRCh38.Ymasked.fa"]),
         gatk = gatk_path
@@ -74,7 +74,7 @@ rule base_recall_XX:
     input:
         BAM = (config["RNA_variants"]+"{sample}_splitNCigar_XX.bam")
     output:
-        recal_table = temporary(config["RNA_variants"]+"{sample}_XX_recal_data.table")
+        recal_table = (config["RNA_variants"]+"{sample}_XX_recal_data.table")
     params:
         XX_reference = (config["GRCh38.Ymasked.fa"]),
         known_sites = (config["dbsnp138.vcf"]+".gz"),
@@ -83,6 +83,18 @@ rule base_recall_XX:
         "{params.gatk} BaseRecalibrator -I {input.BAM} -R {params.XX_reference} --known-sites {params.known_sites} -O {output.recal_table}"
 
 # KEY
+# BaseRecalibrator detects systematic errors in the estimation of base call accuracy carried out by the sequencing machine
+# -I input bam with SplitNCigarReads (see step above)
+# -R reference genome used during alignment 
+# --known-sites
+# -O output table of the recalibration model to be used in the next step (see apply base recall)
+
+# Notes on BaseRecalibrator
+# Base quality scores are per-base estimates of error emitted by the sequencing machines; they express how confident the machine was that it called the correct base each time.
+# Unfortunately the scores produced by the machines are subject to various sources of systematic (non-random) technical error, leading to over- or under-estimated base quality scores in the data. 
+# Some of these errors are due to the physics or the chemistry of how the sequencing reaction works, and some are probably due to manufacturing flaws in the equipment.
+# Base quality score recalibration (BQSR) is a process in which we apply machine learning to model these errors empirically and adjust the quality scores accordingly. 
+# more information can be found here: https://gatk.broadinstitute.org/hc/en-us/articles/360035890531-Base-Quality-Score-Recalibration-BQSR-
 #---------------------
 
 # apply base recall 
@@ -99,8 +111,21 @@ rule apply_base_recall_XX:
         "{params.gatk} ApplyBQSR -R {params.XX_reference} -I {input.BAM} --bqsr-recal-file {input.recal_table} -O {output.BAM}"
 
 # KEY
+# ApplyBQSR goes through all the reads , using the recalibration file to adjust each base's score based on which bins it falls in
+# -I input bam with SplitNCigarReads (see step above)
+# -R reference genome used during alignment 
+# --bqsr-recal-file the recal_table obtained from BaseRecalibrator step 
+# -O output bam file with the base quality scores recalibrated 
+
+# Notes on ApplyBQSR
+# new quality score is:
+# the sum of the global difference between reported quality scores and the empirical quality
+# plus the quality bin specific shift
+# plus the cycle x qual and dinucleotide x qual effect
+# Following recalibration, the read quality scores are much closer to their empirical scores than before. This means they can be used in a statistically robust manner for downstream processing, such as variant calling.
 #---------------------
 
+# we are performing variant calls on germline RNASeq data, thus the “HaplotypeCaller” argument is used.
 rule haplotype_XX:
     input:
         BAM = (config["RNA_variants"]+"{sample}_bqsr_recal_XX.bam")
@@ -114,6 +139,21 @@ rule haplotype_XX:
         "{params.gatk} --java-options -Xmx4g HaplotypeCaller -R {params.XX_reference} -I {input.BAM} -O {output.VCF} -bamout {output.BAM}"
 
 # KEY
+# --java-options -Xmx4g
+# HaplotypeCaller variant detection 
+# -R reference genome used during alignment 
+# -I input bam with recalibrated base quality scores applied (see step above)
+# -O output variant call file (vcf)
+# -bamout output bam file. Realignment of each haplotype is performed against the reference haplotype to determine potentially variant sites. 
+
+# Notes on HaplotypeCaller
+# The program first determines the active regions based on the presence of evidence for variation. 
+# Next, for each active region, it builds a De Bruijn-like graph to reassemble the region and identify the haplotypes (a group of alleles in an organism that is inherited together from a single parent) in the data.
+# Realignment of each haplotype is performed against the reference haplotype to determine potentially variant sites. 
+# Further, for each active region, a pairwise alignment of each read against each haplotype is performed using the PairHMM algorithm – to produce a matrix of likelihoods of haplotypes. 
+# These likelihoods are then marginalized to acquire likelihoods of alleles for each potential variant site given the read data. 
+# In the end, Bayes’ rule is applied for each potential variant site using the likelihoods of alleles to calculate the likelihoods of each genotype per sample given the read data observed for that sample. 
+# eventually, the most likely genotype is assigned to the sample
 #---------------------
 
 # select variants
@@ -128,6 +168,13 @@ rule select_snps_XX:
     shell:
         "{params.gatk} SelectVariants -R {params.XX_reference} -V {input.VCF} --select-type-to-include SNP -O {output.VCF}"
 
+# KEY 
+# SelectVariants selecting subsets of variants from a larger variant callset
+# -R reference genome used during alignment 
+# -V input variant call file 
+# --select-type-to-include SNP indiciating the type of variants to select is SNPs 
+# -O the output vcf will contain only SNPs 
+
 #---------------------
 # XY male samples: 
 #---------------------
@@ -136,7 +183,7 @@ rule split_cigar_XY:
     input:
         BAM = (config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam")
     output:
-        BAM = temporary(config["RNA_variants"]+"{sample}_splitNCigar_XY.bam")
+        BAM = (config["RNA_variants"]+"{sample}_splitNCigar_XY.bam")
     params:
         XY_reference = (config["GRCh38.YPARs_masked.fa"]),
         gatk = gatk_path
@@ -147,7 +194,7 @@ rule base_recall_XY:
     input:
         BAM = (config["RNA_variants"]+"{sample}_splitNCigar_XY.bam")
     output:
-        recal_table = temporary(config["RNA_variants"]+"{sample}_XY_recal_data.table")
+        recal_table = (config["RNA_variants"]+"{sample}_XY_recal_data.table")
     params:
         XY_reference = (config["GRCh38.YPARs_masked.fa"]),
         known_sites = (config["dbsnp138.vcf"]+".gz"),

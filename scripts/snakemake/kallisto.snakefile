@@ -1,6 +1,6 @@
 import os
 
-configfile: "config.json"
+configfile: "RNA.config.json"
 
 #Tools
 kallisto_path = "kallisto"
