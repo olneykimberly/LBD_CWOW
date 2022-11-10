@@ -46,6 +46,7 @@ library(matrixStats)
 library("data.table")
 library(DESeq2)
 library(DEGreport)
+library(dittoSeq)
 ```
 # Save pdf function
 ```{r}
@@ -56,22 +57,10 @@ saveToPDF <- function(...) {
 ```
 # User defined variables
 ```{r set_variables}
-# folder to save the results in since we'll be re-running many times
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+
 directory <- c("pass1/")
 condition <- c("All_samples")
-
-control_color <- "#4682B4" # gray
-AD_color <- "#B4464B" # yellow gold
-PA_color <- "#B4AF46" # brown gold
-LBD_color <- "gray35" # green 
-control_shape <- c(15) # square
-AD_shape <- c(16) # circle
-PA_shape <- c(17) # triangle
-LBD_shape <- c(18) # diamond 
-
-TypeColors <- c("#4682B4", "#B4464B","#B4AF46", "gray35")
-SexColors <- c("orange", "blue")
-colorbindColors <- dittoColors()
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
   "LBDvsAD = LBD - AD",
@@ -81,8 +70,6 @@ myContrasts <- c("LBDvsControl = LBD - CONTROL",
   "ADvsPA = AD - PA")
 tool = c("star")
 typeOfCount <-  c(".bamReadsPerGene.out.tab")
-pathToRef = c("/research/labs/neurology/fryer/projects/references/human/")
-pathToRawData = c("/research/labs/neurology/fryer/projects/LBD_CWOW/")
 ```
 
 # Read data
@@ -144,7 +131,7 @@ ggplot(melt_star_metrics, aes(x = value, fill = V1)) +
   geom_histogram(position = "identity", bins = 100) + 
   facet_grid(V1 ~ .)  + theme_bw()
 ```
-# clean up
+clean up
 ```{r}
 # clean up
 remove(melt_star_metrics, 
@@ -188,7 +175,7 @@ table(dge$samples$TYPE)
 # Save R object
 ```{r, eval=FALSE}
 saveRDS(dge, file = paste0("../../rObjects/", directory, "LBD_SCC_dge.raw.rds"))
-dge.filtered.norm <- readRDS(paste0("../../rObjects/", directory, "LBD_SCC_dge.raw.rds"))
+dge <- readRDS(paste0("../../rObjects/", directory, "LBD_SCC_dge.raw.rds"))
 ```
 
 # Remove mitochondrial genes & keep only protein coding genes
@@ -200,23 +187,25 @@ keepProtein <- dge$genes$gene_type == "protein_coding"
 dge <- dge[keepProtein,,keep.lib.sizes = FALSE]
 dim(dge)
 ```
-
 # Raw MDS
-```{r MDS_techreps, warning=FALSE}
-# set colors and get data
-table(dge$samples$TYPE)
-dge$samples$TYPE <- as.factor(dge$samples$TYPE)
-group_colors <- c(control_color, 
-                  AD_color, 
-                  PA_color, 
-                  LBD_color)[dge$samples$TYPE]
-dge$samples$sex_inferred <- as.factor(dge$samples$sex_inferred)
-
-sex_colors <- c(SexColors)[dge$samples$sex_inferred]
-
+convert counts to cpm and lcpm
+set colors and get data
+```{r cpm, warning=FALSE}
 lcpm <- edgeR::cpm(dge$counts, log = TRUE)
 cpm <- edgeR::cpm(dge$counts, log = FALSE)
+dge$samples$sex_inferred <- as.factor(dge$samples$sex_inferred)
+sex_colors <- c(SexColors)[dge$samples$sex_inferred]
+
+dge$samples$LBD.type <- as.factor(dge$samples$LBD.type)
+LBD.type_colors <- c(colorbindColors)[dge$samples$LBD.type]
+
+dge$samples$LBD.type <- as.factor(dge$samples$LBD.type)
+LBD.type_colors <- c(colorbindColors)[dge$samples$LBD.type]
+
+dge$samples$MF.LB <- as.factor(dge$samples$MF.LB)
+MF.LB_colors <- c(colorbindColors)[dge$samples$MF.LB]
 ```
+
 
 ```{r}
 par(bg = 'white')
@@ -224,7 +213,7 @@ par(bg = 'white')
 # plot MDS
 plotMDS(
   lcpm,
-  top = 500, 
+  top = 100, 
   labels = dge$samples$sex_inferred,
   cex = .8, 
   dim.plot = c(1,2), 
@@ -232,7 +221,7 @@ plotMDS(
   col = sex_colors,
   gene.selection = "common"
 )
-title(expression('Top 500 Genes (Log'[2]~'CPM)'))
+title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 
 path <- paste0("../../results/", directory, tool, "/MDS/", 
                condition,"_MDS_label_sex_dim1&2")
@@ -241,178 +230,52 @@ saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 # plot MDS
 plotMDS(
   lcpm,
-  top = 500, 
+  top = 100, 
   labels = dge$samples$sex_inferred,
   cex = .8, 
-  dim.plot = c(3,4), 
+  dim.plot = c(2,3), 
   plot = TRUE, 
-  col = group_colors,
+  col = sex_colors,
   gene.selection = "common"
 )
-title(expression('Top 500 Genes (Log'[2]~'CPM)'))
-path <- paste0("../../results/", tool, "/MDS/", 
+title(expression('Top 100 Genes (Log'[2]~'CPM)'))
+path <- paste0("../../results/", directory, tool, "/MDS/", 
                condition,"_MDS_label_sex_dim2&3")
 saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 ```
 
-# RIN check with replicates
-```{r}
-# first filter by expression and normalize the data
-keep.expr <- filterByExpr(dge, group = dge$samples$TYPE)
-dim(dge)
-dge.filtered.reps <- dge[keep.expr, , keep.lib.sizes = FALSE]
-
-dim(dge.filtered.reps)
-table(dge.filtered.reps$genes$gene_type)
-
-# Now, normalization by the method of trimmed mean of M-values (TMM)
-dge.filtered.reps.norm <- calcNormFactors(dge.filtered.reps, method = "TMM")
-
-# norm factor summary
-summary(dge.filtered.reps.norm$samples$norm.factors)
-log2cpm.norm.reps <- edgeR::cpm(dge.filtered.reps.norm, log = T)
-nsamples <- ncol(dge.filtered.reps.norm)
-boxplot(log2cpm.norm.reps, 
-        main="Filtered normalized lcpm data with replicates", 
-        xlab="RIN", 
-        ylab=expression('Counts per gene (Log'[2]~'CPM)'),
-        axes=FALSE)
-axis(2)
-axis(1,at=1:nsamples,labels=(dge.filtered.reps.norm$samples$RIN),las=2,cex.axis=0.8)
-
-path <- paste0("../../results/", tool, "/boxplot/LBD_gene_boxplot_with_reps_with_RIN")
-saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
-```
-
-# Sum technical replicates
-```{r techReps}
-# sum technical replicates
-dim(dge)
-dge.tech <- sumTechReps(dge, dge$samples$NPID)
-dim(dge.tech$counts)
-colnames(dge.tech$counts) <- dge.tech$samples$NPID
-
-dge.tech$samples$TYPE <- as.factor(dge.tech$samples$TYPE)
-group_colors <- c(control_color, 
-                  AD_color, 
-                  PA_color, 
-                  LBD_color)[dge.tech$samples$TYPE]
-
-
-lcpm <- edgeR::cpm(dge.tech$counts, log = TRUE)
-```
-
-# Raw MDS
-```{r}
-par(bg = 'white')
-
-# plot MDS
-plotMDS(
-  lcpm,
-  top = 500, 
-  labels = dge.tech$samples$Sex,
-  cex = .8, 
-  dim.plot = c(1,2), 
-  plot = TRUE, 
-  col = group_colors,
-  gene.selection = "common"
-)
-title(expression('Top 500 Genes (Log'[2]~'CPM)'))
-
-path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_gene_MDS_label_sex_dim1&2")
-saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
-
-# plot MDS
-plotMDS(
-  lcpm,
-  top = 500, 
-  labels = dge.tech$samples$Sex,
-  cex = .8, 
-  dim.plot = c(2,3), 
-  plot = TRUE, 
-  col = group_colors,
-  gene.selection = "common"
-)
-title(expression('Top 500 Genes (Log'[2]~'CPM)'))
-path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_gene_MDS_label_sex_dim2&3")
-saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
-```
-
-# Filter lowly expressed genes
+# Filtering and RIN check
 The filterByExpr() function in the edgeR package determines which genes have a 
 great enough count value to keep.  We will filter by group.  This means at least 
 6 samples (6 is the smallest group sample size) must express a minimum count of 
 10 (in cpm, default value).
+```{r}
+# first filter by expression and normalize the data
+keep.expr <- filterByExpr(dge, group = dge$samples$TYPE)
+dim(dge)
+dge.filtered <- dge[keep.expr, , keep.lib.sizes = FALSE]
 
-```{r filter}
-keep.expr <- filterByExpr(dge.tech, group = dge.tech$samples$TYPE)
-dim(dge.tech)
-dge.filtered <- dge.tech[keep.expr, , keep.lib.sizes = FALSE]
-help(filterByExpr)
 dim(dge.filtered)
 table(dge.filtered$genes$gene_type)
-```
 
-# TMM normalization
-```{r TMM_normalize}
 # Now, normalization by the method of trimmed mean of M-values (TMM)
 dge.filtered.norm <- calcNormFactors(dge.filtered, method = "TMM")
 
 # norm factor summary
 summary(dge.filtered.norm$samples$norm.factors)
-```
+log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = T)
+nsamples <- ncol(dge.filtered.norm)
+# Create a vector named "new_order" containing the desired order
+boxplot(log2cpm.norm, 
+        main="Filtered normalized lcpm data", 
+        xlab="RIN", 
+        ylab=expression('Counts per gene (Log'[2]~'CPM)'),
+        axes=FALSE)
+axis(2)
+axis(1,at=1:nsamples,labels=(dge.filtered.norm$samples$RIN),las=2,cex.axis=0.8)
 
-# Density plot
-Density plots of log-intensity distribution of each library can be superposed 
-on a single graph for a better comparison between libraries and for 
-identification of libraries with weird distribution. 
-```{r density_plots}
-# set graphical parameter
-par(mfrow = c(1,3))
-
-# Normalize data for library size and expression intesntiy
-log2cpm.tech <- edgeR::cpm(dge.tech, log = TRUE)
-log2cpm.filtered <- edgeR::cpm(dge.filtered, log = TRUE)
-log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
-
-# set colors
-colors <- c("red","orange","green","yellow","blue","purple", 
-            "lightgray","brown","pink","cyan")
-nsamples <- ncol(dge.tech)
-
-# First, plot the first column of the log2cpm.tech density
-plot(density(log2cpm.tech[,1]), col = colors[1], lwd = 2, ylim = c(0,0.45), 
-     las = 2, main = "A. Raw", xlab = expression('Log'[2]~CPM))
-
-# For each sample plot the lcpm density
-for (i in 2:nsamples){
-  den <- density(log2cpm.tech[,i]) #subset each column
-  lines(den$x, den$y, col = colors[i], lwd = 2) 
-}
-
-# Second, plot log2cpm.filtered
-plot(density(log2cpm.filtered[,1]), col = colors[1], lwd = 2, ylim = c(0,0.45), 
-     las = 2, main = "B. Filtered", xlab = expression('Log'[2]~CPM))
-abline(v = edgeR::cpm(3, log = TRUE), lty = 3)
-for (i in 2:nsamples) {
-  den <- density(log2cpm.filtered[,i])
-  lines(den$x, den$y, col = colors[i], lwd = 2)
-}
-
-# Third, plot log2cpm.norm
-plot(density(log2cpm.norm[,1]), col = colors[1], lwd = 2, ylim = c(0,0.45), 
-     las = 2, main = "C. Normalized", xlab = expression('Log'[2]~CPM))
-abline(v = edgeR::cpm(3, log = TRUE), lty = 3)
-for (i in 2:nsamples) {
-  den <- density(log2cpm.norm[,i])
-  lines(den$x, den$y, col = colors[i], lwd = 2)
-}
-
-# save
-path <- paste0("../../results/", tool, "/density/LBD_gene_density")
-saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+path <- paste0("../../results/",directory, tool, "/library/boxplot_RIN")
+saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
 ```
 
 # RIN check with replicates summed
@@ -436,92 +299,305 @@ ggscatter(box, x = "RIN", y = "lib.size",
           cor.coef = TRUE, cor.method = "pearson",
           ylab = "library size", xlab = "RIN value") 
 
-path <- paste0("../../results/", tool, "/library/LBD_corr_RIN_lib_size")
+path <- paste0("../../results/", directory, tool, "/library/LBD_corr_RIN_lib_size")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 6)
 ```
+```{r}
+metadata_continuous <-
+  data.frame(
+    dge.filtered.norm$samples$RIN,
+    dge.filtered.norm$samples$norm.factors,
+    dge.filtered.norm$samples$lib.size
+  )
+
+lib_info <- dge.filtered.norm$samples
+column_variables <- c("RIN", "norm.factors", "lib.size")
+my_comparisons <-
+  list(
+    c("CONTROL", "AD"),
+    c("CONTROL", "PA"),
+    c("CONTROL", "LBD"),
+    c("AD", "PA"),
+    c("AD", "LBD"),
+    c("PA", "LBD")
+  )
+
+violin_plot_fun <- function(i, j) {
+  ggplot(dge.filtered.norm$samples, aes(group, i)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1) +
+    geom_jitter(shape = 16, position = position_jitter(0.2)) +
+    theme_bw() +
+    ggtitle(j) +
+    xlab("All samples") +
+    ylab(j) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
+violin_plots
+
+plotnames = imap(
+  violin_plots,
+  ~ paste0(
+    "../../results/",
+    directory,
+    tool,
+    "/variance/All_samples_",
+    .y,
+    ".pdf"
+  )
+) %>%
+  flatten()
+plotnames
+walk2(plotnames,
+      violin_plots,
+      ~ ggsave(
+        filename = .x,
+        plot = .y,
+        height = 4,
+        width = 5.5
+      ))
+
+
+violin_plot_fun <- function(i, j) {
+  ggplot(dge.filtered.norm$samples,
+         aes(TYPE, i, fill = dge.filtered.norm$samples$TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1) +
+    geom_jitter(shape = 16, position = position_jitter(0.2)) +
+    theme_bw() +
+    ggtitle(j) +
+    xlab("Disease group") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons) +
+    scale_fill_manual(values = TypeColors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
+violin_plots
+
+plotnames = imap(
+  violin_plots,
+  ~ paste0(
+    "../../results/",
+    directory,
+    tool,
+    "/variance/By_TYPE_",
+    .y,
+    ".pdf"
+  )
+) %>%
+  flatten()
+plotnames
+walk2(plotnames,
+      violin_plots,
+      ~ ggsave(
+        filename = .x,
+        plot = .y,
+        height = 4,
+        width = 5.5
+      ))
+
+outliers <- boxplot(dge.filtered.norm$samples$lib.size,plot=FALSE)$out
+outliers_NPID <- dge.filtered.norm$samples[dge.filtered.norm$samples$lib.size %in% outliers,]
+```
+
+# Raw MDS
+```{r}
+par(bg = 'white')
+
+# plot MDS
+plotMDS(
+  lcpm,
+  top = 100, 
+  labels = dge.filtered.norm$samples$sex_inferred,
+  cex = .8, 
+  dim.plot = c(1,2), 
+  plot = TRUE, 
+  col = sex_colors,
+  gene.selection = "common"
+)
+title(expression('Top 100 Genes (Log'[2]~'CPM)'))
+
+path <- paste0("../../results/",directory, tool, "/MDS/", 
+               condition,"_gene_MDS_label_sex_dim1&2")
+saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
+```
+
+
+```{r TMM_normalize}
+# norm factor summary
+summary(dge.filtered.norm$samples$norm.factors)
+```
+
+# Density plot
+Density plots of log-intensity distribution of each library can be superposed 
+on a single graph for a better comparison between libraries and for 
+identification of libraries with weird distribution. 
+```{r density_plots}
+# set graphical parameter
+par(mfrow = c(1,3))
+
+# Normalize data for library size and expression intesntiy
+log2cpm.tech <- edgeR::cpm(dge, log = TRUE)
+log2cpm.filtered <- edgeR::cpm(dge.filtered, log = TRUE)
+log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
+
+# set colors
+colors <- colorbindColors
+nsamples <- ncol(dge)
+
+# First, plot the first column of the log2cpm.tech density
+plot(density(log2cpm.tech[,1]), col = colors[1], lwd = 2, ylim = c(0,0.4), 
+     las = 2, main = "A. Raw", xlab = expression('Log'[2]~CPM))
+
+# For each sample plot the lcpm density
+for (i in 2:nsamples){
+  den <- density(log2cpm.tech[,i]) #subset each column
+  lines(den$x, den$y, col = colors[i], lwd = 2) 
+}
+
+# Second, plot log2cpm.filtered
+plot(density(log2cpm.filtered[,1]), col = colors[1], lwd = 2, ylim = c(0,0.4), 
+     las = 2, main = "B. Filtered", xlab = expression('Log'[2]~CPM))
+abline(v = edgeR::cpm(3, log = TRUE), lty = 3)
+for (i in 2:nsamples) {
+  den <- density(log2cpm.filtered[,i])
+  lines(den$x, den$y, col = colors[i], lwd = 2)
+}
+
+# Third, plot log2cpm.norm
+plot(density(log2cpm.norm[,1]), col = colors[1], lwd = 2, ylim = c(0,0.4), 
+     las = 2, main = "C. Normalized", xlab = expression('Log'[2]~CPM))
+abline(v = edgeR::cpm(3, log = TRUE), lty = 3)
+for (i in 2:nsamples) {
+  den <- density(log2cpm.norm[,i])
+  lines(den$x, den$y, col = colors[i], lwd = 2)
+}
+
+# save
+path <- paste0("../../results/", directory, tool, "/library/LBD_gene_density")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+```
+
 
 ```{r}
 remove(box,
        res)
 ```
 
-# Sex check with summed replicates 
-
-# Variance partition
-CCA Heatmap
-```{r CCA_heatmap}
-#form <- ~ TYPE + Age + Sex + ClinicalDx +lib.size + LBD.type +CDLB
-form <- ~ TYPE + PathDx + AD.subtype + LBD.type + CDLB + Braak.NFT + Thal.amyloid + MF.SP + MF.NFT + MF.LB + Cing.LB + MF.Amyloid + MF.Tau + Cing.Synuclein + CWOW.Category + VaD  + TDP.type + Brain.wt + ClinicalDx + FHx + Duration + Sex + Age + Race + PMI + APOE + MAPT + GRN + TMEM106b + RIN + Total.RNA.ng 
-# Compute Canonical Correlation Analysis (CCA)
-# between all pairs of variables
-# returns absolute correlation value
-info <- as.data.frame(dge.filtered.norm$samples)
-C = canCorPairs( form, info)
-
-# replace NA with zero
-C[is.na(C)] = 0
-cor.mtest <- function(C, ...) {
-    C <- as.matrix(C)
-    n <- ncol(C)
-    p.mat<- matrix(NA, n, n)
-    diag(p.mat) <- 0
-    for (i in 1:(n - 1)) {
-        for (j in (i + 1):n) {
-            tmp <- cor.test(C[, i], C[, j], ...)
-            p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
-        }
-    }
-  colnames(p.mat) <- rownames(p.mat) <- colnames(C)
-  p.mat
-}
-# matrix of the p-value of the correlation
-p.mat <- cor.mtest(C)
-col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
-  corrplot(C, method="color", col=col(200),  
-         type="upper", order="hclust", 
-         addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black", tl.srt=45, #Text label color and rotation
-         diag=FALSE 
-         )
-
-path <- paste0("../../results/", tool ,"/varpart/LBD_gene_CCA")
-saveToPDF(paste0(path, ".pdf"), width = 25, height = 25)
-```
-
 ```{r}
-remove(C, 
-       info,
-       p.mat,
+remove(
        dge, 
-       dge.tech,
        dge.filtered,
-       dge.filtered.reps,
-       dge.filtered.reps.norm,
        lcpm,
        log2cpm.filtered,
        log2cpm.norm,
-       log2cpm.norm.reps,
        log2cpm.tech)
 ```
 
 # Save R object
 ```{r}
-saveRDS(dge.filtered.norm, file = paste0("../../rObjects/LBD_dge.filtered.norm.rds"))
-dge.filtered.norm <- readRDS(paste0("../../rObjects/LBD_dge.filtered.norm.rds"))
+saveRDS(dge.filtered.norm, file = paste0("../../rObjects/", directory, "dge.filtered.norm.rds"))
+dge.filtered.norm <- readRDS(paste0("../../rObjects/", directory, "dge.filtered.norm.rds"))
+```
+# Variance Parition
+```{r}
+
+#keepLBD <- dge.filtered.norm$samples$TYPE == "LBD"
+#LBD_dge <- dge.filtered.norm[,keepLBD,keep.lib.sizes = FALSE]
+#dim(LBD_dge)
+
+counts <- dge.filtered.norm$counts
+info <- dge.filtered.norm$samples$CWOW.Category
+genes <- dge.filtered.norm$genes
+
+formula <- ~ Age + (1|TYPE) + (1|APOE) + (1|sex_inferred)
+
+# fit regression model for the first gene
+form_test <- counts[1,] ~ Age + (1|APOE) + (1|TYPE) + (1|sex_inferred) + VaD +MF.NFT + MF.Amyloid + MF.SP + MF.Tau + (1|MF.LB) + Brain.wt + RIN + PMI + (1|AD.subtype) + (1|PathDx)+ (1|LBD.type) + lib.size + norm.factors + (1|Race)
+
+form_test <- counts[1,] ~ Age + RIN + PMI + Brain.wt + (1|TYPE) + (1|sex_inferred) + (1|CWOW.Category)
+  
+  #(1|APOE) + (1|TYPE) + (1|sex_inferred) + VaD +MF.NFT + MF.Amyloid + MF.SP + MF.Tau + (1|MF.LB) + Brain.wt + RIN + PMI + (1|AD.subtype) + (1|PathDx)+ (1|LBD.type) + lib.size + norm.factors + (1|Race)
+
+#form <- ~ TYPE + PathDx + AD.subtype + LBD.type + CDLB + Braak.NFT + Thal.amyloid + MF.SP + MF.NFT + MF.LB + Cing.LB + MF.Amyloid + MF.Tau + Cing.Synuclein + CWOW.Category + VaD  + TDP.type + Brain.wt + ClinicalDx + FHx + Duration + Sex + Age + Race + PMI + APOE + MAPT + GRN + TMEM106b + RIN + Total.RNA.ng 
+
+fit <- lmer(form_test, info, REML=FALSE )
+fit <- lmer(form_test, info, REML=FALSE )
+
+# extract variance statistics
+# Compute fraction of variation attributable to each variable in regression model. Also interpretable as the intra-class correlation after correcting for all other variables in the model.
+calcVarPart(fit)
+
+varPart <- fitExtractVarPartModel( counts, formula, info )
+vp <- sortCols( varPart )
+plotPercentBars( vp[1:10,] )
+plotVarPart( vp )
+head(varPart)
+head(varPart$Individual)
+
+```
+
+```{r}
+#--------------
+library('variancePartition')
+data(varPartData)
+form <- ~ Age + (1|Individual) + (1|Tissue) + (1|Batch)
+varPart <- fitExtractVarPartModel( geneExpr, form, info )
+vp <- sortCols( varPart )
+plotPercentBars( vp[1:10,] )
+plotVarPart( vp )
+head(varPart)
+head(varPart$Individual)
+
+
+i <- which.max( varPart$Tissue )
+GE <- data.frame( Expression = geneExpr[i,], Tissue = info$Tissue)
+# Figure 2a
+# plot expression stratified by Tissue
+plotStratify( Expression ~ Tissue, GE, main=rownames(geneExpr)[i]) #
+# get gene with the highest variation across Individuals
+# create data.frame with expression of gene i and Tissue
+# type for each sample
+i <- which.max( varPart$Individual )
+GE <- data.frame( Expression = geneExpr[i,],
+        Individual = info$Individual)
+# Figure 2b
+# plot expression stratified by Tissue
+label <- paste("Individual:", format(varPart$Individual[i]*100,
+        digits=3), "%")
+main <- rownames(geneExpr)[i]
+plotStratify(  Expression ~ Individual, GE, colorBy=NULL,
+        text=label, main=main)
+
+library('lme4')
+# fit regression model for the first gene
+form_test <- geneExpr[1,] ~ Age + (1|Individual) + (1|Tissue)
+fit <- lmer(form_test, info, REML=FALSE )
+# extract variance statistics
+# Compute fraction of variation attributable to each variable in regression model. Also interpretable as the intra-class correlation after correcting for all other variables in the model.
+calcVarPart(fit)
+help(calcVarPart)
 ```
 
 # Design matrix
 ```{r design_matrix}
 age <- as.numeric(dge.filtered.norm$samples$Age)
+dge.filtered.norm$samples$RIN[is.na(dge.filtered.norm$samples$RIN)] <- 1
 RIN <- as.numeric(dge.filtered.norm$samples$RIN)
+dge.filtered.norm$samples$VaD[is.na(dge.filtered.norm$samples$VaD)] <- 0
+VaD <- as.factor(dge.filtered.norm$samples$VaD)
 
-sex <- as.factor(dge.filtered.norm$samples$Sex)
+sex <- as.factor(dge.filtered.norm$samples$sex_inferred)
 race <- as.factor(dge.filtered.norm$samples$Race)
 
 group <- as.factor(dge.filtered.norm$samples$TYPE)
 
-design <- model.matrix(~ 0 + group + sex + (1|RIN))
-colnames(design) <- c(control,AD, PA, LBD, "sex", "RIN")
+design <- model.matrix(~ 0 + group+ sex + RIN)
+colnames(design) <- c(CONTROL, AD, PA, LBD, "sex", "RIN")
 ```
 
 # Voom
@@ -567,7 +643,7 @@ dim1_10 <- data.frame(pca_exp$x[, 1:10])
 # Adding metadata
 pcaWithMetadata <- merge(dim1_10, dge.filtered.norm$samples, by = 0, all = TRUE)
 pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE,
-                                 levels = c(control, AD, PA, LBD, NA))
+                                 levels = c(CONTROL, AD, PA, LBD, NA))
 # Plotting
 ggplot(data = pcaWithMetadata, aes(
   x = PC1,
@@ -601,7 +677,8 @@ ggplot(data = pcaWithMetadata, aes(
 ```{r}
 # fits linear model for each gene given a series of arrays
 fit <- lmFit(v, design)
-
+coef.fit <- fit$coefficients
+head(coef.fit)
 # contrast design for differential expression
 contrasts <- makeContrasts(
   LBDvsControl = LBD - CONTROL,
@@ -658,8 +735,8 @@ saveToPDF(paste0(path, ".pdf"), width = 5, height = 5)
 ```
 
 ```{r save_EList}
-saveRDS(v, file = paste0("../../rObjects/LBD_gene_voom.rds"))
-v <- readRDS(paste0("../../rObjects/LBD_gene_voom.rds"))
+saveRDS(v, file = paste0("../../rObjects/", directory,"gene_voom.rds"))
+saveRDS(voomCountsMatrix, file = paste0("../../rObjects/", directory,"voomCountsMatrix.rds"))
 ```
 
 # Number of DEGs
@@ -712,9 +789,9 @@ vTopTableAll <-
     )
   )
     saveRDS(vTopTableAll, file = 
-            paste0("../../rObjects/", 
+            paste0("../../rObjects/", directory, 
                    i,"_LBD_gene_table.rds"))
-  path <- paste0("../../results/", tool, "/DEGs/",
+  path <- paste0("../../results/", directory, tool, "/DEGs/",
   i, "_LBD_gene_DEGs_FDRq1.00.txt", sep = "") 
   write.table(
     vTopTableAll,

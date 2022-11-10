@@ -1,0 +1,251 @@
+---
+title: "Upset Plot gene level among pairwise DEGs"
+author: "Kimberly Olney"
+date: "11/02/2022"
+output: html_document
+---
+
+# Setup
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = ".")
+```
+# Library packages
+```{r packages}
+library(UpSetR)
+library(ComplexUpset)
+library(ggplot2movies)
+```
+# Function to create tables
+```{r}
+fromList <- function (input) {
+  # Same as original fromList()...
+  elements <- unique(unlist(input))
+  data <- unlist(lapply(input, function(x) {
+      x <- as.vector(match(elements, x))
+      }))
+  data[is.na(data)] <- as.integer(0)
+  data[data != 0] <- as.integer(1)
+  data <- data.frame(matrix(data, ncol = length(input), byrow = F))
+  data <- data[which(rowSums(data) != 0), ]
+  names(data) <- names(input)
+  # ... Except now it conserves your original value names!
+  row.names(data) <- elements
+  return(data)
+  }
+```
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+condition <- c("All_samples")
+tool <- "star"
+# save contrast names
+allComparisons <- c("LBDvsControl", 
+                    "LBDvsAD", 
+                    "LBDvsPA", 
+                    "ADvsControl", 
+                    "PAvsControl", 
+                    "ADvsPA")
+allComparisons # check
+```
+# Read in DEGs
+Read table with all genes (FDRq = 1).
+```{r read_DEG_table}
+coef <- 1
+
+for (i in allComparisons) {
+  filepath <- paste0(
+    "../../results/",
+    tool,
+    "/DEGs/",
+    i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(i,
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+  # increment
+  coef <- coef + 1
+}
+```
+
+# Subset lists
+```{r}
+LBDvsControl_up <- subset(LBDvsControl, LBDvsControl$logFC > 0 & LBDvsControl$adj.P.Val <= 0.05)
+LBDvsControl_down <- subset(LBDvsControl, LBDvsControl$logFC < 0 & LBDvsControl$adj.P.Val <= 0.05)
+
+ADvsControl_up <- subset(ADvsControl, ADvsControl$logFC > 0 & ADvsControl$adj.P.Val <= 0.05)
+ADvsControl_down <- subset(ADvsControl, ADvsControl$logFC < 0 & ADvsControl$adj.P.Val <= 0.05)
+
+PAvsControl_up <- subset(PAvsControl, PAvsControl$logFC > 0 & PAvsControl$adj.P.Val <= 0.05)
+PAvsControl_down <- subset(PAvsControl, PAvsControl$logFC < 0 & PAvsControl$adj.P.Val <= 0.05)
+
+LBDvsAD_up <- subset(LBDvsAD, LBDvsAD$logFC > 0 & LBDvsAD$adj.P.Val <= 0.05)
+LBDvsAD_down <- subset(LBDvsAD, LBDvsAD$logFC < 0 & LBDvsAD$adj.P.Val <= 0.05)
+
+LBDvsPA_up <- subset(LBDvsPA, LBDvsPA$logFC > 0 & LBDvsPA$adj.P.Val <= 0.05)
+LBDvsPA_down <- subset(LBDvsPA, LBDvsPA$logFC < 0 & LBDvsPA$adj.P.Val <= 0.05)
+```
+
+# Upset disease vs control
+```{r}
+list_input <- list("LBD down-regulated" = LBDvsControl_down$gene_name,
+                   "LBD up-regulated" = LBDvsControl_up$gene_name,
+                   "AD down-regulated" = ADvsControl_down$gene_name,
+                   "AD up-regulated" = ADvsControl_up$gene_name,
+                   "PA down-regulated" = PAvsControl_down$gene_name,
+                   "PA up-regulated" = PAvsControl_up$gene_name)
+data <- fromList(list_input)
+
+upset_gene <- upset(data, set_sizes=FALSE,
+      c('LBD down-regulated','LBD up-regulated','AD down-regulated', 'AD up-regulated', 'PA down-regulated', 'PA up-regulated'),
+  queries=list(
+    upset_query(set='LBD down-regulated', fill='blue'),
+    upset_query(set='LBD up-regulated', fill='red'),
+    upset_query(set='AD down-regulated', fill='blue'),
+    upset_query(set='AD up-regulated', fill='red'),
+    upset_query(set='PA down-regulated', fill='blue'),
+    upset_query(set='PA up-regulated', fill='red')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        bar_number_threshold=1,  # show all numbers on top of bars
+        width=0.5,   # reduce width of the bars
+      )
+      # add some space on the top of the bars
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(
+          # hide grid lines
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          # show axis lines
+          axis.line=element_line(colour='black')
+      )
+    )
+  ),
+  stripes=upset_stripes(
+    geom=geom_segment(size=12),  # make the stripes larger
+    colors=c('grey95', 'white')
+  ),
+  # to prevent connectors from getting the colorured
+  # use `fill` instead of `color`, together with `shape='circle filled'`
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=3,
+        stroke=0.45
+      )
+  ),
+  sort_sets='descending',
+  sort_intersections='descending'
+)
+upset_gene
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "LBD_AD_PA_baseline_control_star_upset_plot"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 5)
+```
+
+# Output gene lists of shared and unique
+```{r}
+# Binary table with colnames:
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "Upset_disease_vs_control_gene_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
+)
+```
+
+
+
+# Upset LBD vs other types 
+```{r}
+list_input <- list("LBDvsControl down-regulated" = LBDvsControl_down$gene_name,
+                   "LBDvsControl up-regulated" = LBDvsControl_up$gene_name,
+                   "LBDvsAD down-regulated" = LBDvsAD_down$gene_name,
+                   "LBDvsAD up-regulated" = LBDvsAD_up$gene_name,
+                   "LBDvsPA down-regulated" = LBDvsPA_down$gene_name,
+                   "LBDvsPA up-regulated" = LBDvsPA_up$gene_name)
+data <- fromList(list_input)
+
+upset_gene <- upset(data, set_sizes=FALSE,
+      c('LBDvsControl down-regulated','LBDvsControl up-regulated','LBDvsAD down-regulated', 'LBDvsAD up-regulated', 'LBDvsPA down-regulated', 'LBDvsPA up-regulated'),
+  queries=list(
+    upset_query(set='LBDvsControl down-regulated', fill='blue'),
+    upset_query(set='LBDvsControl up-regulated', fill='red'),
+    upset_query(set='LBDvsAD down-regulated', fill='blue'),
+    upset_query(set='LBDvsAD up-regulated', fill='red'),
+    upset_query(set='LBDvsPA down-regulated', fill='blue'),
+    upset_query(set='LBDvsPA up-regulated', fill='red')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        bar_number_threshold=1,  # show all numbers on top of bars
+        width=0.5,   # reduce width of the bars
+      )
+      # add some space on the top of the bars
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(
+          # hide grid lines
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          # show axis lines
+          axis.line=element_line(colour='black')
+      )
+    )
+  ),
+  stripes=upset_stripes(
+    geom=geom_segment(size=12),  # make the stripes larger
+    colors=c('grey95', 'white')
+  ),
+  # to prevent connectors from getting the colorured
+  # use `fill` instead of `color`, together with `shape='circle filled'`
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=3,
+        stroke=0.45
+      )
+  ),
+  sort_sets='descending',
+  sort_intersections='descending'
+)
+upset_gene
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "LBDvsAllOtherTypes_star_upset_plot"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 5)
+```
+
+# Output gene lists of shared and unique
+```{r}
+# Binary table with colnames:
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "Upset_LBDvsAllOtherTypes_gene_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
+)
+```

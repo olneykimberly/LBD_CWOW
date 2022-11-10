@@ -1,0 +1,107 @@
+---
+title: "gene expresssion"
+author: "Kimberly Olney"
+date: "11/7/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+```
+# XX females
+```{r read_in_objects}
+tool <- "star"
+condition <- c("XX_females")
+XX_V <- readRDS(paste0("../../rObjects/", condition,".gene_voom.rds"))
+XX_voomCountsMatrix <- readRDS(paste0("../../rObjects/", condition,".voomCountsMatrix.rds"))
+```
+
+```{r}
+# get the gene id that corresponds to the gene name 
+genes <- XX_V$genes
+info <- XX_V$targets
+goi <- subset(genes, 
+              gene_name == "TMEM108" |
+                gene_name == "SERPINA5")
+goi_gene_id <- rownames(goi)
+# subset counts 
+goi_counts <- subset(XX_voomCountsMatrix, rownames(XX_voomCountsMatrix) %in% goi_gene_id)
+goi_melt <- reshape2::melt(goi_counts)
+names(goi_melt)[names(goi_melt) == "Var2"] <- "NPID"
+names(goi_melt)[names(goi_melt) == "Var1"] <- "gene_id"
+gene_id_gene_name <- data.frame(rownames(goi), goi$gene_name)
+names(gene_id_gene_name)[names(gene_id_gene_name) == "rownames.goi."] <- "gene_id"
+names(gene_id_gene_name)[names(gene_id_gene_name) == "goi.gene_name"] <- "gene_name"
+df <- merge(gene_id_gene_name, goi_melt, by = "gene_id")
+df <- merge(df, info, by = "NPID")
+df_sub <- subset(df, TYPE == "LBD" | TYPE == "CONTROL")
+```
+# XY males
+```{r read_in_objects}
+tool <- "star"
+condition <- c("XY_males")
+XY_V <- readRDS(paste0("../../rObjects/", condition,".gene_voom.rds"))
+XY_voomCountsMatrix <- readRDS(paste0("../../rObjects/", condition,".voomCountsMatrix.rds"))
+```
+# blood & white matter marker expression among groups 
+```{r}
+# get the gene id that corresponds to the gene name 
+genes <- XY_V$genes
+info <- XY_V$targets
+goi <- subset(genes, 
+              gene_name == "TMEM108" |
+                gene_name == "SERPINA5")
+goi_gene_id <- rownames(goi)
+# subset counts 
+goi_counts <- subset(XY_voomCountsMatrix, rownames(XY_voomCountsMatrix) %in% goi_gene_id)
+goi_melt <- reshape2::melt(goi_counts)
+names(goi_melt)[names(goi_melt) == "Var2"] <- "NPID"
+names(goi_melt)[names(goi_melt) == "Var1"] <- "gene_id"
+gene_id_gene_name <- data.frame(rownames(goi), goi$gene_name)
+names(gene_id_gene_name)[names(gene_id_gene_name) == "rownames.goi."] <- "gene_id"
+names(gene_id_gene_name)[names(gene_id_gene_name) == "goi.gene_name"] <- "gene_name"
+df <- merge(gene_id_gene_name, goi_melt, by = "gene_id")
+df <- merge(df, info, by = "NPID")
+df_sub <- subset(df, TYPE == "LBD" | TYPE == "CONTROL")
+```
+
+# plot
+```{r}
+column_variables <- c("TMEM108", "SERPINA5")
+my_comparisons <-
+  list(
+    c("CONTROL", "LBD")
+  )
+TypeColors <- c("white", "gray")
+violin_plot_fun <- function(j) {
+  df_sub <- subset(df_sub, gene_name == j)
+  ggplot(df_sub, aes(TYPE, value, fill = TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.1)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("Disease group") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons, size =5) +
+    scale_fill_manual(values=TypeColors) +
+    theme(legend.position = "none") +
+      theme(axis.title.x = element_text(size = 16),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        plot.title = element_text(size = 18, colour = "orange"))
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+```
+
+```{r}
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi_markers/Type.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 5.5))
+dev.off()
+```
