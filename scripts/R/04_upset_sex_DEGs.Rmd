@@ -93,6 +93,9 @@ for (i in allComparisons) {
   # increment
   coef <- coef + 1
 }
+saveRDS(LBDvsControl_XX_females, paste0("../../rObjects/LBDvsControl_XX_females.rds"))
+saveRDS(LBDvsControl_XY_males, paste0("../../rObjects/LBDvsControl_XY_males.rds"))
+
 ```
 
 # Subset lists
@@ -294,6 +297,9 @@ write.table(
 ```
 
 ```{r}
+saveRDS(FandM_df, paste0("../../rObjects/LBDvsControl_between_sexes.rds"))
+dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition ,".dge.filtered.norm.rds"))
+
 corr_plot_adjPval_1 <- ggplot(data = FandM_df, aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
    annotate(
     "rect",
@@ -326,12 +332,12 @@ corr_plot_adjPval_1 <- ggplot(data = FandM_df, aes(x = logFC.x, y = logFC.y, tex
     ) +
   geom_point(size = 2) + 
   theme_bw() +
-  theme(plot.title = element_text(size = 30)) +
+  theme(plot.title = element_text(size = 12)) +
   theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 26),
-        axis.text.x = element_text(size = 26)) +
-  theme(axis.title.y = element_text(size = 26),
-        axis.text.y = element_text(size = 26)) +
+  theme(axis.title.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12)) +
+  theme(axis.title.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12)) +
   labs(
   title = "DEGs shared and unique between the sexes",
   x = expression(paste("XX female ", log[2](DLB/control))),

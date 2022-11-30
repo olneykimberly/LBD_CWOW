@@ -180,6 +180,9 @@ remove(pie,
        bar_sex,
        data)
 ```
+```{r}
+saveRDS(metadata, paste0("../../rObjects/metadata.rds"))
+```
 ## loop through variables
 ```{r}
 metadata_categorical <-
