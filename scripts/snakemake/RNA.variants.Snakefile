@@ -15,16 +15,17 @@ rule all:
         	expand(config["RNA_variants"]+"{sample}_bqsr_recal_XX.bam", sample = config["female_names"]), 
         	expand(config["RNA_variants"]+"{sample}_raw_XX.vcf", sample = config["female_names"]),
          	expand(config["RNA_variants"]+"{sample}_raw_snps_XX.vcf", sample = config["female_names"]),
+		expand(config["RNA_variants"]+"{sample}_raw_XX.g.vcf.gz", sample = config["female_names"]),
 
         	expand(config["RNA_variants"]+"{sample}_splitNCigar_XY.bam", sample = config["male_names"]), 	
         	expand(config["RNA_variants"]+"{sample}_XY_recal_data.table", sample = config["male_names"]),	
         	expand(config["RNA_variants"]+"{sample}_bqsr_recal_XY.bam", sample = config["male_names"]), 
         	expand(config["RNA_variants"]+"{sample}_raw_XY.vcf", sample = config["male_names"]),
-         	expand(config["RNA_variants"]+"{sample}_raw_snps_XY.vcf", sample = config["male_names"])
-	
+         	expand(config["RNA_variants"]+"{sample}_raw_snps_XY.vcf", sample = config["male_names"]),
+		expand(config["RNA_variants"]+"{sample}_raw_XY.g.vcf.gz", sample = config["male_names"])
 
 #---------------------
-# Inferring APOE variants from RNAseq data 
+# Inferring  variants from RNAseq data 
 # 	This pipeline follows the recommendations of the GATK pipeline: https://gatk.broadinstitute.org/hc/en-us/articles/360035531192-RNAseq-short-variant-discovery-SNPs-Indels-
 # 		Tutorial: https://expert.cheekyscientist.com/how-to-do-variant-calling-from-rnaseq-ngs-data/ 
 #
@@ -174,6 +175,17 @@ rule select_snps_XX:
 # -V input variant call file 
 # --select-type-to-include SNP indiciating the type of variants to select is SNPs 
 # -O the output vcf will contain only SNPs 
+#--------------------
+rule haplotype_gXX:                                                                              
+    input:
+        BAM = (config["RNA_variants"]+"{sample}_bqsr_recal_XX.bam")
+    output:                                   
+        VCF = (config["RNA_variants"]+"{sample}_raw_XX.g.vcf.gz")                                       
+    params:
+        XX_reference = (config["GRCh38.Ymasked.fa"]),                                              
+        gatk = gatk_path                                                                           
+    shell:
+        "{params.gatk} --java-options -Xmx4g HaplotypeCaller -R {params.XX_reference} -I {input.BAM} -O {output.VCF} -ERC GVCF"
 
 #---------------------
 # XY male samples: 
@@ -239,4 +251,15 @@ rule select_snps_XY:
     shell:
         "{params.gatk} SelectVariants -R {params.XY_reference} -V {input.VCF} --select-type-to-include SNP -O {output.VCF}"
 
+# gvcf
+rule haplotype_gXY:                                                                                 
+    input:
+        BAM = (config["RNA_variants"]+"{sample}_bqsr_recal_XY.bam")                                
+    output:                                  
+        VCF = (config["RNA_variants"]+"{sample}_raw_XY.g.vcf.gz")                                       
+    params:
+        XY_reference = (config["GRCh38.YPARs_masked.fa"]),                                         
+        gatk = gatk_path                                                                           
+    shell:
+        "{params.gatk} --java-options -Xmx4g HaplotypeCaller -R {params.XY_reference} -I {input.BAM} -O {output.VCF} -ERC GVCF"
 #-----------------------
