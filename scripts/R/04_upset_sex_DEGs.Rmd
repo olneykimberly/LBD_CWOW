@@ -1,7 +1,7 @@
 ---
-title: "Upset Plot gene level among pairwise DEGs"
+title: "Upsetgene level among pairwise DEGs"
 author: "Kimberly Olney"
-date: "11/02/2022"
+date: "12/15/2022"
 output: html_document
 ---
 
@@ -50,9 +50,30 @@ allComparisons # check
 # Read in DEGs
 Read table with all genes (FDRq = 1).
 ```{r read_DEG_table}
+# sex as a covariate
+coef <- 1
+for (i in allComparisons) {
+  filepath <- paste0(
+    "../../results/",
+    tool,
+    "/DEGs/",
+    i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(paste0(i),
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+  # increment
+  coef <- coef + 1
+}
+
+# XX females only 
 coef <- 1
 condition <- c("XX_females")
-
 for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
@@ -72,9 +93,9 @@ for (i in allComparisons) {
   coef <- coef + 1
 }
 
+# XY males only 
 coef <- 1
 condition <- c("XY_males")
-
 for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
@@ -96,19 +117,42 @@ for (i in allComparisons) {
 saveRDS(LBDvsControl_XX_females, paste0("../../rObjects/LBDvsControl_XX_females.rds"))
 saveRDS(LBDvsControl_XY_males, paste0("../../rObjects/LBDvsControl_XY_males.rds"))
 
+saveRDS(ADvsControl_XX_females, paste0("../../rObjects/ADvsControl_XX_females.rds"))
+saveRDS(ADvsControl_XY_males, paste0("../../rObjects/ADvsControl_XY_males.rds"))
+
+saveRDS(PAvsControl_XX_females, paste0("../../rObjects/PAvsControl_XX_females.rds"))
+saveRDS(PAvsControl_XY_males, paste0("../../rObjects/PAvsControl_XY_males.rds"))
 ```
 
-# Subset lists
+# DEGs by FDRq <= 0.05
 ```{r}
+# sex as a covariate
+LBDvsControl_up <- subset(LBDvsControl, logFC > 0 & adj.P.Val <= 0.05)
+LBDvsControl_down <- subset(LBDvsControl, logFC < 0 & adj.P.Val <= 0.05)
+ADvsControl_up <- subset(ADvsControl, logFC > 0 & adj.P.Val <= 0.05)
+ADvsControl_down <- subset(ADvsControl, logFC < 0 & adj.P.Val <= 0.05)
+PAvsControl_up <- subset(PAvsControl, logFC > 0 & adj.P.Val <= 0.05)
+PAvsControl_down <- subset(PAvsControl, logFC < 0 & adj.P.Val <= 0.05)
+
+# XX females
 LBDvsControl_XX_females_up <- subset(LBDvsControl_XX_females, logFC > 0 & adj.P.Val <= 0.05)
 LBDvsControl_XX_females_down <- subset(LBDvsControl_XX_females, logFC < 0 & adj.P.Val <= 0.05)
+ADvsControl_XX_females_up <- subset(ADvsControl_XX_females, logFC > 0 & adj.P.Val <= 0.05)
+ADvsControl_XX_females_down <- subset(ADvsControl_XX_females, logFC < 0 & adj.P.Val <= 0.05)
+PAvsControl_XX_females_up <- subset(PAvsControl_XX_females, logFC > 0 & adj.P.Val <= 0.05)
+PAvsControl_XX_females_down <- subset(PAvsControl_XX_females, logFC < 0 & adj.P.Val <= 0.05)
 
-
+# XY males
 LBDvsControl_XY_males_up <- subset(LBDvsControl_XY_males, logFC > 0 & adj.P.Val <= 0.05)
 LBDvsControl_XY_males_down <- subset(LBDvsControl_XY_males, logFC < 0 & adj.P.Val <= 0.05)
+ADvsControl_XY_males_up <- subset(ADvsControl_XY_males, logFC > 0 & adj.P.Val <= 0.05)
+ADvsControl_XY_males_down <- subset(ADvsControl_XY_males, logFC < 0 & adj.P.Val <= 0.05)
+PAvsControl_XY_males_up <- subset(PAvsControl_XY_males, logFC > 0 & adj.P.Val <= 0.05)
+PAvsControl_XY_males_down <- subset(PAvsControl_XY_males, logFC < 0 & adj.P.Val <= 0.05)
 ```
 
-# Upset LBD vs Control
+# Upset of DEGs
+### LBD vs Control bt the sexes 
 ```{r}
 list_input <- list("female down-regulated" = LBDvsControl_XX_females_down$gene_name,
                    "female up-regulated" = LBDvsControl_XX_females_up$gene_name,
@@ -122,21 +166,20 @@ upset_gene <- upset(data, set_sizes = FALSE,
         'female up-regulated',
         'male up-regulated'),
       themes=upset_modify_themes(
-        list('intersections_matrix'=theme(text=element_text(size=25),
-                                          plot.margin = margin(0, 0, 0, 0, "cm")),
-          'overall_sizes' = theme(axis.text.x = element_text(size =25), 
-                                  plot.margin = margin(0, 0, 0, 0, "cm")))),
-
+        list('intersections_matrix'=theme(text=element_text(size=10),
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+               plot.margin = margin(0, 0, 0, 0, "cm")))),
   queries=list(
     upset_query(set='female down-regulated', fill='blue'),
     upset_query(set='male down-regulated', fill='blue'),
     upset_query(set='female up-regulated', fill='red'),
     upset_query(set='male up-regulated', fill='red'),
     upset_query(intersect = c('female down-regulated','male down-regulated'), 
-                color='blue',fill='blue', only_components = 
+               fill='blue', only_components = 
                   c('intersections_matrix', 'Intersection size')),
     upset_query(intersect = c('female up-regulated','male up-regulated'), 
-                color='red',fill='red', only_components = 
+                fill='red', only_components = 
                   c('intersections_matrix', 'Intersection size'))
   ),
   intersections = list(c('female down-regulated', 'male down-regulated'), 
@@ -151,17 +194,17 @@ upset_gene <- upset(data, set_sizes = FALSE,
   base_annotations=list(
     'Intersection size'=(
         intersection_size(
-        size=1,
-        text = list(size = 7),
+        size=2,
+        text = list(size = 3),
         text_mapping = aes(),
-        bar_number_threshold=1,  # show all numbers on top of bars
+        bar_number_threshold=3,  # show all numbers on top of bars
         width=0.3,   # reduce width of the bars
         mapping=aes(fill='bars_color')
       )
       + scale_fill_manual(values=c('grey'), guide='none')
-      + scale_y_continuous(expand=expansion(mult=c(0, 0.1)))
-      + theme(axis.text.y = element_text(size = 25),
-              axis.title.y = element_text(size = 25),
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
           panel.grid.major=element_blank(),
           panel.grid.minor=element_blank(),
           plot.margin = margin(0, 0, 0, 0, "cm"), 
@@ -169,29 +212,20 @@ upset_gene <- upset(data, set_sizes = FALSE,
   matrix=intersection_matrix(
       geom=geom_point(
         shape='circle filled',
-        size=5,
+        size=2,
         stroke=0.45)) +
-        theme(axis.text.y = element_text(size = 25),
-              axis.title.y = element_text(size = 25), 
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
               plot.margin = margin(0, 0, 0, 0, "cm")),
     sort_sets=FALSE,
   sort_intersections=FALSE)
 upset_gene
-```
-```{r}
-upset_gene
-path <-
-  paste0(
-    "../../results/",
-    tool,
-    "/upset/",
-    "LBDvsControl_bt_sexes_upset_plot"
-  )
-saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
-dev.off()
-```
-# Output gene lists of shared and unique
-```{r}
+
+# save
+path <- paste0("../../results/", tool, 
+               "/upset/LBD_gene_bt_sexes_volcano_FDRq0.05")
+saveToPDF(paste0(path, ".pdf"), width = 5, height = 4)
+
 # Binary table with colnames:
 write.table(
   data,
@@ -203,56 +237,572 @@ write.table(
   quote = FALSE
 )
 ```
-# AdjPval 1.00 Find shared and unique DEGs between male and female
+### LBD vs Control with sex as a covariate 
 ```{r}
-# rename GeneName to gene_name to merge data sets and find intersections
-FandM_df <-
-  merge(LBDvsControl_XX_females, LBDvsControl_XY_males, by = "gene_name", all = T)
+list_input <- list("sex covariate down-regulated" = LBDvsControl_down$gene_name,
+                   "sex covariate up-regulated" = LBDvsControl_up$gene_name,
+                   "female down-regulated" = LBDvsControl_XX_females_down$gene_name,
+                   "female up-regulated" = LBDvsControl_XX_females_up$gene_name,
+                   "male down-regulated" = LBDvsControl_XY_males_down$gene_name,
+                   "male up-regulated" = LBDvsControl_XY_males_up$gene_name)
+data <- fromList(list_input)
 
-shared_gene_name <-
-  intersect(LBDvsControl_XX_females$gene_name,
-            LBDvsControl_XY_males$gene_name)
-uniqueToFemale <-
-  setdiff(LBDvsControl_XX_females$gene_name,
-          LBDvsControl_XY_males$gene_name)
-df <- subset(LBDvsControl_XX_females, gene_name %in% uniqueToFemale)
-table(df$seqnames)
-uniqueToMale <-
-  setdiff(LBDvsControl_XY_males$gene_name,
-          LBDvsControl_XX_females$gene_name)
-df <- subset(LBDvsControl_XY_males, gene_name %in% uniqueToMale)
-table(df$seqnames)
-# Venn diagram to see total DEGs between mouse and pig
-x = list(females = LBDvsControl_XX_females$gene_name,
-         males = LBDvsControl_XY_males$gene_name)
-library(ggvenn)
-MandF_venn <- ggvenn(
-  x,
-  fill_color = c("orange", "olivedrab"),
-  stroke_size = 2,
-  set_name_size = 6, 
-  text_size =6, 
+upset_gene <- upset(data, set_sizes = FALSE,
+      c('sex covariate down-regulated',
+        'female down-regulated',
+        'male down-regulated',
+        'sex covariate up-regulated',
+        'female up-regulated',
+        'male up-regulated'),
+      themes=upset_modify_themes(
+        list('intersections_matrix'=theme(text=element_text(size=10),
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")))),
+  queries=list(
+    upset_query(set='sex covariate down-regulated', fill='blue'),
+    upset_query(set='female down-regulated', fill='blue'),
+    upset_query(set='male down-regulated', fill='blue'),
+    upset_query(set='sex covariate up-regulated', fill='red'),
+    upset_query(set='female up-regulated', fill='red'),
+    upset_query(set='male up-regulated', fill='red')
+  ),
+  intersections = list(c('sex covariate down-regulated','female down-regulated', 'male down-regulated'), 
+                       c('sex covariate down-regulated', 'female down-regulated'), 
+                       c('sex covariate down-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male down-regulated'), 
+                       'sex covariate down-regulated',
+                       'female down-regulated', 
+                       'male down-regulated',
+                       c('sex covariate up-regulated','female up-regulated', 'male up-regulated'), 
+                       c('sex covariate up-regulated', 'female up-regulated'), 
+                       c('sex covariate up-regulated', 'male up-regulated'), 
+                       c('female up-regulated', 'male up-regulated'), 
+                       'sex covariate up-regulated',
+                       'female up-regulated', 
+                       'male up-regulated',
+                       c('female up-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male up-regulated')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        size=2,
+        text = list(size = 3),
+        text_mapping = aes(),
+        bar_number_threshold=3,  # show all numbers on top of bars
+        width=0.3,   # reduce width of the bars
+        mapping=aes(fill='bars_color')
+      )
+      + scale_fill_manual(values=c('grey'), guide='none')
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          axis.line=element_line(colour='black')))),
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=2,
+        stroke=0.45)) +
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+    sort_sets=FALSE,
+  sort_intersections=FALSE)
+upset_gene
+
+# save
+path <- paste0("../../results/", tool, 
+               "/upset/LBD_gene_volcano_FDRq0.05")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+
+upset(data, intersect = c('sex covariate down-regulated',
+        'female down-regulated',
+        'male down-regulated',
+        'sex covariate up-regulated',
+        'female up-regulated',
+        'male up-regulated'))
+
+path <- paste0("../../results/", tool,
+               "/upset/LBD_gene_volcano_FDRq0.05_simple")
+saveToPDF(paste0(path, ".pdf"), width = 9, height = 6)
+
+# Binary table with colnames:
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "Upset_LBDvsControl_gene_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
 )
-MandF_venn
 ```
 
-## correlation plot - all
+### LBD DEGs specific to each sex 
 ```{r}
-FandM_df[is.na(FandM_df)] <- 0
-FandM_df <- subset(FandM_df, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
-FandM_df_sub <- subset(FandM_df, 
+# merge the male and female data frames 
+# this will get the logFC for the female and male only analysis
+LBD_FandM <-
+  merge(LBDvsControl_XX_females,
+        LBDvsControl_XY_males,
+        by = "gene_name",
+        all = T)
+
+# uniquely up or down in the females 
+# not DE in the male only or sex as a covariate
+LBD_uniquely_up_females <-
+  subset(data,
+    `female up-regulated` == 1 &
+    `female down-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+LBD_uniquely_down_females <-
+  subset(data,
+    `female down-regulated` == 1 &
+    `female up-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+
+# combine with LBD df to get fold change information 
+LBD_uniquely_up_females_df <-
+  subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_up_females))
+# further sort
+# up in females and not also up in males, at least less than logFC of 0.025
+LBD_uniquely_up_females_df_subset <-
+  subset(LBD_uniquely_up_females_df, logFC.x > 0.25 & logFC.y < 0.025)
+write.table(
+  LBD_uniquely_up_females_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "LBD_uniquely_up_females.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+# repeat for down regulated 
+LBD_uniquely_down_females_df <-
+  subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_down_females))
+# further sort
+LBD_uniquely_down_females_df_subset <-
+  subset(LBD_uniquely_down_females_df, logFC.x < -0.25 & logFC.y > 0.025)
+write.table(
+  LBD_uniquely_down_females_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "LBD_uniquely_down_females.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+# repeat for males
+LBD_uniquely_up_males <-
+  subset(data,
+    `male up-regulated` == 1 &
+    `female down-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `female up-regulated` == 0
+  )
+LBD_uniquely_down_males <-
+  subset(data,
+    `male down-regulated` == 1 &
+    `female up-regulated` == 0 &
+    `female down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+
+LBD_uniquely_up_males_df <-
+  subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_up_males))
+LBD_uniquely_up_males_df_subset <-
+  subset(LBD_uniquely_up_males_df, logFC.y > 0.25 & logFC.x < 0.025)
+write.table(
+  LBD_uniquely_up_males_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "LBD_uniquely_up_males.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+LBD_uniquely_down_males_df <-
+  subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_down_males))
+LBD_uniquely_down_males_df_subset <-
+  subset(LBD_uniquely_down_males_df, logFC.y < -0.25 & logFC.x > 0.025)
+write.table(
+  LBD_uniquely_down_males_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "LBD_uniquely_down_males.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+remove(data)
+```
+
+### AD vs Control bt the sexes
+```{r}
+list_input <- list("female down-regulated" = ADvsControl_XX_females_down$gene_name,
+                   "female up-regulated" = ADvsControl_XX_females_up$gene_name,
+                   "male down-regulated" = ADvsControl_XY_males_down$gene_name,
+                   "male up-regulated" = ADvsControl_XY_males_up$gene_name)
+data <- fromList(list_input)
+
+upset_gene <- upset(data, set_sizes = FALSE,
+      c('female down-regulated',
+        'male down-regulated',
+        'female up-regulated',
+        'male up-regulated'),
+      themes=upset_modify_themes(
+        list('intersections_matrix'=theme(text=element_text(size=10),
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")))),
+  queries=list(
+    upset_query(set='female down-regulated', fill='blue'),
+    upset_query(set='male down-regulated', fill='blue'),
+    upset_query(set='female up-regulated', fill='red'),
+    upset_query(set='male up-regulated', fill='red'),
+    upset_query(intersect = c('female down-regulated','male down-regulated'), 
+               fill='blue', only_components = 
+                  c('intersections_matrix', 'Intersection size')),
+    upset_query(intersect = c('female up-regulated','male up-regulated'), 
+                fill='red', only_components = 
+                  c('intersections_matrix', 'Intersection size'))
+  ),
+  intersections = list(c('female down-regulated', 'male down-regulated'), 
+                       'female down-regulated', 
+                       'male down-regulated',
+                       c('female up-regulated', 'male up-regulated'), 
+                       'female up-regulated', 
+                       'male up-regulated',
+                       c('female up-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male up-regulated')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        size=2,
+        text = list(size = 3),
+        text_mapping = aes(),
+        bar_number_threshold=3,  # show all numbers on top of bars
+        width=0.3,   # reduce width of the bars
+        mapping=aes(fill='bars_color')
+      )
+      + scale_fill_manual(values=c('grey'), guide='none')
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          axis.line=element_line(colour='black')))),
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=2,
+        stroke=0.45)) +
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+    sort_sets=FALSE,
+  sort_intersections=FALSE)
+upset_gene
+
+# save
+path <- paste0("../../results/", tool, 
+               "/upset/AD_gene_bt_sexes_volcano_FDRq0.05")
+saveToPDF(paste0(path, ".pdf"), width = 5, height = 4)
+
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "Upset_ADvsControl_bt_sexes_gene_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
+)
+```
+
+### AD vs Control with sex as a covariate
+```{r}
+list_input <- list("sex covariate down-regulated" = ADvsControl_down$gene_name,
+                   "sex covariate up-regulated" = ADvsControl_up$gene_name,
+                   "female down-regulated" = ADvsControl_XX_females_down$gene_name,
+                   "female up-regulated" = ADvsControl_XX_females_up$gene_name,
+                   "male down-regulated" = ADvsControl_XY_males_down$gene_name,
+                   "male up-regulated" = ADvsControl_XY_males_up$gene_name)
+data <- fromList(list_input)
+
+upset_gene <- upset(data, set_sizes = FALSE,
+      c('sex covariate down-regulated',
+        'female down-regulated',
+        'male down-regulated',
+        'sex covariate up-regulated',
+        'female up-regulated',
+        'male up-regulated'),
+      themes=upset_modify_themes(
+        list('intersections_matrix'=theme(text=element_text(size=10),
+                                          plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+                                  plot.margin = margin(0, 0, 0, 0, "cm")))),
+
+  queries=list(
+    upset_query(set='sex covariate down-regulated', fill='blue'),
+    upset_query(set='female down-regulated', fill='blue'),
+    upset_query(set='male down-regulated', fill='blue'),
+    upset_query(set='sex covariate up-regulated', fill='red'),
+    upset_query(set='female up-regulated', fill='red'),
+    upset_query(set='male up-regulated', fill='red')
+  ),
+  intersections = list(c('sex covariate down-regulated','female down-regulated', 'male down-regulated'), 
+                       c('sex covariate down-regulated', 'female down-regulated'), 
+                       c('sex covariate down-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male down-regulated'), 
+                       'sex covariate down-regulated',
+                       'female down-regulated', 
+                       'male down-regulated',
+                       c('sex covariate up-regulated','female up-regulated', 'male up-regulated'), 
+                       c('sex covariate up-regulated', 'female up-regulated'), 
+                       c('sex covariate up-regulated', 'male up-regulated'), 
+                       c('female up-regulated', 'male up-regulated'), 
+                       'sex covariate up-regulated',
+                       'female up-regulated', 
+                       'male up-regulated',
+                       c('female up-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male up-regulated')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        size=2,
+        text = list(size = 3),
+        text_mapping = aes(),
+        bar_number_threshold=3,  # show all numbers on top of bars
+        width=0.3,   # reduce width of the bars
+        mapping=aes(fill='bars_color')
+      )
+      + scale_fill_manual(values=c('grey'), guide='none')
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          axis.line=element_line(colour='black')))),
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=2,
+        stroke=0.45)) +
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+    sort_sets=FALSE,
+  sort_intersections=FALSE)
+upset_gene
+
+# save
+path <- paste0("../../results/", tool, "/upset/AD_gene_volcano_FDRq0.05")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+
+upset(data, intersect = c('sex covariate down-regulated',
+        'female down-regulated',
+        'male down-regulated',
+        'sex covariate up-regulated',
+        'female up-regulated',
+        'male up-regulated'))
+
+path <- paste0("../../results/", tool, "/upset/AD_gene_volcano_FDRq0.05_simple")
+saveToPDF(paste0(path, ".pdf"), width = 9, height = 6)
+
+# Binary table with colnames:
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "Upset_ADvsControl_gene_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
+)
+```
+### AD DEGs specific to each sex 
+```{r}
+# merge the male and female data frames 
+# this will get the logFC for the female and male only analysis
+AD_FandM <-
+  merge(ADvsControl_XX_females,
+        ADvsControl_XY_males,
+        by = "gene_name",
+        all = T)
+
+# uniquely up or down in the females 
+# not DE in the male only or sex as a covariate
+AD_uniquely_up_females <-
+  subset(data,
+    `female up-regulated` == 1 &
+    `female down-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+AD_uniquely_down_females <-
+  subset(data,
+    `female down-regulated` == 1 &
+    `female up-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+
+# combine with AD df to get fold change information 
+AD_uniquely_up_females_df <-
+  subset(AD_FandM, gene_name %in% rownames(AD_uniquely_up_females))
+# further sort
+# up in females and not also up in males, at least less than logFC of 0.025
+AD_uniquely_up_females_df_subset <-
+  subset(AD_uniquely_up_females_df, logFC.x > 0.25 & logFC.y < 0.025)
+write.table(
+  AD_uniquely_up_females_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "AD_uniquely_up_females.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+# repeat for down regulated 
+AD_uniquely_down_females_df <-
+  subset(AD_FandM, gene_name %in% rownames(AD_uniquely_down_females))
+# further sort
+AD_uniquely_down_females_df_subset <-
+  subset(AD_uniquely_down_females_df, logFC.x < -0.25 & logFC.y > 0.025)
+write.table(
+  AD_uniquely_down_females_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "AD_uniquely_down_females.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+# repeat for males
+AD_uniquely_up_males <-
+  subset(data,
+    `male up-regulated` == 1 &
+    `female down-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `female up-regulated` == 0
+  )
+AD_uniquely_down_males <-
+  subset(data,
+    `male down-regulated` == 1 &
+    `female up-regulated` == 0 &
+    `female down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+
+AD_uniquely_up_males_df <-
+  subset(AD_FandM, gene_name %in% rownames(AD_uniquely_up_males))
+AD_uniquely_up_males_df_subset <-
+  subset(AD_uniquely_up_males_df, logFC.y > 0.25 & logFC.x < 0.025)
+write.table(
+  AD_uniquely_up_males_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "AD_uniquely_up_males.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+AD_uniquely_down_males_df <-
+  subset(AD_FandM, gene_name %in% rownames(AD_uniquely_down_males))
+AD_uniquely_down_males_df_subset <-
+  subset(AD_uniquely_down_males_df, logFC.y < -0.25 & logFC.x > 0.025)
+write.table(
+  AD_uniquely_down_males_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "AD_uniquely_down_males.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+remove(data)
+```
+
+# Correlation plot
+### LBD vs control bt the sexes 
+```{r}
+# table formatting
+LBD_FandM[is.na(LBD_FandM)] <- 0
+LBD_FandM <- subset(LBD_FandM, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
+LBD_FandM_goi <- subset(LBD_FandM, 
                                (logFC.x < -0.25 & logFC.y < -0.5) | 
                                (logFC.x > 1 & logFC.y > 0.5) | 
                                (logFC.x > .5 & logFC.y <= 0) |
-                              (logFC.x <= 0 & logFC.y > 0.5))
+                              (logFC.x <= 0 & logFC.y > 0.25))
 
-upfemales_downmales <- subset(FandM_df, (logFC.x > 0 & logFC.y <= 0) & adj.P.Val.x <= 0.05)
-upmales_downfemales <- subset(FandM_df, (logFC.x <= 0 & logFC.y > 0) & adj.P.Val.y <= 0.05)
-sharedup <- subset(FandM_df, logFC.x > 0 & logFC.y > 0)
-shareddown <- subset(FandM_df, logFC.x < 0 & logFC.y < 0)
+LBD_upfemales_downmales <- subset(LBD_FandM, (logFC.x > 0 & logFC.y <= 0) 
+                                  & adj.P.Val.x <= 0.05)
+LBD_upmales_downfemales <- subset(LBD_FandM, (logFC.x <= 0 & logFC.y > 0)
+                                  & adj.P.Val.y <= 0.05)
+LBD_sharedup <- subset(LBD_FandM, logFC.x > 0 & logFC.y > 0)
+LBD_shareddown <- subset(LBD_FandM, logFC.x < 0 & logFC.y < 0)
 
 write.table(
-  upfemales_downmales,
+  LBD_upfemales_downmales,
   paste0("../../results/",
   tool,
   "/correlation/", 
@@ -263,7 +813,7 @@ write.table(
 )
 
 write.table(
-  upmales_downfemales,
+  LBD_upmales_downfemales,
   paste0("../../results/",
   tool,
   "/correlation/", 
@@ -274,7 +824,7 @@ write.table(
 )
 
 write.table(
-  sharedup,
+  LBD_sharedup,
   paste0("../../results/",
   tool,
   "/correlation/", 
@@ -285,7 +835,7 @@ write.table(
 )
 
 write.table(
-  shareddown,
+  LBD_shareddown,
   paste0("../../results/",
   tool,
   "/correlation/", 
@@ -294,32 +844,29 @@ write.table(
   quote = FALSE,
   row.names = FALSE
 )
-```
 
-```{r}
-saveRDS(FandM_df, paste0("../../rObjects/LBDvsControl_between_sexes.rds"))
-dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition ,".dge.filtered.norm.rds"))
-
-corr_plot_adjPval_1 <- ggplot(data = FandM_df, aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
+# plot
+LBD_corr_plot_adjPval_1 <- ggplot(data = LBD_FandM, 
+   aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
    annotate(
     "rect",
     xmin = 0,
     xmax = 2.5,
-    ymin = 1.25,
+    ymin = 2.5,
     ymax = 0,
     fill = "lightpink3",
     alpha = .5
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -1.5,
+    xmax = -2,
     ymin = 0,
-    ymax = -1.5,
+    ymax = -2,
     fill = "cadetblue3",
     alpha = .5) +
-#  geom_abline(color = "gray40") +
+  geom_abline(color = "gray40") +
     geom_text_repel(
-    data = FandM_df_sub, 
+    data = LBD_FandM_goi, 
     aes(
     x = logFC.x, 
     y = logFC.y,
@@ -327,27 +874,28 @@ corr_plot_adjPval_1 <- ggplot(data = FandM_df, aes(x = logFC.x, y = logFC.y, tex
     ),
     color = "black",
     fontface = "italic",
-    size = 7, 
+    size = 2.5, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
     ) +
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   theme_bw() +
-  theme(plot.title = element_text(size = 12)) +
+  theme(plot.title = element_text(size = 10)) +
   theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 12),
-        axis.text.x = element_text(size = 12)) +
-  theme(axis.title.y = element_text(size = 12),
-        axis.text.y = element_text(size = 12)) +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
   labs(
   title = "DEGs shared and unique between the sexes",
-  x = expression(paste("XX female ", log[2](DLB/control))),
-  y = expression(paste("XY male ", log[2](DLB/control))))+
-  scale_y_continuous(breaks = seq(-1.5, 1.25, by = .5), limits = c(-1.5, 1.25), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-1.5, 2.25, by = .5), limits = c(-1.5, 2.5), expand = c(0,0))
-corr_plot_adjPval_1
-```
-```{r}
-corr_plot_adjPval_1
+  x = expression(paste("XX female ", log[2](LBD/control))),
+  y = expression(paste("XY male ", log[2](LBD/control))))+
+  scale_y_continuous(breaks = seq(-1.75, 2.25, by = .5), 
+                     limits = c(-2, 2.5), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2.5, by = .5), 
+                     limits = c(-2, 2.5), expand = c(0,0))
+LBD_corr_plot_adjPval_1 
+
+LBD_corr_plot_adjPval_1
 path <-
   paste0(
     "../../results/",
@@ -355,13 +903,153 @@ path <-
     "/correlation/",
     "LBDvsControl_bt_sexes"
   )
-saveToPDF(paste0(path, ".pdf"), width = 14.75, height = 13)
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(LBD_FandM, x = "logFC.x", y = "logFC.y",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+   conf.int = TRUE # Add confidence interval
+   )
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+```
+### AD vs control bt the sexes 
+```{r}
+AD_FandM[is.na(AD_FandM)] <- 0
+AD_FandM <- subset(AD_FandM, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
+AD_FandM_goi <- subset(AD_FandM, 
+                        (logFC.x < -0.25 & logFC.y < -0.5) | 
+                          (logFC.x > 1 & logFC.y > 0.5) | 
+                          (logFC.x > .5 & logFC.y <= 0) |
+                          (logFC.x <= 0 & logFC.y > 0.25))
+
+AD_upfemales_downmales <- subset(AD_FandM, (logFC.x > 0 & logFC.y <= 0) 
+                                  & adj.P.Val.x <= 0.05)
+AD_upmales_downfemales <- subset(AD_FandM, (logFC.x <= 0 & logFC.y > 0)
+                                  & adj.P.Val.y <= 0.05)
+AD_sharedup <- subset(AD_FandM, logFC.x > 0 & logFC.y > 0)
+AD_shareddown <- subset(AD_FandM, logFC.x < 0 & logFC.y < 0)
+
+write.table(
+  AD_upfemales_downmales,
+  paste0("../../results/",
+         tool,
+         "/correlation/", 
+         "ADvsControl_upF_downM.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+write.table(
+  AD_upmales_downfemales,
+  paste0("../../results/",
+         tool,
+         "/correlation/", 
+         "ADvsControl_upM_downF.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+write.table(
+  AD_sharedup,
+  paste0("../../results/",
+         tool,
+         "/correlation/", 
+         "ADvsControl_sharedUP.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+write.table(
+  AD_shareddown,
+  paste0("../../results/",
+         tool,
+         "/correlation/", 
+         "ADvsControl_sharedDOWN.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+AD_corr_plot_adjPval_1 <- ggplot(data = AD_FandM, 
+  aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 2.75,
+    ymin = 2.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -2,
+    ymin = 0,
+    ymax = -2,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = AD_FandM_goi, 
+    aes(
+      x = logFC.x, 
+      y = logFC.y,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between the sexes",
+    x = expression(paste("XX female ", log[2](AD/control))),
+    y = expression(paste("XY male ", log[2](AD/control))))+
+  scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
+                     limits = c(-2, 2.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2.75, by = .5), 
+                     limits = c(-2, 2.75), expand = c(0,0))
+AD_corr_plot_adjPval_1 
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "ADvsControl_bt_sexes"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(AD_FandM, x = "logFC.x", y = "logFC.y",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+                conf.int = TRUE # Add confidence interval
+)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
 ```
 
 
+
+
+#----- here
 ## up in females, down or not expressed in males
 ```{r}
-upfemales_downmales <- subset(FandM_df, (logFC.x >= 0 & logFC.y <= 0) & adj.P.Val.x <= 0.05)
+upfemales_downmales <- subset(LBD_FandM, (logFC.x > 0 & logFC.y <= 0) & adj.P.Val.x <= 0.05)
 color_values <- vector()
 max <- nrow(upfemales_downmales)
 
@@ -570,6 +1258,8 @@ path <-
 saveToPDF(paste0(path, ".pdf"), width = 10.45, height = 5.5)
 dev.off()
 ```
+
+
 # AD vs control
 ```{r}
 ADvsControl_XX_females_up <- subset(ADvsControl_XX_females, logFC > 0 & adj.P.Val <= 0.05)
