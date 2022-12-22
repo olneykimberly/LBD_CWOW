@@ -781,6 +781,91 @@ write.table(
 
 remove(data)
 ```
+### All pathologies comparisons
+```{r}
+list_input <- list("LBDvsControl down-regulated" = LBDvsControl_XX_females_down$gene_name,
+                   "LBDvsControl up-regulated" = LBDvsControl_XX_females_up$gene_name,
+                   "ADvsControl down-regulated" = LBDvsControl_XY_males_down$gene_name,
+                   "ADvsControl up-regulated" = LBDvsControl_XY_males_up$gene_name)
+data <- fromList(list_input)
+
+upset_gene <- upset(data, set_sizes = FALSE,
+      c('female down-regulated',
+        'male down-regulated',
+        'female up-regulated',
+        'male up-regulated'),
+      themes=upset_modify_themes(
+        list('intersections_matrix'=theme(text=element_text(size=10),
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+               plot.margin = margin(0, 0, 0, 0, "cm")))),
+  queries=list(
+    upset_query(set='female down-regulated', fill='blue'),
+    upset_query(set='male down-regulated', fill='blue'),
+    upset_query(set='female up-regulated', fill='red'),
+    upset_query(set='male up-regulated', fill='red'),
+    upset_query(intersect = c('female down-regulated','male down-regulated'), 
+               fill='blue', only_components = 
+                  c('intersections_matrix', 'Intersection size')),
+    upset_query(intersect = c('female up-regulated','male up-regulated'), 
+                fill='red', only_components = 
+                  c('intersections_matrix', 'Intersection size'))
+  ),
+  intersections = list(c('female down-regulated', 'male down-regulated'), 
+                       'female down-regulated', 
+                       'male down-regulated',
+                       c('female up-regulated', 'male up-regulated'), 
+                       'female up-regulated', 
+                       'male up-regulated',
+                       c('female up-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male up-regulated')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        size=2,
+        text = list(size = 3),
+        text_mapping = aes(),
+        bar_number_threshold=3,  # show all numbers on top of bars
+        width=0.3,   # reduce width of the bars
+        mapping=aes(fill='bars_color')
+      )
+      + scale_fill_manual(values=c('grey'), guide='none')
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          axis.line=element_line(colour='black')))),
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=2,
+        stroke=0.45)) +
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+    sort_sets=FALSE,
+  sort_intersections=FALSE)
+upset_gene
+
+# save
+path <- paste0("../../results/", tool, 
+               "/upset/LBD_gene_bt_sexes_volcano_FDRq0.05")
+saveToPDF(paste0(path, ".pdf"), width = 5, height = 4)
+
+# Binary table with colnames:
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "Upset_LBDvsControl_bt_sexes_gene_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
+)
+```
 
 # Correlation plot
 ### LBD vs control bt the sexes 
@@ -1042,8 +1127,7 @@ sp <- ggscatter(AD_FandM, x = "logFC.x", y = "logFC.y",
 # Add correlation coefficient
 sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
 ```
-#-- tESTING
-### LBD vs AD within each sex
+### LBD vs AD 
 ##### XX females
 ```{r}
 ADandLBD_XX_females <-
@@ -1056,10 +1140,10 @@ ADandLBD_XX_females <-
 ADandLBD_XX_females[is.na(ADandLBD_XX_females)] <- 0
 ADandLBD_XX_females <- subset(ADandLBD_XX_females, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
 ADandLBD_XX_females_goi <- subset(ADandLBD_XX_females, 
-                        (logFC.x < -0.25 & logFC.y < -0.5) | 
-                          (logFC.x > 1 & logFC.y > 0.5) | 
-                          (logFC.x > .5 & logFC.y <= 0) |
-                          (logFC.x <= 0 & logFC.y > 0.25))
+                        (logFC.x < -0.15 & logFC.y < -0.15) | 
+                          (logFC.x > .5 & logFC.y > 0.5) | 
+                          (logFC.x > .15 & logFC.y <= 0) |
+                          (logFC.x <= 0 & logFC.y > 0.15))
 
 ADandLBD_XX_females_upAD_downLBD <- subset(ADandLBD_XX_females, (logFC.x > 0 & logFC.y <= 0) 
                                   & adj.P.Val.x <= 0.05)
@@ -1141,7 +1225,7 @@ ADandLBD_XX_females_corr_plot <- ggplot(data = ADandLBD_XX_females,
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 40)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -1190,10 +1274,10 @@ ADandLBD_XY_males <-
 ADandLBD_XY_males[is.na(ADandLBD_XY_males)] <- 0
 ADandLBD_XY_males <- subset(ADandLBD_XY_males, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
 ADandLBD_XY_males_goi <- subset(ADandLBD_XY_males, 
-                        (logFC.x < -0.25 & logFC.y < -0.5) | 
-                          (logFC.x > 1 & logFC.y > 0.5) | 
-                          (logFC.x > .5 & logFC.y <= 0) |
-                          (logFC.x <= 0 & logFC.y > 0.25))
+                        (logFC.x < -0.15 & logFC.y < -0.15) | 
+                          (logFC.x > .5 & logFC.y > 0.5) | 
+                          (logFC.x > .15 & logFC.y <= 0) |
+                          (logFC.x <= 0 & logFC.y > 0.15))
 
 ADandLBD_XY_males_upAD_downLBD <- subset(ADandLBD_XY_males, (logFC.x > 0 & logFC.y <= 0) 
                                   & adj.P.Val.x <= 0.05)
@@ -1275,7 +1359,7 @@ ADandLBD_XY_males_corr_plot <- ggplot(data = ADandLBD_XY_males,
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 40)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -1324,10 +1408,10 @@ ADandLBD <-
 ADandLBD[is.na(ADandLBD)] <- 0
 ADandLBD <- subset(ADandLBD, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
 ADandLBD_goi <- subset(ADandLBD, 
-                        (logFC.x < -0.25 & logFC.y < -0.5) | 
-                          (logFC.x > 1 & logFC.y > 0.5) | 
-                          (logFC.x > .5 & logFC.y <= 0) |
-                          (logFC.x <= 0 & logFC.y > 0.25))
+                        (logFC.x < -0.15 & logFC.y < -0.15) | 
+                          (logFC.x > .5 & logFC.y > 0.5) | 
+                          (logFC.x > .15 & logFC.y <= 0) |
+                          (logFC.x <= 0 & logFC.y > 0.15))
 
 ADandLBD_upAD_downLBD <- subset(ADandLBD, (logFC.x > 0 & logFC.y <= 0) 
                                   & adj.P.Val.x <= 0.05)
@@ -1409,7 +1493,7 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -1463,279 +1547,3 @@ sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
 
 
 
-
-#----- here
-## up in females, down or not expressed in males
-```{r}
-upfemales_downmales <- subset(LBD_FandM, (logFC.x > 0 & logFC.y <= 0) & adj.P.Val.x <= 0.05)
-color_values <- vector()
-max <- nrow(upfemales_downmales)
-
-for(i in 1:max){
-  if (upfemales_downmales$seqnames.x[i] == "chrX"){
-      color_values <- c(color_values, 1) # 1 when logFC > 0 and FDRq < 0.05
-    }
-    else if (upfemales_downmales$seqnames.y[i] == "chrX"){
-      color_values <- c(color_values, 2) # 2 when logFC < 0 and FDRq < 0.05
-    }
-  else{
-    color_values <- c(color_values, 3) # 3 when FDRq >= 0.05
-  }
-}
-
-upfemales_downmales$color_p0.05 <- factor(color_values)
-
-X_linked <- subset(upfemales_downmales, seqnames.x == "chrX" | seqnames.y == "chrX")
-Y_linked <- subset(upfemales_downmales, seqnames.x == "chrY" | seqnames.y == "chrY")
-sub <- subset(upfemales_downmales, !(gene_name %in% c(Y_linked$gene_name, X_linked$gene_name)))
-```
-
-```{r}
-up_female_corr_plot <- ggplot(data = upfemales_downmales, aes(x = logFC.x, y = logFC.y, color = color_p0.05, shape = color_p0.05, text = paste(gene_name))) +
-     annotate(
-    "rect",
-    xmin = 0,
-    xmax = 1.25,
-    ymin = -1,
-    ymax = 0,
-    fill = "orange",
-    alpha = .2
-  ) +
-  scale_shape_manual(values = c(4, 17,19)) +
-    scale_color_manual(values = c("purple", "darkgreen", "black")) +  
-  # geom_abline(color = "gray40") +
-    geom_text_repel(
-    data = sub, 
-    aes(
-    x = logFC.x, 
-    y = logFC.y,
-    label = gene_name
-    ),
-    color = "black",
-    fontface = "italic",
-    size = 6, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
-    ) +
-  geom_text_repel(
-    data = X_linked,
-    aes(
-      x = logFC.x,
-      y = logFC.y,
-      label = gene_name
-    ),
-    color = "purple",
-    fontface = "italic",
-    size = 6,
-  #  nudge_x = .05,
-   # nudge_y = -.005,
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-  ) +
-    geom_text_repel(
-    data = Y_linked,
-    aes(
-      x = logFC.x,
-      y = logFC.y,
-      label = gene_name
-    ),
-    color = "darkgreen",
-    fontface = "italic",
-    size = 6,
-   # nudge_x = .05,
-   # nudge_y = -.005,
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-  ) +
-  geom_point(size = 2) + 
-  theme_bw() +
-  theme(plot.title = element_text(size = 30)) +
-  theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 26),
-        axis.text.x = element_text(size = 26)) +
-  theme(axis.title.y = element_text(size = 26),
-        axis.text.y = element_text(size = 26)) +
-  labs(
-  title = "",
-  x = expression(paste("female ", log[2](FC))),
-  y = expression(paste("male ", log[2](FC))))
-up_female_corr_plot
-```
-```{r}
-up_female_corr_plot
-path <-
-  paste0(
-    "../../results/",
-    tool,
-    "/correlation/",
-    "up_female_down_male_corr"
-  )
-saveToPDF(paste0(path, ".pdf"), width = 10.45, height = 5.5)
-dev.off()
-```
-## up in males, down or not expressed females
-```{r}
-upmales_downfemales <- subset(FandM_df, (logFC.x <= 0 & logFC.y >= 0) & adj.P.Val.y <= 0.05)
-color_values <- vector()
-max <- nrow(upmales_downfemales)
-
-for(i in 1:max){
-  if (upmales_downfemales$seqnames.x[i] == "chrX"){
-      color_values <- c(color_values, 1) # 1 when logFC > 0 and FDRq < 0.05
-    }
-    else if (upmales_downfemales$seqnames.y[i] == "chrY"){
-      color_values <- c(color_values, 2) # 2 when logFC < 0 and FDRq < 0.05
-    }
-  else{
-    color_values <- c(color_values, 3) # 3 when FDRq >= 0.05
-  }
-}
-
-upmales_downfemales$color_p0.05 <- factor(color_values)
-
-X_linked <- subset(upmales_downfemales, seqnames.x == "chrX" | seqnames.y == "chrX")
-Y_linked <- subset(upmales_downfemales, seqnames.x == "chrY" | seqnames.y == "chrY")
-sub <- subset(upmales_downfemales, !(gene_name %in% c(Y_linked$gene_name, X_linked$gene_name)))
-table(upmales_downfemales$seqnames.x)
-```
-
-```{r}
-up_male_corr_plot <- ggplot(data = upmales_downfemales, aes(x = logFC.x, y = logFC.y, color = color_p0.05, shape = color_p0.05, text = paste(gene_name))) +
-     annotate(
-    "rect",
-    xmin = 0,
-    xmax = -.75,
-    ymin = 0,
-    ymax = .8,
-    fill = "olivedrab",
-    alpha = .2
-  ) +
-  scale_shape_manual(values = c(4, 17,19)) +
-    scale_color_manual(values = c("purple", "darkgreen", "black")) +  
-  # geom_abline(color = "gray40") +
-    geom_text_repel(
-    data = sub, 
-    aes(
-    x = logFC.x, 
-    y = logFC.y,
-    label = gene_name
-    ),
-    color = "black",
-    fontface = "italic",
-    size = 6, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
-    ) +
-  geom_text_repel(
-    data = X_linked,
-    aes(
-      x = logFC.x,
-      y = logFC.y,
-      label = gene_name
-    ),
-    color = "purple",
-    fontface = "italic",
-    size = 6,
-  #  nudge_x = .05,
-   # nudge_y = -.005,
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-  ) +
-    geom_text_repel(
-    data = Y_linked,
-    aes(
-      x = logFC.x,
-      y = logFC.y,
-      label = gene_name
-    ),
-    color = "darkgreen",
-    fontface = "italic",
-    size = 6,
-   # nudge_x = .05,
-   # nudge_y = -.005,
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-  ) +
-  geom_point(size = 2) + 
-  theme_bw() +
-  theme(plot.title = element_text(size = 30)) +
-  theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 26),
-        axis.text.x = element_text(size = 26)) +
-  theme(axis.title.y = element_text(size = 26),
-        axis.text.y = element_text(size = 26)) +
-  labs(
-  title = "",
-  x = expression(paste("female ", log[2](FC))),
-  y = expression(paste("male ", log[2](FC))))
-up_male_corr_plot
-```
-```{r}
-up_male_corr_plot
-path <-
-  paste0(
-    "../../results/",
-    tool,
-    "/correlation/",
-    "up_male_down_female_corr"
-  )
-saveToPDF(paste0(path, ".pdf"), width = 10.45, height = 5.5)
-dev.off()
-```
-
-
-# AD vs control
-```{r}
-ADvsControl_XX_females_up <- subset(ADvsControl_XX_females, logFC > 0 & adj.P.Val <= 0.05)
-ADvsControl_XX_females_down <- subset(ADvsControl_XX_females, logFC < 0 & adj.P.Val <= 0.05)
-
-
-ADvsControl_XY_males_up <- subset(ADvsControl_XY_males, logFC > 0 & adj.P.Val <= 0.05)
-ADvsControl_XY_males_down <- subset(ADvsControl_XY_males, logFC < 0 & adj.P.Val <= 0.05)
-```
-
-# Upset disease vs control
-```{r}
-list_input <- list("female down-regulated" = ADvsControl_XX_females_down$gene_name,
-                   "female up-regulated" = ADvsControl_XX_females_up$gene_name,
-                   "male down-regulated" = ADvsControl_XY_males_down$gene_name,
-                   "male up-regulated" = ADvsControl_XY_males_up$gene_name)
-data <- fromList(list_input)
-
-upset_gene <- upset(data, set_sizes=FALSE,
-      c('female down-regulated','female up-regulated','male down-regulated', 'male up-regulated'),
-  queries=list(
-    upset_query(set='female down-regulated', fill='blue'),
-    upset_query(set='female up-regulated', fill='red'),
-    upset_query(set='male down-regulated', fill='blue'),
-    upset_query(set='male up-regulated', fill='red')
-  ),
-  base_annotations=list(
-    'Intersection size'=(
-        intersection_size(
-        bar_number_threshold=1,  # show all numbers on top of bars
-        width=0.5,   # reduce width of the bars
-      )
-      # add some space on the top of the bars
-      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
-      + theme(
-          # hide grid lines
-          panel.grid.major=element_blank(),
-          panel.grid.minor=element_blank(),
-          # show axis lines
-          axis.line=element_line(colour='black')
-      )
-    )
-  ),
-  stripes=upset_stripes(
-    geom=geom_segment(size=12),  # make the stripes larger
-    colors=c('grey95', 'white')
-  ),
-  # to prevent connectors from getting the colorured
-  # use `fill` instead of `color`, together with `shape='circle filled'`
-  matrix=intersection_matrix(
-      geom=geom_point(
-        shape='circle filled',
-        size=3,
-        stroke=0.45
-      )
-  ),
-  sort_sets='descending',
-  sort_intersections='descending'
-)
-upset_gene
-```
