@@ -1,7 +1,7 @@
 ---
 title: "Upsetgene level among pairwise DEGs"
 author: "Kimberly Olney"
-date: "12/15/2022"
+date: "12/28/2022"
 output: html_document
 ---
 
@@ -31,7 +31,12 @@ fromList <- function (input) {
   # ... Except now it conserves your original value names!
   row.names(data) <- elements
   return(data)
-  }
+}
+
+makePaddedDataFrame <- function(l, ...) {
+  maxlen <- max(sapply(l, length))
+  data.frame(lapply(l, na.pad, len = maxlen), ...)
+}
 ```
 # User defined variables
 ```{r set_variables}
@@ -223,7 +228,7 @@ upset_gene
 
 # save
 path <- paste0("../../results/", tool, 
-               "/upset/LBD_gene_bt_sexes_volcano_FDRq0.05")
+               "/upset/LBDvsControl_gene_bt_sexes_FDRq0.05")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 4)
 
 # Binary table with colnames:
@@ -232,10 +237,70 @@ write.table(
   paste0("../../results/",
   tool,
   "/upset/", 
-  "Upset_LBDvsControl_bt_sexes_gene_list_binary_results.txt"),
+  "LBDvsControl_gene_bt_sexes_list_binary_results.txt"),
   sep = "\t",
   quote = FALSE
 )
+```
+
+```{r}
+female_down_regulated <-
+  subset(
+    data,
+    `female down-regulated` == 1 &
+      `female up-regulated` == 0  &
+      `male down-regulated` == 0 &
+      `male up-regulated` == 0
+  )
+
+female_up_regulated <-
+  subset(
+    data,
+    `female down-regulated` == 0 &
+      `female up-regulated` == 1  &
+      `male down-regulated` == 0 &
+      `male up-regulated` == 0
+  )
+
+male_down_regulated <-
+  subset(
+    data,
+    `female down-regulated` == 0 &
+      `female up-regulated` == 0  &
+      `male down-regulated` == 1 &
+      `male up-regulated` == 0
+  )
+
+male_up_regulated <-
+  subset(
+    data,
+    `female down-regulated` == 0 &
+      `female up-regulated` == 0  &
+      `male down-regulated` == 0 &
+      `male up-regulated` == 1
+  )
+
+na.pad <- function(x, len) {
+  x[1:len]
+}
+
+df <-
+  makePaddedDataFrame(
+    list(
+      "female down-regulated" = row.names(female_down_regulated),
+      "female up-regulated" = row.names(female_up_regulated),
+      "male down-regulated" = row.names(male_down_regulated),
+      "male up-regulated" = row.names(male_up_regulated)
+    )
+  )
+df[is.na(df)] <- ""
+write.table(
+  df,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "LBDvsControl_gene_bt_sexes_list_gene_names.txt"
+), row.names = FALSE, quote = FALSE, sep = "\t")
 ```
 ### LBD vs Control with sex as a covariate 
 ```{r}
@@ -316,7 +381,7 @@ upset_gene
 
 # save
 path <- paste0("../../results/", tool, 
-               "/upset/LBD_gene_volcano_FDRq0.05")
+               "/upset/LBDvsControl_gene_sex_covariate_FDRq0.05")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 
 upset(data, intersect = c('sex covariate down-regulated',
@@ -327,7 +392,7 @@ upset(data, intersect = c('sex covariate down-regulated',
         'male up-regulated'))
 
 path <- paste0("../../results/", tool,
-               "/upset/LBD_gene_volcano_FDRq0.05_simple")
+               "/upset/LBDvsControl_gene_sex_covariate_FDRq0.05_simple")
 saveToPDF(paste0(path, ".pdf"), width = 9, height = 6)
 
 # Binary table with colnames:
@@ -336,7 +401,7 @@ write.table(
   paste0("../../results/",
   tool,
   "/upset/", 
-  "Upset_LBDvsControl_gene_list_binary_results.txt"),
+  "LBDvsControl_gene_sex_covariate_list_binary_results.txt"),
   sep = "\t",
   quote = FALSE
 )
@@ -351,7 +416,9 @@ LBD_FandM <-
         LBDvsControl_XY_males,
         by = "gene_name",
         all = T)
-
+# remove unnecessary columns 
+LBD_FandM <- LBD_FandM[-c(3:5,7,10,11,13:19,22,23,25)]
+colnames(LBD_FandM) = c("gene_name", "chr", "gene_id", "female_logFC", "female_AveExpr", "female_adj.P.Val", "male_logFC", "male_AveExpr", "male_adj.P.Val")
 # uniquely up or down in the females 
 # not DE in the male only or sex as a covariate
 LBD_uniquely_up_females <-
@@ -376,10 +443,11 @@ LBD_uniquely_down_females <-
 # combine with LBD df to get fold change information 
 LBD_uniquely_up_females_df <-
   subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_up_females))
+
 # further sort
 # up in females and not also up in males, at least less than logFC of 0.025
 LBD_uniquely_up_females_df_subset <-
-  subset(LBD_uniquely_up_females_df, logFC.x > 0.25 & logFC.y < 0.025)
+  subset(LBD_uniquely_up_females_df, female_logFC > 0.25 & male_logFC < 0.025)
 write.table(
   LBD_uniquely_up_females_df_subset,
   paste0(
@@ -397,7 +465,7 @@ LBD_uniquely_down_females_df <-
   subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_down_females))
 # further sort
 LBD_uniquely_down_females_df_subset <-
-  subset(LBD_uniquely_down_females_df, logFC.x < -0.25 & logFC.y > 0.025)
+  subset(LBD_uniquely_down_females_df, female_logFC < -0.25 & male_logFC > 0.025)
 write.table(
   LBD_uniquely_down_females_df_subset,
   paste0(
@@ -434,7 +502,7 @@ LBD_uniquely_down_males <-
 LBD_uniquely_up_males_df <-
   subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_up_males))
 LBD_uniquely_up_males_df_subset <-
-  subset(LBD_uniquely_up_males_df, logFC.y > 0.25 & logFC.x < 0.025)
+  subset(LBD_uniquely_up_males_df, male_logFC > 0.25 & female_logFC < 0.025)
 write.table(
   LBD_uniquely_up_males_df_subset,
   paste0(
@@ -451,7 +519,7 @@ write.table(
 LBD_uniquely_down_males_df <-
   subset(LBD_FandM, gene_name %in% rownames(LBD_uniquely_down_males))
 LBD_uniquely_down_males_df_subset <-
-  subset(LBD_uniquely_down_males_df, logFC.y < -0.25 & logFC.x > 0.025)
+  subset(LBD_uniquely_down_males_df, male_logFC < -0.25 & female_logFC > 0.025)
 write.table(
   LBD_uniquely_down_males_df_subset,
   paste0(
@@ -539,7 +607,7 @@ upset_gene
 
 # save
 path <- paste0("../../results/", tool, 
-               "/upset/AD_gene_bt_sexes_volcano_FDRq0.05")
+               "/upset/ADvsControl_gene_bt_sexes_FDRq0.05")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 4)
 
 write.table(
@@ -547,7 +615,7 @@ write.table(
   paste0("../../results/",
   tool,
   "/upset/", 
-  "Upset_ADvsControl_bt_sexes_gene_list_binary_results.txt"),
+  "ADvsControl_gene_bt_sexes_list_binary_results.txt"),
   sep = "\t",
   quote = FALSE
 )
@@ -632,7 +700,7 @@ upset_gene <- upset(data, set_sizes = FALSE,
 upset_gene
 
 # save
-path <- paste0("../../results/", tool, "/upset/AD_gene_volcano_FDRq0.05")
+path <- paste0("../../results/", tool, "/upset/ADvsControl_gene_sex_covariate_FDRq0.05")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 
 upset(data, intersect = c('sex covariate down-regulated',
@@ -642,7 +710,7 @@ upset(data, intersect = c('sex covariate down-regulated',
         'female up-regulated',
         'male up-regulated'))
 
-path <- paste0("../../results/", tool, "/upset/AD_gene_volcano_FDRq0.05_simple")
+path <- paste0("../../results/", tool, "/upset/ADvsControl_gene_sex_covariate_FDRq0.05_simple")
 saveToPDF(paste0(path, ".pdf"), width = 9, height = 6)
 
 # Binary table with colnames:
@@ -651,7 +719,7 @@ write.table(
   paste0("../../results/",
   tool,
   "/upset/", 
-  "Upset_ADvsControl_gene_list_binary_results.txt"),
+  "ADvsControl_gene_sex_covariate_list_binary_results.txt"),
   sep = "\t",
   quote = FALSE
 )
@@ -665,7 +733,9 @@ AD_FandM <-
         ADvsControl_XY_males,
         by = "gene_name",
         all = T)
-
+# remove unnecessary columns 
+AD_FandM <- AD_FandM[-c(3:5,7,10,11,13:19,22,23,25)]
+colnames(AD_FandM) = c("gene_name", "chr", "gene_id", "female_logFC", "female_AveExpr", "female_adj.P.Val", "male_logFC", "male_AveExpr", "male_adj.P.Val")
 # uniquely up or down in the females 
 # not DE in the male only or sex as a covariate
 AD_uniquely_up_females <-
@@ -690,10 +760,11 @@ AD_uniquely_down_females <-
 # combine with AD df to get fold change information 
 AD_uniquely_up_females_df <-
   subset(AD_FandM, gene_name %in% rownames(AD_uniquely_up_females))
+
 # further sort
 # up in females and not also up in males, at least less than logFC of 0.025
 AD_uniquely_up_females_df_subset <-
-  subset(AD_uniquely_up_females_df, logFC.x > 0.25 & logFC.y < 0.025)
+  subset(AD_uniquely_up_females_df, female_logFC > 0.25 & male_logFC < 0.025)
 write.table(
   AD_uniquely_up_females_df_subset,
   paste0(
@@ -711,7 +782,7 @@ AD_uniquely_down_females_df <-
   subset(AD_FandM, gene_name %in% rownames(AD_uniquely_down_females))
 # further sort
 AD_uniquely_down_females_df_subset <-
-  subset(AD_uniquely_down_females_df, logFC.x < -0.25 & logFC.y > 0.025)
+  subset(AD_uniquely_down_females_df, female_logFC < -0.25 & male_logFC > 0.025)
 write.table(
   AD_uniquely_down_females_df_subset,
   paste0(
@@ -748,7 +819,7 @@ AD_uniquely_down_males <-
 AD_uniquely_up_males_df <-
   subset(AD_FandM, gene_name %in% rownames(AD_uniquely_up_males))
 AD_uniquely_up_males_df_subset <-
-  subset(AD_uniquely_up_males_df, logFC.y > 0.25 & logFC.x < 0.025)
+  subset(AD_uniquely_up_males_df, male_logFC > 0.25 & female_logFC < 0.025)
 write.table(
   AD_uniquely_up_males_df_subset,
   paste0(
@@ -765,7 +836,7 @@ write.table(
 AD_uniquely_down_males_df <-
   subset(AD_FandM, gene_name %in% rownames(AD_uniquely_down_males))
 AD_uniquely_down_males_df_subset <-
-  subset(AD_uniquely_down_males_df, logFC.y < -0.25 & logFC.x > 0.025)
+  subset(AD_uniquely_down_males_df, male_logFC < -0.25 & female_logFC > 0.025)
 write.table(
   AD_uniquely_down_males_df_subset,
   paste0(
@@ -781,12 +852,12 @@ write.table(
 
 remove(data)
 ```
-### All pathologies comparisons
+### PA vs Control bt the sexes 
 ```{r}
-list_input <- list("LBDvsControl down-regulated" = LBDvsControl_XX_females_down$gene_name,
-                   "LBDvsControl up-regulated" = LBDvsControl_XX_females_up$gene_name,
-                   "ADvsControl down-regulated" = LBDvsControl_XY_males_down$gene_name,
-                   "ADvsControl up-regulated" = LBDvsControl_XY_males_up$gene_name)
+list_input <- list("female down-regulated" = PAvsControl_XX_females_down$gene_name,
+                   "female up-regulated" = PAvsControl_XX_females_up$gene_name,
+                   "male down-regulated" = PAvsControl_XY_males_down$gene_name,
+                   "male up-regulated" = PAvsControl_XY_males_up$gene_name)
 data <- fromList(list_input)
 
 upset_gene <- upset(data, set_sizes = FALSE,
@@ -852,7 +923,7 @@ upset_gene
 
 # save
 path <- paste0("../../results/", tool, 
-               "/upset/LBD_gene_bt_sexes_volcano_FDRq0.05")
+               "/upset/PAvsControl_gene_bt_sexes_FDRq0.05")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 4)
 
 # Binary table with colnames:
@@ -861,30 +932,265 @@ write.table(
   paste0("../../results/",
   tool,
   "/upset/", 
-  "Upset_LBDvsControl_bt_sexes_gene_list_binary_results.txt"),
+  "PAvsControl_gene_bt_sexes_list_binary_results.txt"),
   sep = "\t",
   quote = FALSE
 )
 ```
+
+### PA vs Control with sex as a covariate 
+```{r}
+list_input <- list("sex covariate down-regulated" = PAvsControl_down$gene_name,
+                   "sex covariate up-regulated" = PAvsControl_up$gene_name,
+                   "female down-regulated" = PAvsControl_XX_females_down$gene_name,
+                   "female up-regulated" = PAvsControl_XX_females_up$gene_name,
+                   "male down-regulated" = PAvsControl_XY_males_down$gene_name,
+                   "male up-regulated" = PAvsControl_XY_males_up$gene_name)
+data <- fromList(list_input)
+
+upset_gene <- upset(data, set_sizes = FALSE,
+      c('sex covariate down-regulated',
+        'female down-regulated',
+        'male down-regulated',
+        'sex covariate up-regulated',
+        'female up-regulated',
+        'male up-regulated'),
+      themes=upset_modify_themes(
+        list('intersections_matrix'=theme(text=element_text(size=10),
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")))),
+  queries=list(
+    upset_query(set='sex covariate down-regulated', fill='blue'),
+    upset_query(set='female down-regulated', fill='blue'),
+    upset_query(set='male down-regulated', fill='blue'),
+    upset_query(set='sex covariate up-regulated', fill='red'),
+    upset_query(set='female up-regulated', fill='red'),
+    upset_query(set='male up-regulated', fill='red')
+  ),
+  intersections = list(c('sex covariate down-regulated','female down-regulated', 'male down-regulated'), 
+                       c('sex covariate down-regulated', 'female down-regulated'), 
+                       c('sex covariate down-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male down-regulated'), 
+                       'sex covariate down-regulated',
+                       'female down-regulated', 
+                       'male down-regulated',
+                       c('sex covariate up-regulated','female up-regulated', 'male up-regulated'), 
+                       c('sex covariate up-regulated', 'female up-regulated'), 
+                       c('sex covariate up-regulated', 'male up-regulated'), 
+                       c('female up-regulated', 'male up-regulated'), 
+                       'sex covariate up-regulated',
+                       'female up-regulated', 
+                       'male up-regulated',
+                       c('female up-regulated', 'male down-regulated'), 
+                       c('female down-regulated', 'male up-regulated')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        size=2,
+        text = list(size = 3),
+        text_mapping = aes(),
+        bar_number_threshold=3,  # show all numbers on top of bars
+        width=0.3,   # reduce width of the bars
+        mapping=aes(fill='bars_color')
+      )
+      + scale_fill_manual(values=c('grey'), guide='none')
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          axis.line=element_line(colour='black')))),
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=2,
+        stroke=0.45)) +
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+    sort_sets=FALSE,
+  sort_intersections=FALSE)
+upset_gene
+
+# save
+path <- paste0("../../results/", tool, 
+               "/upset/PAvsControl_gene_sex_covariate_FDRq0.05")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+
+upset(data, intersect = c('sex covariate down-regulated',
+        'female down-regulated',
+        'male down-regulated',
+        'sex covariate up-regulated',
+        'female up-regulated',
+        'male up-regulated'))
+
+path <- paste0("../../results/", tool,
+               "/upset/PAvsControl_gene_sex_covariate_FDRq0.05_simple")
+saveToPDF(paste0(path, ".pdf"), width = 9, height = 6)
+
+# Binary table with colnames:
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", 
+  "PAvsControl_gene_sex_covariate_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
+)
+```
+
+### PA DEGs specific to each sex 
+```{r}
+# merge the male and female data frames 
+# this will get the logFC for the female and male only analysis
+PA_FandM <-
+  merge(PAvsControl_XX_females,
+        PAvsControl_XY_males,
+        by = "gene_name",
+        all = T)
+# remove unnecessary columns 
+PA_FandM <- PA_FandM[-c(3:5,7,10,11,13:19,22,23,25)]
+colnames(PA_FandM) = c("gene_name", "chr", "gene_id", "female_logFC", "female_AveExpr", "female_adj.P.Val", "male_logFC", "male_AveExpr", "male_adj.P.Val")
+# uniquely up or down in the females 
+# not DE in the male only or sex as a covariate
+PA_uniquely_up_females <-
+  subset(data,
+    `female up-regulated` == 1 &
+    `female down-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+PA_uniquely_down_females <-
+  subset(data,
+    `female down-regulated` == 1 &
+    `female up-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+
+# combine with PA df to get fold change information 
+PA_uniquely_up_females_df <-
+  subset(PA_FandM, gene_name %in% rownames(PA_uniquely_up_females))
+
+# further sort
+# up in females and not also up in males, at least less than logFC of 0.025
+PA_uniquely_up_females_df_subset <-
+  subset(PA_uniquely_up_females_df, female_logFC > 0.25 & male_logFC < 0.025)
+write.table(
+  PA_uniquely_up_females_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "PA_uniquely_up_females.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+# repeat for down regulated 
+PA_uniquely_down_females_df <-
+  subset(PA_FandM, gene_name %in% rownames(PA_uniquely_down_females))
+# further sort
+PA_uniquely_down_females_df_subset <-
+  subset(PA_uniquely_down_females_df, female_logFC < -0.25 & male_logFC > 0.025)
+write.table(
+  PA_uniquely_down_females_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "PA_uniquely_down_females.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+# repeat for males
+PA_uniquely_up_males <-
+  subset(data,
+    `male up-regulated` == 1 &
+    `female down-regulated` == 0 &
+    `male down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `female up-regulated` == 0
+  )
+PA_uniquely_down_males <-
+  subset(data,
+    `male down-regulated` == 1 &
+    `female up-regulated` == 0 &
+    `female down-regulated` == 0 &
+    `sex covariate down-regulated` == 0 &
+    `sex covariate up-regulated` == 0 & 
+    `male up-regulated` == 0
+  )
+
+PA_uniquely_up_males_df <-
+  subset(PA_FandM, gene_name %in% rownames(PA_uniquely_up_males))
+PA_uniquely_up_males_df_subset <-
+  subset(PA_uniquely_up_males_df, male_logFC > 0.25 & female_logFC < 0.025)
+write.table(
+  PA_uniquely_up_males_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "PA_uniquely_up_males.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+PA_uniquely_down_males_df <-
+  subset(PA_FandM, gene_name %in% rownames(PA_uniquely_down_males))
+PA_uniquely_down_males_df_subset <-
+  subset(PA_uniquely_down_males_df, male_logFC < -0.25 & female_logFC > 0.025)
+write.table(
+  PA_uniquely_down_males_df_subset,
+  paste0(
+    "../../results/",
+    tool,
+    "/upset/",
+    "PA_uniquely_down_males.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+remove(data)
+```
+
 
 # Correlation plot
 ### LBD vs control bt the sexes 
 ```{r}
 # table formatting
 LBD_FandM[is.na(LBD_FandM)] <- 0
-LBD_FandM <- subset(LBD_FandM, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
+LBD_FandM <- subset(LBD_FandM, female_adj.P.Val <= 0.05 | male_adj.P.Val <= 0.05)
 LBD_FandM_goi <- subset(LBD_FandM, 
-                               (logFC.x < -0.25 & logFC.y < -0.5) | 
-                               (logFC.x > 1 & logFC.y > 0.5) | 
-                               (logFC.x > .5 & logFC.y <= 0) |
-                              (logFC.x <= 0 & logFC.y > 0.25))
+                               (female_logFC < -0.25 & male_logFC < -0.5) | 
+                               (female_logFC > 1 & male_logFC > 0.5) | 
+                               (female_logFC > .5 & male_logFC <= 0) |
+                              (female_logFC <= 0 & male_logFC > 0.25))
 
-LBD_upfemales_downmales <- subset(LBD_FandM, (logFC.x > 0 & logFC.y <= 0) 
-                                  & adj.P.Val.x <= 0.05)
-LBD_upmales_downfemales <- subset(LBD_FandM, (logFC.x <= 0 & logFC.y > 0)
-                                  & adj.P.Val.y <= 0.05)
-LBD_sharedup <- subset(LBD_FandM, logFC.x > 0 & logFC.y > 0)
-LBD_shareddown <- subset(LBD_FandM, logFC.x < 0 & logFC.y < 0)
+LBD_upfemales_downmales <- subset(LBD_FandM, (female_logFC > 0 & male_logFC <= 0) 
+                                  & female_adj.P.Val <= 0.05)
+LBD_upmales_downfemales <- subset(LBD_FandM, (female_logFC <= 0 & male_logFC > 0)
+                                  & male_adj.P.Val <= 0.05)
+LBD_sharedup <- subset(LBD_FandM, female_logFC > 0 & male_logFC > 0)
+LBD_shareddown <- subset(LBD_FandM, female_logFC < 0 & male_logFC < 0)
 
 write.table(
   LBD_upfemales_downmales,
@@ -913,7 +1219,7 @@ write.table(
   paste0("../../results/",
   tool,
   "/correlation/", 
-  "LBDvsControl_sharedUP.txt"),
+  "LBDvsControl_shared_bt_sexes_up.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
@@ -924,7 +1230,7 @@ write.table(
   paste0("../../results/",
   tool,
   "/correlation/", 
-  "LBDvsControl_sharedDOWN.txt"),
+  "LBDvsControl_shared_bt_sexes_down.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
@@ -932,7 +1238,7 @@ write.table(
 
 # plot
 LBD_corr_plot_adjPval_1 <- ggplot(data = LBD_FandM, 
-   aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
+   aes(x = female_logFC, y = male_logFC, text = paste(gene_name))) +
    annotate(
     "rect",
     xmin = 0,
@@ -953,8 +1259,8 @@ LBD_corr_plot_adjPval_1 <- ggplot(data = LBD_FandM,
     geom_text_repel(
     data = LBD_FandM_goi, 
     aes(
-    x = logFC.x, 
-    y = logFC.y,
+    x = female_logFC, 
+    y = male_logFC,
     label = gene_name
     ),
     color = "black",
@@ -991,30 +1297,38 @@ path <-
 saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
-sp <- ggscatter(LBD_FandM, x = "logFC.x", y = "logFC.y",
+sp <- ggscatter(LBD_FandM, x = "female_logFC", y = "male_logFC",
    add = "reg.line",  # Add regressin line
    add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
    conf.int = TRUE # Add confidence interval
    )
 # Add correlation coefficient
 sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "LBDvsControl_bt_sexes_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
 ### AD vs control bt the sexes 
 ```{r}
 AD_FandM[is.na(AD_FandM)] <- 0
-AD_FandM <- subset(AD_FandM, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
+AD_FandM <- subset(AD_FandM, female_adj.P.Val <= 0.05 | male_adj.P.Val <= 0.05)
 AD_FandM_goi <- subset(AD_FandM, 
-                        (logFC.x < -0.25 & logFC.y < -0.5) | 
-                          (logFC.x > 1 & logFC.y > 0.5) | 
-                          (logFC.x > .5 & logFC.y <= 0) |
-                          (logFC.x <= 0 & logFC.y > 0.25))
+                        (female_logFC < -0.25 & male_logFC < -0.5) | 
+                          (female_logFC > 1 & male_logFC > 0.5) | 
+                          (female_logFC > .5 & male_logFC <= 0) |
+                          (female_logFC <= 0 & male_logFC > 0.25))
 
-AD_upfemales_downmales <- subset(AD_FandM, (logFC.x > 0 & logFC.y <= 0) 
-                                  & adj.P.Val.x <= 0.05)
-AD_upmales_downfemales <- subset(AD_FandM, (logFC.x <= 0 & logFC.y > 0)
-                                  & adj.P.Val.y <= 0.05)
-AD_sharedup <- subset(AD_FandM, logFC.x > 0 & logFC.y > 0)
-AD_shareddown <- subset(AD_FandM, logFC.x < 0 & logFC.y < 0)
+AD_upfemales_downmales <- subset(AD_FandM, (female_logFC > 0 & male_logFC <= 0) 
+                                  & female_adj.P.Val <= 0.05)
+AD_upmales_downfemales <- subset(AD_FandM, (female_logFC <= 0 & male_logFC > 0)
+                                  & male_adj.P.Val <= 0.05)
+AD_sharedup <- subset(AD_FandM, female_logFC > 0 & male_logFC > 0)
+AD_shareddown <- subset(AD_FandM, female_logFC < 0 & male_logFC < 0)
 
 write.table(
   AD_upfemales_downmales,
@@ -1043,7 +1357,7 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADvsControl_sharedUP.txt"),
+         "ADvsControl_shared_bt_sexes_up.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
@@ -1054,14 +1368,14 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADvsControl_sharedDOWN.txt"),
+         "ADvsControl_shared_bt_sexes_down.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
 )
 
 AD_corr_plot_adjPval_1 <- ggplot(data = AD_FandM, 
-  aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
+  aes(x = female_logFC, y = male_logFC, text = paste(gene_name))) +
   annotate(
     "rect",
     xmin = 0,
@@ -1082,8 +1396,8 @@ AD_corr_plot_adjPval_1 <- ggplot(data = AD_FandM,
   geom_text_repel(
     data = AD_FandM_goi, 
     aes(
-      x = logFC.x, 
-      y = logFC.y,
+      x = female_logFC, 
+      y = male_logFC,
       label = gene_name
     ),
     color = "black",
@@ -1119,13 +1433,161 @@ path <-
 saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
-sp <- ggscatter(AD_FandM, x = "logFC.x", y = "logFC.y",
+sp <- ggscatter(AD_FandM, x = "female_logFC", y = "male_logFC",
                 add = "reg.line",  # Add regressin line
                 add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
                 conf.int = TRUE # Add confidence interval
 )
 # Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -1.25, label.y = .75)
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "ADvsControl_bt_sexes_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+```
+### PA vs control bt the sexes
+```{r}
+# table formatting
+PA_FandM[is.na(PA_FandM)] <- 0
+PA_FandM <- subset(PA_FandM, female_adj.P.Val <= 0.05 | male_adj.P.Val <= 0.05)
+PA_FandM_goi <- subset(PA_FandM, 
+                               (female_logFC < -0.25 & male_logFC < -0.5) | 
+                               (female_logFC > 1 & male_logFC > 0.5) | 
+                               (female_logFC > .5 & male_logFC <= 0) |
+                              (female_logFC <= 0 & male_logFC > 0.25))
+
+PA_upfemales_downmales <- subset(PA_FandM, (female_logFC > 0 & male_logFC <= 0) 
+                                  & female_adj.P.Val <= 0.05)
+PA_upmales_downfemales <- subset(PA_FandM, (female_logFC <= 0 & male_logFC > 0)
+                                  & male_adj.P.Val <= 0.05)
+PA_sharedup <- subset(PA_FandM, female_logFC > 0 & male_logFC > 0)
+PA_shareddown <- subset(PA_FandM, female_logFC < 0 & male_logFC < 0)
+
+write.table(
+  PA_upfemales_downmales,
+  paste0("../../results/",
+  tool,
+  "/correlation/", 
+  "PAvsControl_upF_downM.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+write.table(
+  PA_upmales_downfemales,
+  paste0("../../results/",
+  tool,
+  "/correlation/", 
+  "PAvsControl_upM_downF.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+write.table(
+  PA_sharedup,
+  paste0("../../results/",
+  tool,
+  "/correlation/", 
+  "PAvsControl_shared_bt_sexes_up.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+write.table(
+  PA_shareddown,
+  paste0("../../results/",
+  tool,
+  "/correlation/", 
+  "PAvsControl_shared_bt_sexes_down.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+# plot
+PA_corr_plot_adjPval_1 <- ggplot(data = PA_FandM, 
+   aes(x = female_logFC, y = male_logFC, text = paste(gene_name))) +
+   annotate(
+    "rect",
+    xmin = 0,
+    xmax = 3.25,
+    ymin = 3.25,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -2,
+    ymin = 0,
+    ymax = -2,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+    geom_text_repel(
+    data = PA_FandM_goi, 
+    aes(
+    x = female_logFC, 
+    y = male_logFC,
+    label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+  title = "DEGs shared and unique between the sexes",
+  x = expression(paste("XX female ", log[2](PA/control))),
+  y = expression(paste("XY male ", log[2](PA/control))))+
+  scale_y_continuous(breaks = seq(-1.75, 3.25, by = .5), 
+                     limits = c(-2, 3.25), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 3.25, by = .5), 
+                     limits = c(-2, 3.25), expand = c(0,0))
+PA_corr_plot_adjPval_1 
+
+PA_corr_plot_adjPval_1
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "PAvsControl_bt_sexes"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(PA_FandM, x = "female_logFC", y = "male_logFC",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+   conf.int = TRUE # Add confidence interval
+   )
+# Add correlation coefficient
 sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "PAvsControl_bt_sexes_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
 ### LBD vs AD 
 ##### XX females
@@ -1135,22 +1597,21 @@ ADandLBD_XX_females <-
         LBDvsControl_XX_females,
         by = "gene_name",
         all = T)
-
+ADandLBD_XX_females <- ADandLBD_XX_females[-c(3:5,7,10,11,13:19,22,23,25)]
+colnames(ADandLBD_XX_females) = c("gene_name", "chr", "gene_id", "AD_female_logFC", "AD_female_AveExpr", "AD_female_adj.P.Val", "LBD_female_logFC", "LBD_female_AveExpr", "LBD_female_adj.P.Val")
 
 ADandLBD_XX_females[is.na(ADandLBD_XX_females)] <- 0
-ADandLBD_XX_females <- subset(ADandLBD_XX_females, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
+ADandLBD_XX_females <- subset(ADandLBD_XX_females, AD_female_adj.P.Val <= 0.05 | LBD_female_adj.P.Val <= 0.05)
 ADandLBD_XX_females_goi <- subset(ADandLBD_XX_females, 
-                        (logFC.x < -0.15 & logFC.y < -0.15) | 
-                          (logFC.x > .5 & logFC.y > 0.5) | 
-                          (logFC.x > .15 & logFC.y <= 0) |
-                          (logFC.x <= 0 & logFC.y > 0.15))
+                        (AD_female_logFC < -0.15 & LBD_female_logFC < -0.15) | 
+                          (AD_female_logFC > .5 & LBD_female_logFC > 0.5) | 
+                          (AD_female_logFC > .15 & LBD_female_logFC <= 0) |
+                          (AD_female_logFC <= 0 & LBD_female_logFC > 0.15))
 
-ADandLBD_XX_females_upAD_downLBD <- subset(ADandLBD_XX_females, (logFC.x > 0 & logFC.y <= 0) 
-                                  & adj.P.Val.x <= 0.05)
-ADandLBD_XX_females_downAD_upLBD <- subset(ADandLBD_XX_females, (logFC.x <= 0 & logFC.y > 0)
-                                  & adj.P.Val.y <= 0.05)
-ADandLBD_XX_females_sharedup <- subset(ADandLBD_XX_females, logFC.x > 0 & logFC.y > 0)
-ADandLBD_XX_females_shareddown <- subset(ADandLBD_XX_females, logFC.x < 0 & logFC.y < 0)
+ADandLBD_XX_females_upAD_downLBD <- subset(ADandLBD_XX_females, (AD_female_logFC > 0 & LBD_female_logFC <= 0) & AD_female_adj.P.Val <= 0.05)
+ADandLBD_XX_females_downAD_upLBD <- subset(ADandLBD_XX_females, (AD_female_logFC <= 0 & LBD_female_logFC > 0) & LBD_female_adj.P.Val <= 0.05)
+ADandLBD_XX_females_sharedup <- subset(ADandLBD_XX_females, AD_female_logFC > 0 & LBD_female_logFC > 0)
+ADandLBD_XX_females_shareddown <- subset(ADandLBD_XX_females, AD_female_logFC < 0 & LBD_female_logFC < 0)
 
 write.table(
   ADandLBD_XX_females_upAD_downLBD,
@@ -1179,7 +1640,7 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADandLBD_XX_females_sharedup.txt"),
+         "ADandLBD_XX_females_shared_bt_pathologies_up.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
@@ -1190,14 +1651,14 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADandLBD_XX_females_shareddown.txt"),
+         "ADandLBD_XX_females_shared_bt_pathologies_down.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
 )
 
 ADandLBD_XX_females_corr_plot <- ggplot(data = ADandLBD_XX_females, 
-  aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
+  aes(x = AD_female_logFC, y = LBD_female_logFC, text = paste(gene_name))) +
   annotate(
     "rect",
     xmin = 0,
@@ -1218,8 +1679,8 @@ ADandLBD_XX_females_corr_plot <- ggplot(data = ADandLBD_XX_females,
   geom_text_repel(
     data = ADandLBD_XX_females_goi, 
     aes(
-      x = logFC.x, 
-      y = logFC.y,
+      x = AD_female_logFC, 
+      y = LBD_female_logFC,
       label = gene_name
     ),
     color = "black",
@@ -1255,12 +1716,20 @@ path <-
 saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
-sp <- ggscatter(ADandLBD_XX_females, x = "logFC.x", y = "logFC.y",
+sp <- ggscatter(ADandLBD_XX_females, x = "AD_female_logFC", y = "LBD_female_logFC",
                 add = "reg.line",  # Add regressin line
                 add.params = list(color = "blue", fill = "lightgray"), 
                 conf.int = TRUE)
 # Add correlation coefficient
 sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "ADandLBD_XX_females_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
 #### XY males
 ```{r}
@@ -1269,22 +1738,21 @@ ADandLBD_XY_males <-
         LBDvsControl_XY_males,
         by = "gene_name",
         all = T)
-
+ADandLBD_XY_males <- ADandLBD_XY_males[-c(3:5,7,10,11,13:19,22,23,25)]
+colnames(ADandLBD_XY_males) = c("gene_name", "chr", "gene_id", "AD_male_logFC", "AD_male_AveExpr", "AD_male_adj.P.Val", "LBD_male_logFC", "LBD_male_AveExpr", "LBD_male_adj.P.Val")
 
 ADandLBD_XY_males[is.na(ADandLBD_XY_males)] <- 0
-ADandLBD_XY_males <- subset(ADandLBD_XY_males, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
+ADandLBD_XY_males <- subset(ADandLBD_XY_males, AD_male_adj.P.Val <= 0.05 | LBD_male_adj.P.Val <= 0.05)
 ADandLBD_XY_males_goi <- subset(ADandLBD_XY_males, 
-                        (logFC.x < -0.15 & logFC.y < -0.15) | 
-                          (logFC.x > .5 & logFC.y > 0.5) | 
-                          (logFC.x > .15 & logFC.y <= 0) |
-                          (logFC.x <= 0 & logFC.y > 0.15))
+                        (AD_male_logFC < -0.15 & LBD_male_logFC < -0.15) | 
+                          (AD_male_logFC > .5 & LBD_male_logFC > 0.5) | 
+                          (AD_male_logFC > .15 & LBD_male_logFC <= 0) |
+                          (AD_male_logFC <= 0 & LBD_male_logFC > 0.15))
 
-ADandLBD_XY_males_upAD_downLBD <- subset(ADandLBD_XY_males, (logFC.x > 0 & logFC.y <= 0) 
-                                  & adj.P.Val.x <= 0.05)
-ADandLBD_XY_males_downAD_upLBD <- subset(ADandLBD_XY_males, (logFC.x <= 0 & logFC.y > 0)
-                                  & adj.P.Val.y <= 0.05)
-ADandLBD_XY_males_sharedup <- subset(ADandLBD_XY_males, logFC.x > 0 & logFC.y > 0)
-ADandLBD_XY_males_shareddown <- subset(ADandLBD_XY_males, logFC.x < 0 & logFC.y < 0)
+ADandLBD_XY_males_upAD_downLBD <- subset(ADandLBD_XY_males, (AD_male_logFC > 0 & LBD_male_logFC <= 0) & AD_male_adj.P.Val <= 0.05)
+ADandLBD_XY_males_downAD_upLBD <- subset(ADandLBD_XY_males, (AD_male_logFC <= 0 & LBD_male_logFC > 0) & LBD_male_adj.P.Val <= 0.05)
+ADandLBD_XY_males_sharedup <- subset(ADandLBD_XY_males, AD_male_logFC > 0 & LBD_male_logFC > 0)
+ADandLBD_XY_males_shareddown <- subset(ADandLBD_XY_males, AD_male_logFC < 0 & LBD_male_logFC < 0)
 
 write.table(
   ADandLBD_XY_males_upAD_downLBD,
@@ -1313,7 +1781,7 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADandLBD_XY_males_sharedup.txt"),
+         "ADandLBD_XY_males_shared_bt_pathologies_up.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
@@ -1324,14 +1792,14 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADandLBD_XY_males_shareddown.txt"),
+         "ADandLBD_XY_males_shared_bt_pathologies_down.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
 )
 
 ADandLBD_XY_males_corr_plot <- ggplot(data = ADandLBD_XY_males, 
-  aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
+  aes(x = AD_male_logFC, y = LBD_male_logFC, text = paste(gene_name))) +
   annotate(
     "rect",
     xmin = 0,
@@ -1352,8 +1820,8 @@ ADandLBD_XY_males_corr_plot <- ggplot(data = ADandLBD_XY_males,
   geom_text_repel(
     data = ADandLBD_XY_males_goi, 
     aes(
-      x = logFC.x, 
-      y = logFC.y,
+      x = AD_male_logFC, 
+      y = LBD_male_logFC,
       label = gene_name
     ),
     color = "black",
@@ -1389,12 +1857,20 @@ path <-
 saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
-sp <- ggscatter(ADandLBD_XY_males, x = "logFC.x", y = "logFC.y",
+sp <- ggscatter(ADandLBD_XY_males, x = "AD_male_logFC", y = "LBD_male_logFC",
                 add = "reg.line",  # Add regressin line
                 add.params = list(color = "blue", fill = "lightgray"), 
                 conf.int = TRUE)
 # Add correlation coefficient
 sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "ADandLBD_XY_males_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
 #### Sex as a covariate
 ```{r}
@@ -1403,22 +1879,24 @@ ADandLBD <-
         LBDvsControl,
         by = "gene_name",
         all = T)
+ADandLBD <- ADandLBD[c(1,2,9,16,17,20,36,37,40)]
+colnames(ADandLBD) = c("gene_name", "chr", "gene_id", "ADvsControl_logFC", "ADvsControl_AveExpr", "ADvsControl_adj.P.Val", "LBDvsControl_logFC", "LBDvsControl_AveExpr", "LBDvsControl_adj.P.Val")
 
 
 ADandLBD[is.na(ADandLBD)] <- 0
-ADandLBD <- subset(ADandLBD, adj.P.Val.x <= 0.05 | adj.P.Val.y <= 0.05)
+ADandLBD <- subset(ADandLBD, ADvsControl_adj.P.Val <= 0.05 | LBDvsControl_adj.P.Val <= 0.05)
 ADandLBD_goi <- subset(ADandLBD, 
-                        (logFC.x < -0.15 & logFC.y < -0.15) | 
-                          (logFC.x > .5 & logFC.y > 0.5) | 
-                          (logFC.x > .15 & logFC.y <= 0) |
-                          (logFC.x <= 0 & logFC.y > 0.15))
+                        (ADvsControl_logFC < -0.5 & LBDvsControl_logFC < -0.5) | 
+                          (ADvsControl_logFC > .5 & LBDvsControl_logFC > 0.5) | 
+                          (ADvsControl_logFC > .5 & LBDvsControl_logFC <= 0) |
+                          (ADvsControl_logFC <= 0 & LBDvsControl_logFC > 0.5))
 
-ADandLBD_upAD_downLBD <- subset(ADandLBD, (logFC.x > 0 & logFC.y <= 0) 
-                                  & adj.P.Val.x <= 0.05)
-ADandLBD_downAD_upLBD <- subset(ADandLBD, (logFC.x <= 0 & logFC.y > 0)
-                                  & adj.P.Val.y <= 0.05)
-ADandLBD_sharedup <- subset(ADandLBD, logFC.x > 0 & logFC.y > 0)
-ADandLBD_shareddown <- subset(ADandLBD, logFC.x < 0 & logFC.y < 0)
+ADandLBD_upAD_downLBD <- subset(ADandLBD, (ADvsControl_logFC > 0 & LBDvsControl_logFC <= 0) 
+                                  & ADvsControl_adj.P.Val <= 0.05)
+ADandLBD_downAD_upLBD <- subset(ADandLBD, (ADvsControl_logFC <= 0 & LBDvsControl_logFC > 0)
+                                  & LBDvsControl_adj.P.Val <= 0.05)
+ADandLBD_sharedup <- subset(ADandLBD, ADvsControl_logFC > 0 & LBDvsControl_logFC > 0)
+ADandLBD_shareddown <- subset(ADandLBD, ADvsControl_logFC < 0 & LBDvsControl_logFC < 0)
 
 write.table(
   ADandLBD_upAD_downLBD,
@@ -1447,7 +1925,7 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADandLBD_sharedup.txt"),
+         "ADandLBD_shared_up.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
@@ -1458,14 +1936,14 @@ write.table(
   paste0("../../results/",
          tool,
          "/correlation/", 
-         "ADandLBD_shareddown.txt"),
+         "ADandLBD_shared_down.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
 )
 
 ADandLBD_corr_plot <- ggplot(data = ADandLBD, 
-  aes(x = logFC.x, y = logFC.y, text = paste(gene_name))) +
+  aes(x = ADvsControl_logFC, y = LBDvsControl_logFC, text = paste(gene_name))) +
   annotate(
     "rect",
     xmin = 0,
@@ -1486,8 +1964,8 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
   geom_text_repel(
     data = ADandLBD_goi, 
     aes(
-      x = logFC.x, 
-      y = logFC.y,
+      x = ADvsControl_logFC, 
+      y = LBDvsControl_logFC,
       label = gene_name
     ),
     color = "black",
@@ -1505,7 +1983,7 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
         axis.text.y = element_text(size = 10)) +
   labs(
     title = "DEGs shared and unique between LBD and AD within ",
-    x = expression(paste("sex as a covariate", log[2](AD/control))),
+    x = expression(paste("sex as a covariate ", log[2](AD/control))),
     y = expression(paste("sex as a covariate ", log[2](LBD/control))))+
   scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
                      limits = c(-2, 2.75), expand = c(0,0)) +
@@ -1523,27 +2001,18 @@ path <-
 saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
-sp <- ggscatter(ADandLBD, x = "logFC.x", y = "logFC.y",
+sp <- ggscatter(ADandLBD, x = "ADvsControl_logFC", y = "LBDvsControl_logFC",
                 add = "reg.line",  # Add regressin line
                 add.params = list(color = "blue", fill = "lightgray"), 
                 conf.int = TRUE)
 # Add correlation coefficient
 sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    "ADandLBD_sex_covariate_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
