@@ -555,6 +555,7 @@ remove(coef)
 
 Read table with all genes (FDRq = 1).
 ```{r read_DEG_table}
+allComparisons <- c("LBDvsControl", "ADvsControl", "PAvsControl")
 coef <- 1
 
 for (i in allComparisons) {
@@ -581,14 +582,14 @@ for (i in allComparisons) {
 Assign colors  values based on FDRq cutoff of 0.05.
 ```{r assign_colors}
 color_values <- vector()
-max <- nrow(LBDvsControl)
+max <- nrow(PAvsControl)
 
 for(i in 1:max){
-  if (LBDvsControl$adj.P.Val[i] < 0.05){
-    if (LBDvsControl$logFC[i] > 0){
+  if (PAvsControl$adj.P.Val[i] < 0.05){
+    if (PAvsControl$logFC[i] > 0){
       color_values <- c(color_values, 1) # 1 when logFC > 0 and FDRq < 0.05
     }
-    else if (LBDvsControl$logFC[i] < 0){
+    else if (PAvsControl$logFC[i] < 0){
       color_values <- c(color_values, 2) # 2 when logFC < 0 and FDRq < 0.05
     }
   }
@@ -597,27 +598,27 @@ for(i in 1:max){
   }
 }
 
-LBDvsControl$color_p0.05 <- factor(color_values)
+PAvsControl$color_p0.05 <- factor(color_values)
 ```
 
 # Subset genes to label
 Subset the top 10 up and down-regulated genes
 ```{r}
-up <- LBDvsControl[LBDvsControl$color_p0.05 == 1,]
+up <- PAvsControl[PAvsControl$color_p0.05 == 1,]
 up10 <- up[1:10,]
 
-down <- LBDvsControl[LBDvsControl$color_p0.05 == 2,]
+down <- PAvsControl[PAvsControl$color_p0.05 == 2,]
 down10 <- down[1:7,]
 ```
 
 # Volcano plot
 ```{r volcano}
 hadjpval <- (-log10(max(
-  LBDvsControl$P.Value[LBDvsControl$adj.P.Val < 0.05], 
+  PAvsControl$P.Value[PAvsControl$adj.P.Val < 0.05], 
   na.rm=TRUE)))
 
 p_vol <-
-  ggplot(data = LBDvsControl, 
+  ggplot(data = PAvsControl, 
          aes(x = logFC,  # x-axis is logFC
              y = -log10(P.Value),  # y-axis will be -log10 of P.Value
              color = color_p0.05)) +  # color is based on factored color column
@@ -637,7 +638,7 @@ p_vol <-
   geom_hline(yintercept = hadjpval,  #  horizontal line
                      colour = "#000000",
                      linetype = "dashed") +
-  ggtitle("LBD vs Control\nFDRq < 0.05") +
+  ggtitle("PA vs Control\nFDRq < 0.05") +
   theme(plot.title = element_text(size = 10)) +
   geom_text_repel(data = up10,
                   aes(x = logFC, y= -log10(P.Value), label = gene_name), 
@@ -658,17 +659,18 @@ p_vol <-
 p_vol
 
 # save
-path <- paste0("../../results/", tool, "/volcano/LBD_gene_volcano_FDRq0.05")
+path <- paste0("../../results/", tool, "/volcano/PA_gene_volcano_FDRq0.05")
 saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 ```
 # glimma
 ```{r}
-saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, ".veBayesFit.rds"))
+#saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, ".veBayesFit.rds"))
 
 veBayesFit <- readRDS(paste0("../../rObjects/", condition, ".veBayesFit.rds"))
+dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, ".dge.filtered.norm.rds"))
 ```
 
 ```{r}
-glimmaVolcano(veBayesFit, coef = 1,  dge = dge.filtered.norm, groups = dge.filtered.norm$samples$TYPE, display.columns=c("gene_name", "AdjPValue", "seqnames"))
+glimmaVolcano(veBayesFit, coef = 5,  dge = dge.filtered.norm, groups = dge.filtered.norm$samples$TYPE, display.columns=c("gene_name", "AdjPValue", "seqnames"))
 ```
 
