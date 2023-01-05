@@ -41,7 +41,7 @@ PA_shape <- c(17) # triangle
 LBD_shape <- c(18) # diamond 
 
 TypeColors <- c("#4682B4", "#B4464B","#B4AF46", "gray35")
-SexColors <- c("orange", "blue")
+SexColors <- c("darkorange", "blue")
 colorbindColors <- dittoColors()
 correlationColors <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
 
