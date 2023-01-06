@@ -16,10 +16,7 @@ editor_options:
 # Also do Session > Set Working Directory > Choose Directory
 knitr::opts_knit$set(root.dir = ".")
 ```
-# libraries
-```{r}
-library(gtools)
-```
+
 # User defined variables
 ```{r set_variables}
 pathToRef = c("/research/labs/neurology/fryer/projects/references/human/")

@@ -1,7 +1,7 @@
 ---
-title: "Variance in expression data LBD samples"
+title: "Variance in expression data"
 author: "Kimberly Olney, Ph.D."
-date: "09/30/2022"
+date: "01/06/2023"
 output:
   html_document:
     df_print: paged
@@ -9,7 +9,7 @@ output:
 params:
   args: myarg
 ---
-# setup
+# Setup
 ```{r setup}
 knitr::opts_knit$set(root.dir = ".")
 ```
@@ -21,11 +21,12 @@ library('BiocParallel')
 library('Hmisc')
 ```
 
-# user defined variables
+# User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-directory <- c("pass1/")
+source(here::here("scripts/R", "gtf_path.R"))
 condition <- c("All_samples")
+min_expression <- "min_exp50"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
   "LBDvsAD = LBD - AD",
@@ -37,11 +38,11 @@ tool = c("star")
 typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
 
-# read in DGE object & metadata
+# Read in DGE object & metadata
 ```{r}
-dge <- readRDS(paste0("../../rObjects/", directory, "LBD_SCC_dge.raw.rds"))
+dge <- readRDS(paste0("../../rObjects/", condition, ".dge.raw.rds"))
 metadata <- dge$samples
-dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, ".dge.filtered.norm.rds"))
+dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
 # some samples are missing RIN values. 
 # Replace NA with 1 so as to be able to account for RIN in the model. 
 # This is necessary to be able include RIN as a covariate in voom
@@ -50,7 +51,7 @@ info <- as.data.frame(dge.filtered.norm$samples)
 genes <- dge.filtered.norm$genes
 ```
 
-# make contrast plots
+# Make contrast plots
 ```{r}
 design <- model.matrix(~ 0 + TYPE + RIN + Age + sex_inferred + APOE + Race, dge.filtered.norm$samples)
 
@@ -67,12 +68,12 @@ L = makeContrastsDream(form, dge$samples, contrasts = myDreamContrasts)
 colnames(L) <- gsub("TYPE","",colnames(L))
 rownames(L) <- gsub("TYPE","", rownames(L))
 
-
 # Visualize contrast matrix
 plotContrasts(L) 
 ```
 
 # CCA
+### all variables
 ```{r}
 form <- ~ MF.NFT + 
 MF.Amyloid + 
@@ -130,75 +131,11 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          diag=FALSE, col.lim = c(0, 1)
          )
   
-path <- paste0("../../results/", tool ,"/varpart/LBD_gene_CCA")
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_gene_CCA_all_varaiables")
 saveToPDF(paste0(path, ".pdf"), width = 16, height = 16)
 ```
-
-# fit variance 
-```{r}
-design <- model.matrix(~ 0 + TYPE + RIN + Age + sex_inferred + APOE + Race, dge.filtered.norm$samples)
-v <- voom(dge.filtered.norm, design, plot=TRUE)
-voomCounts <- v$E
-voomCountsMatrix <- data.matrix(voomCounts, rownames.force = NA)
-```
-
-```{r, eval=FALSE}
-form <- ~ (1|TYPE) + 
-  (1|TDP.43) +
-  (1|sex_inferred) + 
-  (1|VaD) + 
-  (1|Race) + 
-  (1|APOE) + 
-  (1|FHx) + 
-  Age + 
-  MF.SP + 
-  MF.NFT + 
-  MF.Amyloid +
-  RIN + 
-  PMI + 
-  Braak.NFT + 
-  Brain.wt + 
-  Duration
-
-# fit model and extract variance percents
-varPart <- fitExtractVarPartModel(voomCountsMatrix, form, info, 
-                                  showWarnings=FALSE)
-plotVarPart(sortCols(varPart), label.angle=60 )
-
-path <- paste0("../../results/", tool, "/varpart/varpart")
-saveToPDF(paste0(path, ".pdf"), width = 8.2, height = 5.2)
-
-varPart$gene_id <- rownames(varPart)
-variance_explained <- merge(varPart, genes, by = "gene_id")
-write.table(variance_explained, 
-            paste0("../../results/", tool ,
-            "/varpart/variance_explained.tsv"), 
-            sep = "\t", 
-            quote = FALSE)
-```
-
-# re-examine CCA with the variables in the varpart model 
-```{r, eval = FALSE}
-form <- ~ TYPE + 
-  sex_inferred + 
-  VaD + 
-  Race + 
-  APOE + 
-  FHx + 
-  Age + 
-  MF.SP + 
-  MF.NFT + 
-  MF.Amyloid +
-  RIN + 
-  Braak.NFT + 
-  Brain.wt 
-C = canCorPairs( form, info)
-# Plot correlation matrix
-plotCorrMatrix( C )
-path <- paste0("../../results/", tool ,"/varpart/CCA_limited_form")
-saveToPDF(paste0(path, ".pdf"), width = 16, height = 16)
-```
-# re-run variance partition with metadata variables that most samples have information for. 
+### variables that most samples have information for
+variables that most samples have information for. 
 3 samples are missing MF.SP values
 4 samples are missing MF.NFT values 
 4 samples are missing MF.Amyloid values 
@@ -213,12 +150,12 @@ saveToPDF(paste0(path, ".pdf"), width = 16, height = 16)
 will re-run excluding PMI, Duration, and TDP.43 status so as to include these samples that otherwise would be missed. 
 Will also remove MF.Amyloid as this is highly correlated with MF.SP 
 ```{r}
-form <- ~ (1|TYPE) + 
-  (1|sex_inferred) + 
-  (1|VaD) + 
-  (1|Race) + 
-  (1|APOE) + 
-  (1|FHx) + 
+form <- ~ TYPE + 
+  sex_inferred + 
+  VaD + 
+  Race + 
+  APOE + 
+  FHx + 
   Age + 
   MF.SP + 
   MF.NFT + 
@@ -226,93 +163,147 @@ form <- ~ (1|TYPE) +
   Braak.NFT + 
   Brain.wt 
 
+C = canCorPairs(form, info)
+#plotCorrMatrix( C )
+
+cor.mtest <- function(C, ...) {
+    C <- as.matrix(C)
+    n <- ncol(C)
+    p.mat<- matrix(NA, n, n)
+    diag(p.mat) <- 0
+    for (i in 1:(n - 1)) {
+        for (j in (i + 1):n) {
+            tmp <- cor.test(C[, i], C[, j], ...)
+            p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+        }
+    }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(C)
+  p.mat
+}
+# matrix of the p-value of the correlation
+p.mat <- cor.mtest(C)
+col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
+  corrplot(C, method="color", col=col(200),  
+         type="upper", order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         diag=FALSE, col.lim = c(0, 1)
+         )
+  
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_gene_CCA_most_samples_have_variable_information")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 8)
+```
+
+# Fit variance 
+```{r}
+design <- model.matrix(~ 0 + TYPE + RIN + Age + sex_inferred + APOE + Race, dge.filtered.norm$samples)
+v <- voom(dge.filtered.norm, design, plot=TRUE)
+voomCounts <- v$E
+voomCountsMatrix <- data.matrix(voomCounts, rownames.force = NA)
+```
+
+```{r, eval=FALSE}
+form <- ~ (1|TYPE) + 
+  (1|sex_inferred) + 
+  (1|Race) + 
+  (1|APOE) + 
+  Age + 
+  RIN  
+
 # fit model and extract variance percents
 varPart <- fitExtractVarPartModel(voomCountsMatrix, form, info, 
-                                  showWarnings=FALSE )
-plotVarPart(sortCols(varPart), label.angle=60 )
+                                  showWarnings=FALSE)
+```
 
-path <- paste0("../../results/", tool, "/varpart/varpart_NA_variables_excluded")
+```{r}
+plotVarPart(sortCols(varPart), label.angle=60)
+
+path <- paste0("../../results/", tool, "/varpart/", condition, "_varpart_type_sex_race_apoe_age_rin")
 saveToPDF(paste0(path, ".pdf"), width = 8.2, height = 5.2)
+
 varPart$gene_id <- rownames(varPart)
 variance_explained <- merge(varPart, genes, by = "gene_id")
 write.table(variance_explained, 
             paste0("../../results/", tool ,
-            "/varpart/variance_explained_NA_varaibles_excluded.tsv"), 
+            "/varpart/", condition, "_variance_explained.tsv"), 
             sep = "\t", 
             quote = FALSE)
 ```
 
-```{r}
-variance_explained <- read.delim(paste0("../../results/",
-                                        tool,
-                                        "/varpart/variance_explained_NA_varaibles_excluded.tsv"),
-                                        sep = "\t")
-# replace gene_id with gene_name
-varPart$gene_id <- NULL
-row.names(varPart) <-
-  make.names(variance_explained$gene_name, unique = TRUE)
-row.names(voomCountsMatrix) <-
-  make.names(genes$gene_name, unique = TRUE)
-
-vp <- sortCols(varPart)
-plotPercentBars(vp[1:10, ])
-plotVarPart(vp)
+# Re-examine CCA with the variables in the varpart model 
+```{r, eval = FALSE}
+form <- ~ TYPE + 
+  sex_inferred + 
+  Race + 
+  APOE + 
+  Age + 
+  RIN  
+C = canCorPairs( form, info)
+# Plot correlation matrix
+cor.mtest <- function(C, ...) {
+    C <- as.matrix(C)
+    n <- ncol(C)
+    p.mat<- matrix(NA, n, n)
+    diag(p.mat) <- 0
+    for (i in 1:(n - 1)) {
+        for (j in (i + 1):n) {
+            tmp <- cor.test(C[, i], C[, j], ...)
+            p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+        }
+    }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(C)
+  p.mat
+}
+# matrix of the p-value of the correlation
+p.mat <- cor.mtest(C)
+col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
+  corrplot(C, method="color", col=col(200),  
+         type="upper", order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         diag=FALSE, col.lim = c(0, 1)
+         )
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_type_sex_race_apoe_age_rin")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 6)
 ```
+
 # remove technical variability before fitting model
 Subtracting the RIN effect can reduce the total variation in the data, so that the contribution of other variables become clearer.
 
 run the residuals function inside the call to fitVarPartModel to avoid storing the large intermediate results.
 
-Voom - Transform count data to log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observational-level weights. The data are then ready for linear modelling.
+Voom - Transform count data to log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observational-level weights. The data are then ready for linear modeling.
 ```{r}
-# subtract out effect of: 
-design <- model.matrix(~ 0 + TYPE + RIN + Age + sex_inferred + APOE + Race, dge.filtered.norm$samples)
-v <- voom(dge.filtered.norm, design, plot=TRUE)
-# Voom transformed counts
-voomCounts <- v$E
-voomCountsMatrix <- data.matrix(voomCounts, rownames.force = NA)
+# subtract out effect of: RIN 
+modelFit <- fitVarPartModel(v, ~RIN, dge.filtered.norm$samples, fxn=residuals)
+residMatrix = do.call(rbind, modelFit)
+```
 
-# extract residuals directly without storing intermediate results
-# variancePartition seamlessly deals with the result of voom() 
-# by default, it seamlessly models the precision weights
-# This can be turned off with useWeights=FALSE
-formula <- ~ (1|sex_inferred) + 
+```{r}
+# fit model on residuals
+formula <- ~ (1|TYPE) +
+  (1|sex_inferred) + 
   (1|Race) + 
   (1|APOE) + 
-  Age + 
-  RIN 
+  Age 
+varPartResid <- fitExtractVarPartModel(residMatrix, formula, dge.filtered.norm$samples)
+```
 
-residList <- fitVarPartModel(v, formula, dge.filtered.norm$samples,
-        fxn=residuals )
-
-# convert list to matrix
-residMatrix = do.call(rbind, residList)
-
-dge.filtered.norm$samples$VaD <- as.factor(dge.filtered.norm$samples$VaD)
-# fit model on residuals
-form <- ~ (1|TYPE) + 
-  (1|VaD) + 
-  (1|FHx) + 
-  MF.SP + 
-  MF.NFT + 
-  Braak.NFT + 
-  Brain.wt 
-
-# fit model and extract variance percents
-varPartResid <- fitExtractVarPartModel(residMatrix, 
-                                       form, 
-                                       dge.filtered.norm$samples,
-                                       showWarnings=FALSE)
+```{r}
 plotVarPart(sortCols(varPartResid), label.angle=60)
-varPartResid$gene_id <- NULL
+
+path <- paste0("../../results/", tool, "/varpart/", condition, "_varpart_type_sex_race_apoe_age_regressed_rin")
+saveToPDF(paste0(path, ".pdf"), width = 8.2, height = 5.2)
+
 varPartResid$gene_id <- rownames(varPartResid)
-variance_explained_correcting_vars <- merge(varPartResid, genes, by = "gene_id")
-write.table(variance_explained_correcting_vars, 
+variance_explained <- merge(varPartResid, genes, by = "gene_id")
+write.table(variance_explained, 
             paste0("../../results/", tool ,
-            "/varpart/variance_explained_correcting_vars.tsv"), 
+            "/varpart/", condition, "_variance_explained_regressed_RIN.tsv"), 
             sep = "\t", 
             quote = FALSE)
 ```
+
 
 
 ```{r}
@@ -345,7 +336,8 @@ veBayesFit <- eBayes(vfit)
 plotSA(veBayesFit, main = "Final Model: Mean-variance Trend")
 
 # save
-path <- paste0("../../results/", tool, "/voom/LBD_gene_final_mean_var")
+path <- paste0("../../results/", tool, "/voom/", condition, 
+               "_", min_expression, "_gene_final_mean_var")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 ```
 
@@ -372,7 +364,8 @@ title(expression('Top 100 Genes - Voom (Log'[2]~'CPM)'))
 
 # save
 # save
-path <- paste0("../../results/", tool, "/MDS/LBD_gene_MDS_voom_sex")
+path <- paste0("../../results/", tool, "/MDS/", condition, 
+               "_", min_expression,"_gene_MDS_voom_sex")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 5)
 ```
 
@@ -433,6 +426,7 @@ ggplot(data = pcaWithMetadata, aes(
   ylab("PC2 ")
 ```
 # CCA with PCA 1-4
+### all variables
 ```{r}
 form <- ~ 
   PC1 +
@@ -454,18 +448,85 @@ form <- ~
   Brain.wt 
 C = canCorPairs(form, pcaWithMetadata)
 # Plot correlation matrix
-plotCorrMatrix( C )
+cor.mtest <- function(C, ...) {
+    C <- as.matrix(C)
+    n <- ncol(C)
+    p.mat<- matrix(NA, n, n)
+    diag(p.mat) <- 0
+    for (i in 1:(n - 1)) {
+        for (j in (i + 1):n) {
+            tmp <- cor.test(C[, i], C[, j], ...)
+            p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+        }
+    }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(C)
+  p.mat
+}
+# matrix of the p-value of the correlation
+p.mat <- cor.mtest(C)
+col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
+  corrplot(C, method="color", col=col(200),  
+         type="upper", order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         diag=FALSE, col.lim = c(0, 1)
+         )
+  
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_gene_CCA_all_varaiables_PC1_4")
+saveToPDF(paste0(path, ".pdf"), width = 16, height = 16)
+```
+### variables in model
+```{r}
+form <- ~ 
+  PC1 +
+  PC2 +
+  PC3 +
+  PC4 +
+  TYPE + 
+  sex_inferred + 
+  Race + 
+  APOE + 
+  Age + 
+  RIN
+C = canCorPairs(form, pcaWithMetadata)
+# Plot correlation matrix
+cor.mtest <- function(C, ...) {
+    C <- as.matrix(C)
+    n <- ncol(C)
+    p.mat<- matrix(NA, n, n)
+    diag(p.mat) <- 0
+    for (i in 1:(n - 1)) {
+        for (j in (i + 1):n) {
+            tmp <- cor.test(C[, i], C[, j], ...)
+            p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+        }
+    }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(C)
+  p.mat
+}
+# matrix of the p-value of the correlation
+p.mat <- cor.mtest(C)
+col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
+  corrplot(C, method="color", col=col(200),  
+         type="upper", order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         diag=FALSE, col.lim = c(0, 1)
+         )
+  
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_gene_CCA_type_rin_sex_apoe_age_PC1_4")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 6)
 ```
 
 ```{r}
-saveRDS(veBayesFit, file = paste0("../../rObjects/", condition,".veBayesFit.rds"))
-saveRDS(voomCountsMatrix, file = paste0("../../rObjects/", condition,".voomCountsMatrix.rds"))
+saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, "_", min_expression,".veBayesFit.rds"))
+saveRDS(voomCountsMatrix, file = paste0("../../rObjects/", condition, "_", min_expression,".voomCountsMatrix.rds"))
 
-veBayesFit <- readRDS(paste0("../../rObjects/", condition,".veBayesFit.rds"))
-voomCountsMatrix <- readRDS(paste0("../../rObjects/", condition,".voomCountsMatrix.rds"))
+veBayesFit <- readRDS(paste0("../../rObjects/", condition, "_", min_expression,".veBayesFit.rds"))
+voomCountsMatrix <- readRDS(paste0("../../rObjects/", condition, "_", min_expression,".voomCountsMatrix.rds"))
 ```
 
-# number of DEGs
+# Number of DEGs
 Identify number of differential expressed genes.
 ```{r}
 pval <- 0.05
@@ -480,9 +541,9 @@ sumTable <-
 
 print(paste0(" FDRq < ", pval))
 sumTable
-topTable(veBayesFit, coef = "ADvsPA")
+topTable(veBayesFit, coef = "ADvsControl")
 ```
-# output DEG tables
+# Output DEG tables
 ```{r}
 coef <- 1
 
@@ -514,8 +575,9 @@ vTopTableAll <-
     )
   )
     saveRDS(vTopTableAll, file = 
-            paste0("../../rObjects/", directory, 
-                   i,"_LBD_gene_table.rds"))
+            paste0("../../rObjects/", condition, "_", 
+                   min_expression, "_", 
+                   i,"_gene_table.rds"))
   path <- paste0("../../results/", tool, "/DEGs/",
   i, "_gene_DEGs_FDRq1.00.txt", sep = "") 
   write.table(
@@ -534,7 +596,8 @@ vTopTableAll <-
       p.value = 0.05,
       lfc = 0
     )
-  path <- paste0("../../results/", tool, "/DEGs/",
+  path <- paste0("../../results/", tool, "/DEGs/", condition,"_", 
+                 min_expression, "_",
   i, "_gene_DEGs_FDRq0.05.txt", sep = "") 
   write.table(
     vTopTable1,
@@ -549,116 +612,8 @@ vTopTableAll <-
 remove(coef)
 ```
 
-Read table with all genes (FDRq = 1).
-```{r}
-coef <- 1
 
-for (i in allComparisons) {
-  filepath <- paste0(
-    "../../results/",
-    tool,
-    "/DEGs/",
-    i,
-    "_gene_DEGs_FDRq1.00.txt"
-  )
-  assign(i,
-         read.delim(
-           filepath,
-           header = TRUE,
-           sep = "\t",
-           stringsAsFactors = FALSE
-         ))
-  # increment
-  coef <- coef + 1
-}
-```
-# assign colors
-Assign colors  values based on FDRq cutoff of 0.05.
-```{r assign_colors}
-color_values <- vector()
-max <- nrow(LBDvsControl)
-
-for(i in 1:max){
-  if (LBDvsControl$adj.P.Val[i] < 0.05){
-    if (LBDvsControl$logFC[i] > 0){
-      color_values <- c(color_values, 1) # 1 when logFC > 0 and FDRq < 0.05
-    }
-    else if (LBDvsControl$logFC[i] < 0){
-      color_values <- c(color_values, 2) # 2 when logFC < 0 and FDRq < 0.05
-    }
-  }
-  else{
-    color_values <- c(color_values, 3) # 3 when FDRq >= 0.05
-  }
-}
-
-LBDvsControl$color_p0.05 <- factor(color_values)
-```
-
-# subset genes to label
-Subset the top 10 up and down-regulated genes
-```{r}
-up <- LBDvsControl[LBDvsControl$color_p0.05 == 1,]
-up10 <- up[1:10,]
-
-down <- LBDvsControl[LBDvsControl$color_p0.05 == 2,]
-down <- subset(down, down$logFC < -1.5)
-down10 <- down[1:7,]
-```
-
-# volcano plot
-```{r volcano}
-hadjpval <- (-log10(max(
-  LBDvsControl$P.Value[LBDvsControl$adj.P.Val < 0.05], 
-  na.rm=TRUE)))
-
-p_vol <-
-  ggplot(data = LBDvsControl, 
-         aes(x = logFC,  # x-axis is logFC
-             y = -log10(P.Value),  # y-axis will be -log10 of P.Value
-             color = color_p0.05)) +  # color is based on factored color column
-  geom_point(alpha = 1.5, size = 1.7) +  # create scatterplot, alpha makes points transparent
-  theme_bw() +  # set color theme
-  theme(legend.position = "none") +  # no legend
-  scale_color_manual(values = c("red", "blue","grey")) +  # set factor colors
-  labs(
-    title = "", # no main title
-    x = expression(log[2](FC)), # x-axis title
-    y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)") # y-axis title
-  ) +
-  theme(axis.title.x = element_text(size = 10),
-        axis.text.x = element_text(size = 10)) +
-  theme(axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10)) +
-  geom_hline(yintercept = hadjpval,  #  horizontal line
-                     colour = "#000000",
-                     linetype = "dashed") +
-  ggtitle("LBD vs Control\nFDRq < 0.05") +
-  theme(plot.title = element_text(size = 10)) +
-  geom_text_repel(data = up10,
-                  aes(x = logFC, y= -log10(P.Value), label = gene_name), 
-                  color = "maroon", 
-                  fontface="italic",
-                  size = 4, 
-                  max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
-                  ) +
-  geom_text_repel(data = down10,
-                  aes(x = logFC, y= -log10(P.Value), label = gene_name), 
-                  color = "navyblue", 
-                  fontface="italic",
-                  size = 4, 
-                  max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
-                  )  #+
- # scale_y_continuous(breaks = seq(0,8,by=1), limits = c(0,8)) +
- # scale_x_continuous(breaks = seq(-3,3,by=1), limits = c(-3,3))
-p_vol
-
-# save
-#path <- paste0("../../results/", tool, "/volcano/LBD_gene_volcano_FDRq0.05")
-#saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
-```
-
-# blood & white matter marker expression among groups 
+# Blood & white matter marker expression among groups 
 ```{r}
 # get the gene id that corresponds to the gene name 
 genes <- dge.filtered.norm$genes
@@ -733,7 +688,7 @@ violin_plot_fun <- function(j) {
     geom_jitter(shape=16, position=position_jitter(0.2)) +
     theme_bw() + 
     ggtitle(j) +
-    xlab("Disease group") +
+    xlab("VaD classification") +
     ylab(j) +
     stat_compare_means(comparisons = my_comparisons) +
     theme(legend.position = "none")

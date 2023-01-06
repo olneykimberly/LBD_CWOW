@@ -1,7 +1,7 @@
 ---
 title: "Differential expression in LBD samples"
 author: "Kimberly Olney, Ph.D."
-date: "09/30/2022"
+date: "01/06/2023"
 output:
   html_document:
     df_print: paged
@@ -14,14 +14,13 @@ Samples have already been sex checked and realigned to the SCC reference.
 ```{r setup}
 knitr::opts_knit$set(root.dir = ".")
 ```
-
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
+source(here::here("scripts/R", "gtf_path.R"))
 
-directory <- c("pass1/")
 condition <- c("XY_males")
-whichSex <- "male"
+min_expression <- "min_exp50"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
   "LBDvsAD = LBD - AD",
@@ -32,12 +31,10 @@ myContrasts <- c("LBDvsControl = LBD - CONTROL",
 tool = c("star")
 typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
-
 # Read data
 ### metadata
 ```{r read_data}
-# subset metadata file to only include samples of interest
-metadata <- subset(metadata, sex_inferred == whichSex)
+metadata <- subset(metadata, sex_inferred == "male")
 # example of file naming:
 # NA12-254_FCHCLTJDMXY_L1_STAR_XY.bamReadsPerGene.out.tab
 # path to counts files
@@ -79,7 +76,7 @@ remove(melt_star_metrics,
        params, 
        star_metrics)
 ```
-# format counts table
+# Format counts table
 ```{r}
 # remove star metric information
 counts <- counts[!grepl("N_", counts$V1),]
@@ -89,7 +86,6 @@ counts$V1 <- NULL
 # set column names to NPID sample ID
 colnames(counts) <- metadata$NPID
 ```
-
 # Check inputs
 ```{r}
 all.equal(rownames(counts), genes.gtf$gene_id)
@@ -104,13 +100,11 @@ dge <- DGEList(counts = counts,
 
 table(dge$samples$TYPE)
 ```
-
 # Save R object
 ```{r, eval=FALSE}
-saveRDS(dge, file = paste0("../../rObjects/", condition, "_dge.raw.rds"))
-dge <- readRDS(paste0("../../rObjects/", condition, "_dge.raw.rds"))
+saveRDS(dge, file = paste0("../../rObjects/", condition, ".dge.raw.rds"))
+dge <- readRDS(paste0("../../rObjects/", condition, ".dge.raw.rds"))
 ```
-
 # Remove mitochondrial genes & keep only protein coding genes
 ```{r MT_genes}
 dim(dge)
@@ -129,10 +123,8 @@ cpm <- edgeR::cpm(dge$counts, log = FALSE)
 # sex colors 
 dge$samples$sex_inferred <- as.factor(dge$samples$sex_inferred)
 sex_colors <- c(SexColors)[dge$samples$sex_inferred]
-
 TypeColors <- c(TypeColors)[dge$samples$TYPE]
 ```
-
 ```{r}
 par(bg = 'white')
 
@@ -150,7 +142,23 @@ plotMDS(
 title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 
 path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_MDS_label_TYPE_dim1&2")
+               condition,"_", min_expression, "_raw_MDS_label_type_dim1&2")
+saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
+
+# plot MDS
+plotMDS(
+  lcpm,
+  top = 100, 
+  labels = dge$samples$TYPE,
+  cex = .8, 
+  dim.plot = c(2,3), 
+  plot = TRUE, 
+  col = TypeColors,
+  gene.selection = "common"
+)
+title(expression('Top 100 Genes (Log'[2]~'CPM)'))
+path <- paste0("../../results/", tool, "/MDS/", 
+               condition,"_", min_expression, "_raw_MDS_label_type_dim2&3")
 saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 ```
 
@@ -161,11 +169,11 @@ great enough count value to keep.  We will filter by group.  This means at least
 10 (in cpm, default value).
 ```{r}
 # first filter by expression and normalize the data
-keep.expr <- filterByExpr(dge, group = dge$samples$TYPE)
+keep.expr <- filterByExpr(dge, group = dge$samples$TYPE, min.count = 50)
 dim(dge)
 dge.filtered <- dge[keep.expr, , keep.lib.sizes = FALSE]
-
 dim(dge.filtered)
+
 table(dge.filtered$genes$gene_type)
 
 # Now, normalization by the method of trimmed mean of M-values (TMM)
@@ -184,11 +192,11 @@ boxplot(log2cpm.norm,
 axis(2)
 axis(1,at=1:nsamples,labels=(dge.filtered.norm$samples$RIN),las=2,cex.axis=0.8)
 
-path <- paste0("../../results/", tool, "/library/", condition, "boxplot_RIN")
+path <- paste0("../../results/", tool, "/library/", condition,
+               "_", min_expression, "_boxplot_RIN")
 saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
 ```
-
-# Library check
+# RIN check with replicates summed
 ```{r}
 # check if there is correlation between RIN and library size
 box <- dge.filtered.norm$samples
@@ -209,11 +217,11 @@ ggscatter(box, x = "RIN", y = "lib.size",
           cor.coef = TRUE, cor.method = "pearson",
           ylab = "library size", xlab = "RIN value") 
 
-path <- paste0("../../results/", tool, "/library/", condition, "_corr_RIN_lib_size")
+path <- paste0("../../results/", tool, "/library/", condition, 
+               "_", min_expression, "_corr_RIN_lib_size")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 6)
 ```
-
-# Raw MDS
+# MDS
 ```{r}
 par(bg = 'white')
 
@@ -231,10 +239,9 @@ plotMDS(
 title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 
 path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_gene_MDS_label_TYPE_dim1&2")
+               condition, "_", min_expression, "_filtered_MDS_label_type_dim1&2")
 saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 ```
-
 
 ```{r TMM_normalize}
 # norm factor summary
@@ -287,16 +294,13 @@ for (i in 2:nsamples) {
 }
 
 # save
-path <- paste0("../../results/", tool, "/library/", condition,"_gene_density")
+path <- paste0("../../results/", tool, "/library/", condition,"_", min_expression, "_gene_density")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 ```
-
-
 ```{r}
 remove(box,
        res)
 ```
-
 ```{r}
 remove(
        dge, 
@@ -306,13 +310,10 @@ remove(
        log2cpm.norm,
        log2cpm.tech)
 ```
-
 # Save R object
 ```{r}
-saveRDS(dge.filtered.norm, file = paste0("../../rObjects/", condition, ".dge.filtered.norm.rds"))
-dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition ,".dge.filtered.norm.rds"))
+saveRDS(dge.filtered.norm, file = paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
 ```
-
 # Design matrix
 ```{r design_matrix}
 dge.filtered.norm$samples$RIN[is.na(dge.filtered.norm$samples$RIN)] <- 1
@@ -320,7 +321,6 @@ dge.filtered.norm$samples$RIN[is.na(dge.filtered.norm$samples$RIN)] <- 1
 design <- model.matrix(~ 0 + TYPE + RIN + Age + APOE + Race,  dge.filtered.norm$samples)
 colnames(design) <- c(CONTROL, AD, PA, LBD, "RIN", "Age", "E2E4", "E3E3", "E3E4", "E4E4", "Asian_American", "Caucasian", "Hispanic", "Native_American")
 ```
-
 # Voom
 ```{r voom}
 # voom transform counts
@@ -330,66 +330,8 @@ colnames(design) <- c(CONTROL, AD, PA, LBD, "RIN", "Age", "E2E4", "E3E3", "E3E4"
 
 # no weights needed with this large sample size
 v <- voom(dge.filtered.norm, design, plot=TRUE)
-path <- paste0("../../results/", tool, "/voom/", condition, "_gene_mean_voom")
+path <- paste0("../../results/", tool, "/voom/", condition, "_", min_expression, "_gene_mean_voom")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
-```
-# PCA on all/the most variable genes
-Select most variable genes based on the biological 
-coefficient of variance
-```{r pca, cache=TRUE}
-# Voom transformed counts
-voomCounts <- v$E
-voomCountsMatrix <- data.matrix(voomCounts, rownames.force = NA)
-# Setting the N of genes to use
-ntop = length(dge.filtered.norm$genes$gene_id)
-# Sorting by the coefficient of variance
-means <- rowMeans(voomCountsMatrix)
-Pvars <- rowVars(voomCountsMatrix)
-cv2 <- Pvars / means ^ 2
-select <-
-  order(cv2, decreasing = TRUE)[seq_len(min(ntop, length(cv2)))]
-highly_variable_exp <- ((voomCountsMatrix)[select,])
-# Running PCA
-pca_exp <- prcomp(t(highly_variable_exp), scale = F, center = T)
-# scale a logical value indicating whether the variables should be scaled
-# to have unit variance before the analysis takes place.
-# a logical value indicating whether the variables should be shifted to be zero centered.
-head(pca_exp$x)[, 1:3]
-#summary(pca_exp)
-# Dataframe with the first 10 PCs
-dim1_10 <- data.frame(pca_exp$x[, 1:10])
-# Adding metadata
-pcaWithMetadata <- merge(dim1_10, dge.filtered.norm$samples, by = 0, all = TRUE)
-pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE,
-                                 levels = c(CONTROL, AD, PA, LBD, NA))
-# Plotting
-ggplot(data = pcaWithMetadata, aes(
-  x = PC1,
-  y = PC2,
-  shape = group,
-  color = group
-)) +
-  geom_point(size = 2) +
-  theme_bw() +
-#  xlim(-150, 150) +
-#  ylim(-150, 150) +
-  scale_color_manual(values = c(control_color, AD_color,
-                                PA_color, LBD_color,
-                                "azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape,
-                                PA_shape, LBD_shape)) +
-  theme(
-    plot.title = element_text(size = 7, face = "bold"),
-    legend.title = element_text(size = 7),
-    legend.text = element_text(size = 6),
-    axis.text.x = element_text(size = 6),
-    axis.text.y = element_text(size = 6),
-    axis.title.x = element_text(size = 6),
-    axis.title.y = element_text(size = 6)
-  ) +
-  theme(legend.title = element_blank()) +
-  xlab("PC1 ") +
-  ylab("PC2 ")
 ```
 
 ```{r}
@@ -421,18 +363,18 @@ veBayesFit <- eBayes(vfit)
 plotSA(veBayesFit, main = "Final Model: Mean-variance Trend")
 
 # save
-path <- paste0("../../results/", tool, "/voom/", condition, "_gene_final_mean_var")
+path <- paste0("../../results/", tool, "/voom/", condition,
+               "_", min_expression, "_gene_final_mean_var")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 ```
-
 # Voom MDS Plot
 ```{r MDS_voom}
 group_colors <- c(control_color, 
                   AD_color, 
                   PA_color, 
                   LBD_color)[v$targets$TYPE]
+Sex <- v$targets$Sex
 TYPE <- v$targets$TYPE
-
 plotMDS(
   v, 
   top = 100, 
@@ -448,13 +390,18 @@ title(expression('Top 100 Genes - Voom (Log'[2]~'CPM)'))
 
 # save
 # save
-path <- paste0("../../results/", tool, "/MDS/", condition, "_gene_MDS_voom_sex")
+path <- paste0("../../results/", tool, "/MDS/", condition, 
+               "_", min_expression,"_filtered_MDS_voom_type")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 5)
 ```
 
 ```{r save_EList}
-saveRDS(v, file = paste0("../../rObjects/", condition,".gene_voom.rds"))
-saveRDS(voomCountsMatrix, file = paste0("../../rObjects/", condition,".voomCountsMatrix.rds"))
+voomCounts <- v$E
+voomCountsMatrix <- data.matrix(voomCounts, rownames.force = NA)
+saveRDS(v, file = paste0("../../rObjects/", condition,
+                         "_", min_expression,".gene_voom.rds"))
+saveRDS(voomCountsMatrix, file = paste0("../../rObjects/", condition,
+      "_", min_expression,".voomCountsMatrix.rds"))
 ```
 
 # Number of DEGs
@@ -472,12 +419,12 @@ sumTable <-
 
 print(paste0(" FDRq < ", pval))
 sumTable
-#topTable(veBayesFit, coef = "LBDvsControl")
 ```
 
 # Output DEG tables
 ```{r output_DEG_tables}
 coef <- 1
+
 for (i in allComparisons) {
   # p < 1, log2fc > 0 
   vTopTableAll <-
@@ -492,6 +439,13 @@ vTopTableAll <-
   subset(
     vTopTableAll,
     select = -c(
+      strand,
+      source,
+      type,
+      gene_type,
+      level,
+      hgnc_id, 
+      havana_transcript,
       score,
       phase,
       transcript_id,
@@ -502,22 +456,16 @@ vTopTableAll <-
       exon_id,
       ont,
       protein_id,
-      ccdsid, 
-      strand, 
-      source, 
-      type, 
-      level, 
-      hgnc_id,
-      havana_gene,
-      tag,
-      havana_transcript
+      ccdsid
     )
   )
     saveRDS(vTopTableAll, file = 
-            paste0("../../rObjects/", 
-                   i, "_", condition,"_gene_table.rds"))
-  path <- paste0("../../results/", tool, "/DEGs/",
-  i, "_", condition, "_gene_DEGs_FDRq1.00.txt", sep = "") 
+            paste0("../../rObjects/", condition, 
+                   "_", min_expression, "_",
+                   i,"_gene_table.rds"))
+  path <- paste0("../../results/", tool, "/DEGs/", condition, 
+                 "_", min_expression, "_",
+  i, "_gene_DEGs_FDRq1.00.txt", sep = "") 
   write.table(
     vTopTableAll,
     path,
@@ -535,7 +483,8 @@ vTopTableAll <-
       lfc = 0
     )
   path <- paste0("../../results/", tool, "/DEGs/",
-  i, "_", condition, "_gene_DEGs_FDRq0.05.txt", sep = "") 
+                 condition, "_", min_expression, "_",
+  i, "_gene_DEGs_FDRq0.05.txt", sep = "") 
   write.table(
     vTopTable1,
     path,
@@ -549,120 +498,135 @@ vTopTableAll <-
 remove(coef)
 ```
 
-Read table with all genes (FDRq = 1).
-```{r read_DEG_table}
-coef <- 1
+# Volcano plots
+```{r}
 for (i in allComparisons) {
-  filepath <- paste0(
-    "../../results/",
-    tool,
-    "/DEGs/",
-    i,"_", condition, 
-    "_gene_DEGs_FDRq1.00.txt"
-  )
-  assign(i,
-         read.delim(
-           filepath,
-           header = TRUE,
-           sep = "\t",
-           stringsAsFactors = FALSE
-         ))
-  # increment
-  coef <- coef + 1
-}
-```
-
-# Assign colors
-Assign colors  values based on FDRq cutoff of 0.05.
-```{r assign_colors}
-color_values <- vector()
-max <- nrow(LBDvsControl)
-
-for(i in 1:max){
-  if (LBDvsControl$adj.P.Val[i] < 0.05){
-    if (LBDvsControl$logFC[i] > 0){
-      color_values <- c(color_values, 1) # 1 when logFC > 0 and FDRq < 0.05
+  group1_vs_group2 <-
+    read.delim(
+      paste0(
+        "../../results/",
+        tool,
+        "/DEGs/",
+        condition,
+        "_",
+        min_expression,
+        "_",
+        i,
+        "_gene_DEGs_FDRq1.00.txt"
+      )
+    )
+  color_values <- vector()
+  max <- nrow(group1_vs_group2)
+  for (row in 1:max) {
+    if (group1_vs_group2$adj.P.Val[row] < 0.05) {
+      if (group1_vs_group2$logFC [row] > 0) {
+        color_values <- c(color_values, 1)
+      }
+      else if (group1_vs_group2$logFC[row] < 0) {
+        color_values <- c(color_values, 2)
+      }
     }
-    else if (LBDvsControl$logFC[i] < 0){
-      color_values <- c(color_values, 2) # 2 when logFC < 0 and FDRq < 0.05
+    else{
+      color_values <- c(color_values, 3)
     }
   }
-  else{
-    color_values <- c(color_values, 3) # 3 when FDRq >= 0.05
+  group1_vs_group2$color_adjpval_0.05 <- factor(color_values)
+  data <- group1_vs_group2
+  # plot only if there are DEGs with p_val_adj < 0.05
+  num <- subset(data, adj.P.Val < 0.05)
+  num <- nrow(num)
+  if (num != 0) {
+    up <- data[data$color_adjpval_0.05 == 1,]
+    up10 <- up[1:10,]
+    down <- data[data$color_adjpval_0.05 == 2,]
+    down10 <- down[1:10,]
+    if (!1 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("blue", "gray")
+    } else if (!2 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("red", "gray")
+    } else if (!1 %in% unique(data$color_adjpval_0.05) &&
+               !2 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("gray")
+    } else {
+      my_colors <- c("red", "blue", "gray")
+    }
+    hadjpval <- (-log10(max(data$P.Value[data$adj.P.Val < 0.05],
+                            na.rm = TRUE)))
+    p <-
+      ggplot(data = data,
+             aes(
+               x = logFC,
+               y = -log10(P.Value),
+               color = color_adjpval_0.05
+             )) +
+      geom_point(alpha = 0.8, size = 1) +
+      theme_bw() +
+      theme(legend.position = "none") +
+      scale_color_manual(values = my_colors) +
+      labs(
+        title = "",
+        x = expression(log[2](FC)),
+        y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
+      ) +
+      theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_text(size = 10)) +
+      geom_hline(yintercept = hadjpval,
+                 #  horizontal line
+                 colour = "#000000",
+                 linetype = "dashed") +
+      ggtitle(paste0(condition, " ", i, "\n", "adj.P.Val < 0.05")) +
+      geom_text_repel(
+        data = up10,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "maroon",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      ) +
+      geom_text_repel(
+        data = down10,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "navyblue",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      )
+    p
+    
+    # save
+    path <-
+      paste0(
+        "../../results/",
+        tool,
+        "/volcano/",
+        condition,
+        "_",
+        min_expression,
+        "_",
+        i,
+        "_gene_volcano_FDRq0.05"
+      )
+    pdf(paste0(path, ".pdf"),
+        height = 5,
+        width = 5)
+    print(p)
+    dev.off()
+    
+    print(paste("i =", i))
+    
   }
-}
-
-LBDvsControl$color_p0.05 <- factor(color_values)
+} 
 ```
-
-# Subset genes to label
-Subset the top 10 up and down-regulated genes
 ```{r}
-up <- LBDvsControl[LBDvsControl$color_p0.05 == 1,]
-up10 <- up[1:30,]
-
-down <- LBDvsControl[LBDvsControl$color_p0.05 == 2,]
-down10 <- down[1:30,]
 ```
-
-# Volcano plot
-```{r volcano}
-hadjpval <- (-log10(max(
-  LBDvsControl$P.Value[LBDvsControl$adj.P.Val < 0.05], 
-  na.rm=TRUE)))
-
-p_vol <-
-  ggplot(data = LBDvsControl, 
-         aes(x = logFC,  # x-axis is logFC
-             y = -log10(P.Value),  # y-axis will be -log10 of P.Value
-             color = color_p0.05)) +  # color is based on factored color column
-  geom_point(alpha = 1.5, size = 1.7) +  # create scatterplot, alpha makes points transparent
-  theme_bw() +  # set color theme
-  theme(legend.position = "none") +  # no legend
-  scale_color_manual(values = c("red", "blue","grey")) +  # set factor colors
-  labs(
-    title = "", # no main title
-    x = expression(log[2](FC)), # x-axis title
-    y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)") # y-axis title
-  ) +
-  theme(axis.title.x = element_text(size = 16),
-        axis.text.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        axis.text.y = element_text(size = 16),
-        plot.title = element_text(size = 18, colour = "olivedrab")) +
-  geom_hline(yintercept = hadjpval,  #  horizontal line
-                     colour = "#000000",
-                     linetype = "dashed") +
-  ggtitle("XY males") +
-  geom_text_repel(data = up10,
-                  aes(x = logFC, y= -log10(P.Value), label = gene_name), 
-                  color = "maroon", 
-                  fontface="italic",
-                  size = 4, 
-                  max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-                  ) +
-  geom_text_repel(data = down10,
-                  aes(x = logFC, y= -log10(P.Value), label = gene_name), 
-                  color = "navyblue", 
-                  fontface="italic",
-                  size = 4, 
-                  max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-                  ) +
-  scale_y_continuous(breaks = seq(0,13,by=2), limits = c(0,13)) #+
-#  scale_x_continuous(breaks = seq(-2,2,by=1), limits = c(-2,2))
-p_vol
-
-# save
-path <- paste0("../../results/", tool, "/volcano/", condition, "_gene_volcano_FDRq0.05")
-saveToPDF(paste0(path, ".pdf"), width = 4, height = 4.25)
-```
-# glimma
-```{r}
-saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, ".veBayesFit.rds"))
-veBayesFit <- readRDS(paste0("../../rObjects/", condition, ".veBayesFit.rds"))
-```
-
-```{r}
-glimmaVolcano(veBayesFit, coef = 1,  dge = dge.filtered.norm, groups = dge.filtered.norm$samples$TYPE, display.columns=c("gene_name", "AdjPValue", "seqnames"))
-```
-

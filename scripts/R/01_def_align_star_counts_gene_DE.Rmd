@@ -531,7 +531,7 @@ boxplot(log2cpm.norm.reps,
 axis(2)
 axis(1,at=1:nsamples,labels=(dge.filtered.reps.norm$samples$RIN),las=2,cex.axis=0.8)
 
-path <- paste0("../../results/", tool, "/boxplot/LBD_gene_boxplot_with_reps_with_RIN")
+path <- paste0("../../results/", tool, "/library/", condition, "_gene_boxplot_RIN")
 saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
 ```
 
