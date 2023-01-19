@@ -1,0 +1,194 @@
+---
+title: "Compare DEGs to other datasets"
+author: "Kimberly Olney"
+date: "01/06/2023"
+output: html_document
+---
+
+# Setup
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = ".")
+```
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+condition <- c("All_samples")
+tool <- "star"
+min_expression <- "min_exp50"
+# save contrast names
+allComparisons <- c("LBDvsControl", 
+                    "LBDvsAD", 
+                    "LBDvsPA", 
+                    "ADvsControl", 
+                    "PAvsControl", 
+                    "ADvsPA")
+allComparisons # check
+```
+# Read in DEGs
+Read table with all genes (FDRq = 1).
+```{r read_DEG_table}
+# sex as a covariate
+coef <- 1
+for (i in allComparisons) {
+  filepath <- paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition, "_", min_expression, "_",
+    i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(paste0(i),
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+  # increment
+  coef <- coef + 1
+}
+```
+
+```{r}
+test <- vroom("/research/labs/neurology/fryer/m239830/LBD_CWOW/other_datasets/Marques-Coelho_2021/sup_table_1.txt")
+colnames(test)[4] ="gene_name"
+```
+
+```{r}
+data <-
+  merge(LBDvsControl,
+        test,
+        by = "gene_name",
+        all = T)
+#data <- data[c(1,2,6,9,10,13,22,23,26)]
+#colnames(data) = c("gene_name", "chr", "gene_id", "LBD_logFC", "LBD_AveExpr", "LBD_adj.P.Val", "AD_logFC", "AD_AveExpr", "AD_adj.P.Val")
+
+data[is.na(data)] <- 0
+#data <- subset(data, AD_adj.P.Val <= 0.05 | LBD_adj.P.Val <= 0.05)
+data_goi <- subset(data, 
+                        (AD_logFC < -0.5 & LBD_logFC < -0.5) | 
+                          (AD_logFC > .5 & LBD_logFC > 0.5) | 
+                          (AD_logFC > .5 & LBD_logFC <= 0) |
+                          (AD_logFC <= 0 & LBD_logFC > 0.5))
+
+data$difference <- data$logFC - data$gene.log2FC
+ggplot(data = data, 
+  aes(x = logFC, y = gene.log2FC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 2.75,
+    ymin = 2.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -2,
+    ymin = 0,
+    ymax = -2,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between our data and Marques-Coelho 2021",
+    x = expression(paste("Our data ", log[2](AD/control))),
+    y = expression(paste("Marques-Coelho 2021 ", log[2](LBD/control))))+
+  scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
+                     limits = c(-2, 2.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2.75, by = .5), 
+                     limits = c(-2, 2.75), expand = c(0,0))
+
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(data, x = "logFC", y = "gene.log2FC",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -1.25, label.y = -10)
+```
+```{r}
+data <-
+  merge(LBDvsControl,
+        ADvsControl,
+        by = "gene_name",
+        all = T)
+data <- data[c(1,2,6,9,10,13,22,23,26)]
+colnames(data) = c("gene_name", "chr", "gene_id", "LBD_logFC", "LBD_AveExpr", "LBD_adj.P.Val", "AD_logFC", "AD_AveExpr", "AD_adj.P.Val")
+
+data[is.na(data)] <- 0
+#data <- subset(data, AD_adj.P.Val <= 0.05 | LBD_adj.P.Val <= 0.05)
+data_goi <- subset(data, 
+                        (AD_logFC < -0.5 & LBD_logFC < -0.5) | 
+                          (AD_logFC > .5 & LBD_logFC > 0.5) | 
+                          (AD_logFC > .5 & LBD_logFC <= 0) |
+                          (AD_logFC <= 0 & LBD_logFC > 0.5))
+
+data$difference <- data$LBD_logFC - data$AD_logFC
+ggplot(data = data, 
+  aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 2.75,
+    ymin = 2.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -2,
+    ymin = 0,
+    ymax = -2,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = data_goi, 
+    aes(
+      x = AD_logFC, 
+      y = LBD_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 40)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between LBD and AD within XX females",
+    x = expression(paste("XX female ", log[2](AD/control))),
+    y = expression(paste("XX female ", log[2](LBD/control))))+
+  scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
+                     limits = c(-2, 2.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2.75, by = .5), 
+                     limits = c(-2, 2.75), expand = c(0,0))
+
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(data, x = "AD_logFC", y = "LBD_logFC",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+```
