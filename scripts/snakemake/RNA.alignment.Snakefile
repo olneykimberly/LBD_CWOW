@@ -21,13 +21,15 @@ rule all:
 			#expand(config["trimmedQC"]+"{sample}_trimmed_fq1_fastqc.html", sample = config["sample_names"]),
 			#expand(config["trimmedQC"]+"{sample}_trimmed_fq2_fastqc.html", sample = config["sample_names"]),
 
-			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XX.bam", sample = config["female_names"]),   	   	        		
-			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XX.bam", sample = config["female_names"]),   	
+			expand(config["starAligned_SCC"]+"{sample}_STAR_XX.bam", sample = config["female_names"]),   	   	        		
+			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XX.bam", sample = config["female_names"]),   	   	        		
+			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XX.bam", sample = config["female_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam", sample = config["female_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam.bai", sample = config["female_names"]),
 
-			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XY.bam", sample = config["male_names"]),   	   	        		
-			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XY.bam", sample = config["male_names"]),   	
+			expand(config["starAligned_SCC"]+"{sample}_STAR_XY.bam", sample = config["male_names"]),   	   	        		
+			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XY.bam", sample = config["male_names"]),   	   	        		
+			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XY.bam", sample = config["male_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam", sample = config["male_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai", sample = config["male_names"])
 
@@ -425,4 +427,5 @@ rule index_bam_XY:
 #---------------------
 # End of alignment and processing bam file, may poceed to R scripts for differential expression. 
 # Run RNA.variants.Snakefile to call variants from RNA aligned bam files. 
+
 
