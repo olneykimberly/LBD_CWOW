@@ -20,18 +20,22 @@ rule all:
 			expand(config["trimmedReads"]+"{sample}_trimmed_R2.fastq.gz", sample = config["sample_names"]),
 			#expand(config["trimmedQC"]+"{sample}_trimmed_fq1_fastqc.html", sample = config["sample_names"]),
 			#expand(config["trimmedQC"]+"{sample}_trimmed_fq2_fastqc.html", sample = config["sample_names"]),
+			#expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"]),   	   	        		
+			#expand(config["starAligned"]+"{sample}_STAR_metrics.txt", sample = config["sample_names"]),   	   	        		
 
 			expand(config["starAligned_SCC"]+"{sample}_STAR_XX.bam", sample = config["female_names"]),   	   	        		
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XX.bam", sample = config["female_names"]),   	   	        		
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XX.bam", sample = config["female_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam", sample = config["female_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam.bai", sample = config["female_names"]),
+			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XX.txt", sample = config["female_names"]),   	        		
 
 			expand(config["starAligned_SCC"]+"{sample}_STAR_XY.bam", sample = config["male_names"]),   	   	        		
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XY.bam", sample = config["male_names"]),   	   	        		
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XY.bam", sample = config["male_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam", sample = config["male_names"]),   	
-			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai", sample = config["male_names"])
+			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai", sample = config["male_names"]),
+			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XY.txt", sample = config["male_names"]) 	        		
 
 
 #---------------------
@@ -289,6 +293,40 @@ rule STAR_index_bam:
 #index. Index a coordinate-sorted BGZIP-compressed SAM, BAM or CRAM file for fast random access.
 #-in. input bam file
 # many downstream tools require the bam to be indexed. 
+#---------------------
+#rule collectRnaSeqMetrics: 
+#---------------------
+# produces metrics describing the distribution of the bases within the transcripts. It calculates the total numbers and the fractions of nucleotides within specific genomic regions including untranslated regions (UTRs), introns, intergenic sequences (between discrete genes), and peptide-coding sequences (exons). This tool also determines the numbers of bases that pass quality filters that are specific to Illumina data (PF_BASES). For more information please see the corresponding GATK Dictionary entry.
+# NOTE ** to make the refFlat file from the gtf, picardmetrics tool was run first 
+# picardmetrics refFlat /research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation.gtf
+# see https://github.com/slowkow/picardmetrics for details
+rule collectRnaSeqMetrics:
+    input:
+    	BAM = (config["starAligned"]+"{sample}_STAR_sort_mkdup_rdgrp.bam")
+    output:
+    	Metrics = (config["starAligned"]+"{sample}_STAR_metrics.txt"),
+    	Graph = (config["starAligned"]+"{sample}_RNA_metrics.pdf")
+    params:
+    	ref_flat = (config["refFlat"]),
+    	ref = (config["GRCh38.fa"]),
+    	picard = picard_path
+    shell:
+    	"{params.picard} -Xmx14g CollectRnaSeqMetrics I={input.BAM} O={output.Metrics} "
+    	"REF_FLAT={params.ref_flat} STRAND=SECOND_READ_TRANSCRIPTION_STRAND "
+    	"REFERENCE_SEQUENCE={params.ref} CHART_OUTPUT={output.Graph}"
+
+# KEY
+#-Xmx14g. -Xms<size> it' initial heap size. 14GB for the heap
+#collectRnaSeqMetrics Produces RNA alignment metrics for a SAM or BAM file.
+#I=. input bam file
+#O=. output metrics file
+#REF_FLAT = ref_flat.txt the tool also requires a REF_FLAT file, a tab-delimited file containing information about the location of RNA transcripts, exon start and stop sites, etc. For an example refFlat file for GRCh38, see refFlat.txt.gz at http://hgdownload.cse.ucsc.edu/goldenPath/hg38/database. 
+#REFERENCE_SEQUENCE = GRCh38.primary_assembly.genome.fa  optional argument 
+# produces metrics describing the distribution of the bases within the transcripts. 
+# Calculates the total numbers and the fractions of nucleotides within specific genomic regions including:
+# untranslated regions (UTRs), introns, intergenic sequences (between discrete genes), and peptide-coding sequences (exons). 
+# This tool also determines the numbers of bases that pass quality filters that are specific to Illumina data (PF_BASES). 
+# More information see the picard website: https://gatk.broadinstitute.org/hc/en-us/articles/360037057492-CollectRnaSeqMetrics-Picard-#--CHART_OUTPUT 
 
 #-----------------------------------------------------------------------------------------
 # Female XX only samples
@@ -356,6 +394,20 @@ rule index_bam_XX:
     shell:
     	"{params.bamtools} index -in {input.BAM}"
 
+rule collectRnaSeqMetrics_XX:
+    input:
+    	BAM = (config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam")
+    output:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_metrics_XX.txt"),
+    	Graph = (config["starAligned_SCC"]+"{sample}_RNA_metrics_XX.pdf")
+    params:
+    	ref_flat = (config["refFlat"]),
+    	ref = (config["GRCh38.fa"]),
+    	picard = picard_path
+    shell:
+    	"{params.picard} -Xmx14g CollectRnaSeqMetrics I={input.BAM} O={output.Metrics} "
+    	"REF_FLAT={params.ref_flat} STRAND=SECOND_READ_TRANSCRIPTION_STRAND "
+    	"REFERENCE_SEQUENCE={params.ref} CHART_OUTPUT={output.Graph}"
 
 #-----------------------------------------------------------------------------------------
 # Male XY only samples
@@ -423,6 +475,21 @@ rule index_bam_XY:
     	bamtools = bamtools_path
     shell:
     	"{params.bamtools} index -in {input.BAM}"
+
+rule collectRnaSeqMetrics_XY:
+    input:
+    	BAM = (config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam")
+    output:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_metrics_XY.txt"),
+    	Graph = (config["starAligned_SCC"]+"{sample}_RNA_metrics_XY.pdf")
+    params:
+    	ref_flat = (config["refFlat"]),
+    	ref = (config["GRCh38.fa"]),
+    	picard = picard_path
+    shell:
+    	"{params.picard} -Xmx14g CollectRnaSeqMetrics I={input.BAM} O={output.Metrics} "
+    	"REF_FLAT={params.ref_flat} STRAND=SECOND_READ_TRANSCRIPTION_STRAND "
+    	"REFERENCE_SEQUENCE={params.ref} CHART_OUTPUT={output.Graph}"
 
 #---------------------
 # End of alignment and processing bam file, may poceed to R scripts for differential expression. 

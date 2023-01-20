@@ -14,6 +14,8 @@
     "GRCh38.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38.primary_assembly.genome.fa",
     "GRCh38.star" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_def",
     "GRCh38.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation",
+    "refFlat": "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation.refFlat",
+    "rRNA_interval_list": "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation.rRNA.list",
     
     "GRCh38.Ymasked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_Ymasked_XX.fa",
     "GRCh38.YPARs_masked.fa" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY.fa",
@@ -8779,3 +8781,4 @@
         "PL": "Illumina"
         }
 }
+
