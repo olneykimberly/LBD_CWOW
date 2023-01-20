@@ -269,8 +269,8 @@ walk2(plotnames,
 ## loop through variables
 ```{r}
 metadata_continuous <-
-  data.frame(metadata$Brain.wt, metadata$Duration, metadata$Age, metadata$PMI) 
-column_variables <- c("Brain.wt","Duration", "Age", "PMI")
+  data.frame(metadata$Brain.wt, metadata$Duration, metadata$Age, metadata$PMI, metadata$Concentration.ng.ul, metadata$Volume.ul, metadata$Total.RNA.ng, metadata$RIN) 
+column_variables <- c("Brain.wt","Duration", "Age", "PMI", "Concentration.ng.ul", "Volume.ul", "Total.RNA.ng", "RIN")
 my_comparisons <- list(c("CONTROL", "AD"), c("CONTROL", "PA"), c("CONTROL", "LBD"), c("AD", "PA"), c("AD", "LBD"), c("PA", "LBD"))
 
 violin_plot_fun <- function(i, j) {
