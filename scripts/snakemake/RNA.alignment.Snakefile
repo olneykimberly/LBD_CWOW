@@ -29,7 +29,8 @@ rule all:
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XX.bam", sample = config["female_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam", sample = config["female_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam.bai", sample = config["female_names"]),
-			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XX.txt", sample = config["female_names"]),   	        		
+			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XX.txt", sample = config["female_names"]),  
+			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_only_XX.txt", sample = config["female_names"]),   	        		 	        		
 			expand(config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics_XX.txt", sample = config["female_names"]),   	        		
 
 			expand(config["starAligned_SCC"]+"{sample}_STAR_XY.bam", sample = config["male_names"]),   	   	        		
@@ -37,7 +38,8 @@ rule all:
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_XY.bam", sample = config["male_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam", sample = config["male_names"]),   	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai", sample = config["male_names"]),
-			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XY.txt", sample = config["male_names"]),	        		
+			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XY.txt", sample = config["male_names"]),	
+			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_only_XY.txt", sample = config["male_names"]),   	        		 	        		        		
 			expand(config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics_XY.txt", sample = config["male_names"]) 	        		
 
 
@@ -432,6 +434,14 @@ rule collectRnaSeqMetrics_XX:
     	"REF_FLAT={params.ref_flat} STRAND=SECOND_READ_TRANSCRIPTION_STRAND "
     	"REFERENCE_SEQUENCE={params.ref} CHART_OUTPUT={output.Graph}"
 
+rule reformat_collectRnaSeqMetrics_XX:
+    input:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_metrics_XX.txt")
+    output:
+    	Metrics_only = (config["starAligned_SCC"]+"{sample}_STAR_metrics_only_XX.txt")
+    shell:
+    	"cat {input.Metrics} | sed 1,7d | head -1 > {output.Metrics_only}"
+    	
 rule CollectAlignmentSummaryMetrics_XX:
     input:
     	BAM = (config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XX.bam")
@@ -525,6 +535,14 @@ rule collectRnaSeqMetrics_XY:
     	"REF_FLAT={params.ref_flat} STRAND=SECOND_READ_TRANSCRIPTION_STRAND "
     	"REFERENCE_SEQUENCE={params.ref} CHART_OUTPUT={output.Graph}"
 
+rule reformat_collectRnaSeqMetrics_XY:
+    input:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_metrics_XY.txt")
+    output:
+    	Metrics_only = (config["starAligned_SCC"]+"{sample}_STAR_metrics_only_XY.txt")
+    shell:
+    	"cat {input.Metrics} | sed 1,7d | head -1 > {output.Metrics_only}"
+
 rule CollectAlignmentSummaryMetrics_XY:
     input:
     	BAM = (config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam")
@@ -539,3 +557,4 @@ rule CollectAlignmentSummaryMetrics_XY:
 #---------------------
 # End of alignment and processing bam file, may poceed to R scripts for differential expression. 
 # Run RNA.variants.Snakefile to call variants from RNA aligned bam files. 
+
