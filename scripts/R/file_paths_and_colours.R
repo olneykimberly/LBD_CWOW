@@ -25,6 +25,8 @@ library("data.table")
 library(DESeq2)
 library(DEGreport)
 library(dittoSeq)
+library(Hmisc)
+
 
 # paths, colors, shapes and more
 LBD <- "LBD"
@@ -58,20 +60,20 @@ saveToPDF <- function(...) {
 # the expanded metadata contains inferred sex, RIN, and WGS sample IDs
 metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
 # remove duplicates if any 
-metadata <- metadata[!duplicated(metadata[,c('RNA.config.ID')]),]
+#metadata <- metadata[!duplicated(metadata[,c('RNA.config.ID')]),]
 # rename columns for easier plotting 
 # names(metadata)[names(metadata) == "TYPE"] <- "Disease group"
-metadata <- metadata %>%
-  mutate(across('TYPE', str_replace, 'CONTROL - AD', 'AD'))
-metadata <- metadata %>%
-  mutate(across('TYPE', str_replace, 'CONTROL - PA', 'PA'))
-metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "AD", "PA", "LBD"))
+#metadata <- metadata %>%
+#  mutate(across('TYPE', str_replace, 'CONTROL - AD', 'AD'))
+#metadata <- metadata %>%
+#  mutate(across('TYPE', str_replace, 'CONTROL - PA', 'PA'))
+#metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "AD", "PA", "LBD"))
 
 
-metadata <- metadata %>% mutate(sex_chr = case_when(
-  startsWith(sex_inferred, "female") ~ "XX", 
-  startsWith(sex_inferred, "male") ~ "XY"))
+#metadata <- metadata %>% mutate(sex_chr = case_when(
+#  startsWith(sex_inferred, "female") ~ "XX", 
+#  startsWith(sex_inferred, "male") ~ "XY"))
 
 # remove rows with no inferred sex.
 # No counts data for this samples because there is no RNAseq data for that individual
-metadata <- metadata[!is.na(metadata$sex_inferred),]
+#metadata <- metadata[!is.na(metadata$sex_inferred),]

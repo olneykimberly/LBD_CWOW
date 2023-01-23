@@ -21,8 +21,10 @@ rule all:
 			#expand(config["trimmedQC"]+"{sample}_trimmed_fq1_fastqc.html", sample = config["sample_names"]),
 			#expand(config["trimmedQC"]+"{sample}_trimmed_fq2_fastqc.html", sample = config["sample_names"]),
 			#expand(config["starAligned"]+"{sample}_STAR.bam", sample = config["sample_names"]),   	   	        		
-			#expand(config["starAligned"]+"{sample}_STAR_metrics.txt", sample = config["sample_names"]),   	   	        		
+			#expand(config["starAligned"]+"{sample}_STAR_metrics.txt", sample = config["sample_names"]),
+			#expand(config["starAligned"]+"{sample}_STAR_metrics_only.txt", sample = config["sample_names"]),   	   	        		   	   	        		
 			#expand(config["starAligned"]+"{sample}_STAR_Alignment_metrics.txt", sample = config["sample_names"]),   	   	        		
+			#expand(config["starAligned"]+"{sample}_Alignment_metrics_only.txt", sample = config["sample_names"]),   	        		
 
 			expand(config["starAligned_SCC"]+"{sample}_STAR_XX.bam", sample = config["female_names"]),   	   	        		
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XX.bam", sample = config["female_names"]),   	   	        		
@@ -32,6 +34,7 @@ rule all:
 			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XX.txt", sample = config["female_names"]),  
 			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_only_XX.txt", sample = config["female_names"]),   	        		 	        		
 			expand(config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics_XX.txt", sample = config["female_names"]),   	        		
+			expand(config["starAligned_SCC"]+"{sample}_Alignment_metrics_only_XX.txt", sample = config["female_names"]),   	        		
 
 			expand(config["starAligned_SCC"]+"{sample}_STAR_XY.bam", sample = config["male_names"]),   	   	        		
 			#expand(config["starAligned_SCC"]+"{sample}_STAR_sort_XY.bam", sample = config["male_names"]),   	   	        		
@@ -40,7 +43,8 @@ rule all:
 			expand(config["starAligned_SCC"]+"{sample}_STAR_sort_mkdup_rdgrp_XY.bam.bai", sample = config["male_names"]),
 			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_XY.txt", sample = config["male_names"]),	
 			expand(config["starAligned_SCC"]+"{sample}_STAR_metrics_only_XY.txt", sample = config["male_names"]),   	        		 	        		        		
-			expand(config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics_XY.txt", sample = config["male_names"]) 	        		
+			expand(config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics_XY.txt", sample = config["male_names"]),	        		
+			expand(config["starAligned_SCC"]+"{sample}_Alignment_metrics_only_XY.txt", sample = config["male_names"]) 	        		
 
 
 #---------------------
@@ -333,6 +337,20 @@ rule collectRnaSeqMetrics:
 # This tool also determines the numbers of bases that pass quality filters that are specific to Illumina data (PF_BASES). 
 # More information see the picard website: https://gatk.broadinstitute.org/hc/en-us/articles/360037057492-CollectRnaSeqMetrics-Picard-#--CHART_OUTPUT 
 #---------------------
+#rule reformat_collectRnaSeqMetrics: 
+#---------------------
+rule reformat_collectRnaSeqMetrics:
+    input:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_metrics.txt")
+    output:
+    	Metrics_only = (config["starAligned_SCC"]+"{sample}_STAR_metrics_only.txt")
+    shell:
+    	"cat {input.Metrics} | sed 1,7d | head -1 > {output.Metrics_only}"
+# sed to get lines 1-7 
+# head to get the first line
+# the output contains the metrics information only, this will make it easier to read into R for plotting. 
+# the output will not have header information. This information is stored in RNA_metrics_header.txt
+#---------------------
 #rule CollectAlignmentSummaryMetrics: 
 #---------------------
 rule CollectAlignmentSummaryMetrics:
@@ -352,6 +370,20 @@ rule CollectAlignmentSummaryMetrics:
 #I=. input bam file
 #O=. output metrics file
 #R= GRCh38.primary_assembly.genome.fa  
+#---------------------
+#rule reformat_CollectAlignmentSummaryMetrics: 
+#---------------------
+rule reformat_CollectAlignmentSummaryMetrics:
+    input:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics.txt")
+    output:
+    	Metrics_only = (config["starAligned_SCC"]+"{sample}_Alignment_metrics_only.txt")
+    shell:
+    	"cat {input.Metrics} | sed 1,7d | head -1 > {output.Metrics_only}"
+# sed to get lines 1-7 
+# head to get the first line
+# the output contains the metrics information only, this will make it easier to read into R for plotting. 
+# the output will not have header information. This information is stored in Alignment_metrics_header.txt
 
 #-----------------------------------------------------------------------------------------
 # Female XX only samples
@@ -452,6 +484,14 @@ rule CollectAlignmentSummaryMetrics_XX:
     	picard = picard_path
     shell:
     	"{params.picard} -Xmx14g CollectAlignmentSummaryMetrics R={params.ref} I={input.BAM} O={output.Metrics}"
+
+rule reformat_CollectAlignmentSummaryMetrics_XX:
+    input:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics_XX.txt")
+    output:
+    	Metrics_only = (config["starAligned_SCC"]+"{sample}_Alignment_metrics_only_XX.txt")
+    shell:
+    	"cat {input.Metrics} | sed 1,7d | head -1 > {output.Metrics_only}"
 
 #-----------------------------------------------------------------------------------------
 # Male XY only samples
@@ -554,6 +594,13 @@ rule CollectAlignmentSummaryMetrics_XY:
     shell:
     	"{params.picard} -Xmx14g CollectAlignmentSummaryMetrics R={params.ref} I={input.BAM} O={output.Metrics}"
 
+rule reformat_CollectAlignmentSummaryMetrics_XY:
+    input:
+    	Metrics = (config["starAligned_SCC"]+"{sample}_STAR_Alignment_metrics_XY.txt")
+    output:
+    	Metrics_only = (config["starAligned_SCC"]+"{sample}_Alignment_metrics_only_XY.txt")
+    shell:
+    	"cat {input.Metrics} | sed 1,7d | head -1 > {output.Metrics_only}"
 #---------------------
 # End of alignment and processing bam file, may poceed to R scripts for differential expression. 
 # Run RNA.variants.Snakefile to call variants from RNA aligned bam files. 
