@@ -56,7 +56,7 @@ saveToPDF <- function(...) {
 
 # read in metadata
 # the expanded metadata contains inferred sex, RIN, and WGS sample IDs
-metadata <- vroom(paste0(pathToRawData, "RNA_metadata.tsv"))
+metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
 # remove duplicates if any 
 metadata <- metadata[!duplicated(metadata[,c('RNA.config.ID')]),]
 # rename columns for easier plotting 
