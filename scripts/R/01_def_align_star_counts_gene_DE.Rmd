@@ -453,6 +453,9 @@ low_coverage_samples <-
 wrong_sex_samples <- unique(wrong_sex_samples)
 leg_lab <- "reported sex"
 cbPaletteJITTER = SexColors
+write.table(data, paste0("../../results/", tool, "/sex_check/sex_check_data.txt"), sep = "\t")
+write.table(wrong_sex_samples, paste0("../../results/", tool, "/sex_check/wrong_sex_samples.txt"), sep = "\t")
+
 geneticSEXgenes_plot <- ggplot(data, aes(x = Geneid, y = value)) +
   geom_jitter(aes(color = Sex, shape = Sex),
               width = 0.25,
