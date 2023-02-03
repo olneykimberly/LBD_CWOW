@@ -295,16 +295,51 @@ kableExtra::kable(exp_genes_df, "simple", col.names = c("gene_biotype", "fractio
 
 16,627 genes are considered expressed and will be kept for downstream analysis. 
 
+# Normalization with CQN
+```{r}
+gene_id_gene_length_GC <- read.delim("gene_id_gene_length_QC.txt", sep = "\t", header = TRUE)
+gene_id_gene_length_GC <- unique(gene_id_gene_length_GC)
+
+genes$gene_id_with_version <- genes$gene_id
+genes$gene_id <- gsub("\\..*","",genes$gene_id)
+
+gene_info <- merge(genes, gene_id_gene_length_GC, by = "gene_id")
+
+
+library(cqn)
+library(scales)
+
+size_factors <- dge.filtered$samples$lib.size
+
+gene_info_v2 <- gene_info[order(rownames(dge.filtered$counts),gene_info$gene_id_with_version),]
+
+counts <- dge.filtered$counts
+gene_info_v2 <- gene_info[ order(match(gene_info$gene_id_with_version, rownames(counts))), ]
+
+stopifnot(all(rownames(dge.filtered$counts) == gene_info_v2$gene_id_with_version))
+stopifnot(colnames(dge.filtered$counts) == names(size_factors))
+
+
+
+gene_info_v2$length[is.na(gene_info_v2$length)] <- gene_info_v2$width
+
+gene_info_v2$gc[is.na(gene_info_v2$gc)] <- 0
+
+cqn.subset <- cqn(dge.filtered$counts, lengths = as.numeric(gene_info_v2$length), x = as.numeric(gene_info_v2$gc), sizeFactors = as.numeric(size_factors), verbose = TRUE)
+
+RPKM.cqn <- cqn.subset$y + cqn.subset$offset
+```
+
 # Identify Outliers
 ```{r  echo=FALSE, warning = FALSE, message = FALSE, results='asis'}
 # Setting the N of genes to use
-ntop = length(dge.filtered.norm$counts)
-cpm <- edgeR::cpm(dge.filtered.norm$counts, log = TRUE)
-means <- rowMeans(cpm)
-Pvars <- rowVars(cpm)
+ntop = length(RPKM.cqn)
+#cpm <- edgeR::cpm(dge.filtered.norm$counts, log = TRUE)
+means <- rowMeans(RPKM.cqn)
+Pvars <- rowVars(RPKM.cqn)
 cv2 <- Pvars / means ^ 2
 select <- order(cv2, decreasing = TRUE)[seq_len(min(ntop, length(cv2)))]
-highly_variable_exp <- ((cpm)[select,])
+highly_variable_exp <- ((RPKM.cqn)[select,])
 # Running PCA
 pca_exp <- prcomp(t(highly_variable_exp), scale = T, center = T)
 # scale a logical value indicating whether the variables should be scaled
@@ -345,7 +380,53 @@ ggplot(data = pcaWithMetadata, aes(
                                 PA_color, LBD_color,
                                 "azure3")) 
 
+
+UTY<- subset(genes, gene_name == "UTY")
+#ENSG00000183878.16
+XIST<- subset(genes, gene_name == "XIST")
+#ENSG00000229807.13
+
+UTY_expression <- subset(RPKM.cqn, rownames(RPKM.cqn) == "ENSG00000183878.16")
+XIST_expression <- subset(RPKM.cqn, rownames(RPKM.cqn) == "ENSG00000229807.13")
+plot(XIST_expression, UTY_expression)
+XY_df <- rbind(XIST_expression, UTY_expression)
+XY_df_melt <- melt(XY_df)
+XIST_UTY_plot <- ggplot(XY_df, aes(x = value, y = Var1)) +
+  geom_jitter(aes(color = Sex.x, shape = Sex.x),
+              width = 0.25,
+              size = 1.35) +
+  scale_color_manual(leg_lab, values = c("mediumorchid4", "orange")) + 
+  scale_shape_manual(leg_lab, values = c(19, 15)) +
+  labs(title = "", # no main title
+    x = expression(log[2] ~ "(" ~ italic("XIST") ~ ")"), # x-axis title
+    y = expression(log[2] ~ "(" ~ italic("UTY") ~ ")") # y-axis title
+  ) +
+  theme_bw() +
+    geom_text_repel(
+    data = df2_wrong_sex_M,
+    aes(x = value.x,
+        y = value.y,
+        label = NPID),
+    color = "orange",
+    size = 3.5,
+    nudge_y = .5,
+    min.segment.length = unit(0, 'lines'),
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  ) +
+    geom_text_repel(
+    data = df2_wrong_sex_F,
+    aes(x = value.x,
+        y = value.y,
+        label = NPID),
+    color = "mediumorchid4",
+    size = 3.5,
+    nudge_x = .5,
+    min.segment.length = unit(0, 'lines'),
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  )
+XIST_UTY_plot
 ```
+
 ```{r}
 ```
 # Significant Covariates
