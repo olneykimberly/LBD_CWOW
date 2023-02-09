@@ -20,7 +20,7 @@ source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
 
 condition <- c("All_samples")
-min_expression <- "min_exp50"
+min_expression <- "min_exp10"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
   "LBDvsAD = LBD - AD",

@@ -123,6 +123,37 @@ Alignment_metrics_metadata <- merge(RNA_metrics_metadata, Alignment_metrics_df, 
 Alignment_metrics_metadata <- Alignment_metrics_metadata[1:(length(Alignment_metrics_metadata)-3)]
 metadata <- Alignment_metrics_metadata
 ```
+# Add numerical values for categorical variables 
+```{r}
+metadata$APOE_E4_allele_count <-
+  ifelse(
+    metadata$APOE == "E2E3",
+    0,
+    ifelse(
+      metadata$APOE == "E2E4",
+      1,
+      ifelse(
+        metadata$APOE == "E3E3",
+        0,
+        ifelse(
+          metadata$APOE == "E3E4",
+          0,
+          ifelse(
+            metadata$APOE == "E4E4", 2, "NA")))))
+metadata$APOE_E4_allele_count <- as.numeric(metadata$APOE_E4_allele_count)
+metadata$sex_numeric <- ifelse(metadata$sex_inferred == "male", 0, 1)
+metadata$Race_numeric <- ifelse(metadata$Race == "Caucasian", 0, 1)
+```
+# Remove sample with very large library size 
+```{r}
+plot(metadata$TYPE, metadata$TOTAL_READS)
+hist(metadata$TOTAL_READS, breaks = 100)
+metadata <- subset(metadata, NPID != "NA18-272")
+#metadata <- subset(metadata, TOTAL_READS < 100557772)
+plot(metadata$TYPE, metadata$TOTAL_READS)
+hist(metadata$TOTAL_READS, breaks = 100)
+summary(metadata$TOTAL_READS)
+```
 # Output updated RNA metadata table
 ```{r}
 write.table(

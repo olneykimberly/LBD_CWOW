@@ -26,6 +26,7 @@ library(DESeq2)
 library(DEGreport)
 library(dittoSeq)
 library(Hmisc)
+library(mvIC)
 
 
 # paths, colors, shapes and more
@@ -43,7 +44,7 @@ PA_shape <- c(17) # triangle
 LBD_shape <- c(18) # diamond 
 
 TypeColors <- c("#4682B4", "#B4464B","#B4AF46", "gray35")
-SexColors <- c("darkorange", "blue")
+SexColors <- c("purple", "darkorange")
 colorbindColors <- dittoColors()
 correlationColors <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
 
@@ -67,7 +68,7 @@ metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
 #  mutate(across('TYPE', str_replace, 'CONTROL - AD', 'AD'))
 #metadata <- metadata %>%
 #  mutate(across('TYPE', str_replace, 'CONTROL - PA', 'PA'))
-#metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "AD", "PA", "LBD"))
+metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "AD", "PA", "LBD"))
 
 
 #metadata <- metadata %>% mutate(sex_chr = case_when(
