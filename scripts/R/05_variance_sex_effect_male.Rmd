@@ -1,0 +1,585 @@
+---
+title: "Variance in expression data include effect of sex "
+author: "Kimberly Olney, Ph.D."
+date: "01/06/2023"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+params:
+  args: myarg
+---
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+
+```{r libraries, message=FALSE, warning=FALSE}
+library('variancePartition')
+library('edgeR')
+library('BiocParallel')
+library('Hmisc')
+```
+
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+source(here::here("scripts/R", "gtf_path.R"))
+condition <- c("All_samples")
+min_expression <- "min_exp1"
+
+myContrasts <- c("LBDvsControl = LBD - CONTROL",
+  "LBDvsAD = LBD - AD",
+  "LBDvsPA = LBD - PA",
+  "ADvsControl = AD - CONTROL", 
+  "PAvsControl = PA - CONTROL",
+  "ADvsPA = AD - PA")
+tool = c("star")
+typeOfCount <-  c(".bamReadsPerGene.out.tab")
+```
+# Read in DGE object & metadata
+```{r}
+dge <- readRDS(paste0("../../rObjects/", condition, ".dge.raw.rds"))
+metadata <- dge$samples
+dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
+# some samples are missing RIN values. 
+# Replace NA with median RIN. 
+# This is necessary to be able include RIN as a covariate in voom
+# fill missing values of marks2 with median
+dge.filtered.norm$samples$RIN <- impute(dge.filtered.norm$samples$RIN, median)
+# one sample is missing VaD information
+dge.filtered.norm$samples$VaD <- impute(dge.filtered.norm$samples$VaD, median)
+dge.filtered.norm$samples$flowcell_and_lane <- factor(dge.filtered.norm$samples$flowcell_and_lane)
+dge.filtered.norm$samples$APOE <- factor(dge.filtered.norm$samples$APOE)
+
+info <- as.data.frame(dge.filtered.norm$samples)
+genes <- dge.filtered.norm$genes
+log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
+
+# Add new condition information for saving results 
+condition <- c("All_samples_sex_effect_male")
+
+dge.filtered.norm$samples$sex_inferred <- factor(dge.filtered.norm$samples$sex_inferred, levels = c("male", "female"))
+```
+
+# BIC with forward stepwise regression
+First, we will scale some of the continuous variables. 
+In regression, it is often recommended to scale the features so that the predictors have a mean of 0. This makes it easier to interpret the intercept term as the expected value of Y when the predictor values are set to their means.
+scale is generic function whose default method centers and/or scales the columns of a numeric matrix.
+
+Secondly, obtian voom$E counts to use in the BIC. See BIC 
+
+
+Finally, perform forwards stepwise regression Bayesian information criterion (BIC) to determine the best  model. 
+see: https://rdrr.io/github/GabrielHoffman/mvIC/man/mvIC_fit.html 
+```{r}
+scaled.info <-
+  info[c(
+    "Race_numeric",
+    "RIN",
+    "Age",
+    "PCT_CODING_BASES",
+    "PCT_INTERGENIC_BASES",
+    "PCT_INTRONIC_BASES",
+    "APOE_E4_allele_count"
+  )] %>% scale()
+scaled.info.df <- as.data.frame(scaled.info)
+
+info_with_scale <- cbind(info, scaled.info.df)
+```
+
+```{r}
+formula <- ( ~ 0 + TYPE)
+voom_with_weights <-
+  variancePartition::voomWithDreamWeights(
+    counts = dge.filtered.norm$counts,
+    formula = formula,
+    data = dge.filtered.norm$samples,
+    BPPARAM = BiocParallel::SnowParam(cores),
+    plot = TRUE
+  )
+path <- paste0("../../results/", tool, "/voom/", condition, "_", min_expression, "_gene_mean_voom_with_weights_no_covariates")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+voomCounts <- voom_with_weights$E
+```
+
+```{r}
+baseFormula <- ~ (1 | TYPE)
+# Combine responses on *rows*
+Y = with(
+  info,
+  rbind(
+    sex_inferred,
+    Race,
+    flowcell_and_lane,
+    APOE,
+    scaled.info.df$RIN,
+    scaled.info.df$Age,
+    scaled.info.df$APOE_E4_allele_count,
+    scaled.info.df$PCT_CODING_BASES,
+    scaled.info.df$PCT_INTERGENIC_BASES,
+    scaled.info.df$PCT_INTRONIC_BASES
+  )
+)
+
+rownames(Y) <-
+  c(
+    "sex_inferred",
+    "Race",
+    "flowcell_and_lane",
+    "APOE",
+    "RIN",
+    "Age",
+    "APOE_E4_allele_count",
+    "PCT_CODING_BASES",
+    "PCT_INTERGENIC_BASES",
+    "PCT_INTRONIC_BASES"
+  )
+# variables to consider in the model
+variables = c(
+  "(1|sex_inferred)",
+  "(1|Race)",
+  "(1|flowcell_and_lane)",
+  "(1|APOE)",
+  "RIN",
+  "Age",
+  "APOE_E4_allele_count",
+  "PCT_CODING_BASES",
+  "PCT_INTERGENIC_BASES",
+  "PCT_INTRONIC_BASES"
+)
+
+# fit forward stepwise regression starting
+bestModel_voomcounts = mvForwardStepwise(voomCounts,
+                                         baseFormula,
+                                         data = info,
+                                         variables = variables)
+bestModel_voomcounts
+```
+Best model: ~ (1 | TYPE) + PCT_CODING_BASES + (1 | flowcell_and_lane) + (1 | TYPE:sex_inferred) + PCT_INTERGENIC_BASES + PCT_INTRONIC_BASES + RIN + Age 
+
+# Design matrix
+```{r}
+design <-
+  model.matrix(~ 0 + TYPE +
+      TYPE*sex_inferred + 
+      scale(RIN) + 
+      scale(Age) + 
+      flowcell_and_lane + 
+      scale(PCT_CODING_BASES) + 
+      scale(PCT_CODING_BASES) + 
+      scale(PCT_INTERGENIC_BASES) + 
+      scale(PCT_INTRONIC_BASES),
+    dge.filtered.norm$samples
+  )
+
+colnames(design) <-
+  c(
+    CONTROL,
+    AD,
+    PA,
+    LBD,
+    "sex",
+    "RIN",
+    "Age",
+    "Batch1",
+    "Batch2",
+    "Batch3",
+    "Batch4",
+    "Batch5",
+    "Batch6",
+    "Batch7",
+    "PCT_CODING_BASES",
+    "PCT_INTERGENIC_BASES",
+    "PCT_INTRONIC_BASES", 
+    "AD_SexEffect",
+    "PA_SexEffect",
+    "LBD_SexEffect"
+  )
+```
+# Voom
+When the library sizes are quite variable between samples, then the voom approach is theoretically more powerful than limma-trend. 
+If the data are very noisy, one can apply the same between-array normalization methods as would be used for microarrays, for example:
+```{r voom}
+form <- (
+  ~ 0 +
+    TYPE +
+    TYPE*sex_inferred +
+    scale(RIN) +
+    scale(Age) +
+    flowcell_and_lane +
+    scale(PCT_CODING_BASES) +
+    scale(PCT_CODING_BASES) +
+    scale(PCT_INTERGENIC_BASES) +
+    scale(PCT_INTRONIC_BASES)
+)
+voom_with_weights_and_covariates <-
+  variancePartition::voomWithDreamWeights(
+    counts = dge.filtered.norm$counts,
+    formula = form,
+    data = dge.filtered.norm$samples,
+    BPPARAM = BiocParallel::SnowParam(cores),
+    plot = TRUE
+  )
+path <-
+  paste0("../../results/",
+         tool,
+         "/voom/",
+         condition,
+         "_",
+         min_expression,
+         "_gene_mean_voom_with_weights_and_covariates")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+
+voomCounts_covariates <- voom_with_weights_and_covariates$E
+voomCountsMatrix <- voom_with_weights_and_covariates$E
+```
+# Contrast plot
+```{r}
+# form <- ~ 0 + TYPE
+myDreamContrasts <- c(LBDvsControl = "TYPELBD - TYPECONTROL",
+  LBDvsAD = "TYPELBD - TYPEAD",
+  LBDvsPA = "TYPELBD - TYPEPA",
+  ADvsControl = "TYPEAD - TYPECONTROL", 
+  PAvsControl = "TYPEPA - TYPECONTROL",
+  ADvsPA = "TYPEAD - TYPEPA")
+myDreamContrasts<- rev(myDreamContrasts)
+
+L = makeContrastsDream(form, dge.filtered.norm$samples, contrasts = myDreamContrasts)
+colnames(L) <- gsub("TYPE","",colnames(L))
+rownames(L) <- gsub("TYPE","", rownames(L))
+
+# Visualize contrast matrix
+plotContrasts(L) 
+```
+
+```{r}
+# fits linear model for each gene given a series of arrays
+fit <- lmFit(voom_with_weights_and_covariates, design)
+coef.fit <- fit$coefficients
+head(coef.fit)
+# contrast design for differential expression
+contrasts <- makeContrasts(
+  LBDvsControl = LBD - CONTROL,
+  LBDvsAD = LBD - AD,
+  LBDvsPA = LBD - PA,
+  ADvsControl = AD - CONTROL, 
+  PAvsControl = PA - CONTROL,
+  ADvsPA = AD - PA, 
+  levels = colnames(design))
+head(contrasts)
+
+# save contrast names
+allComparisons <- colnames(contrasts)
+allComparisons # check
+
+# run contrast analysis
+vfit <- contrasts.fit(fit, contrasts = contrasts)
+
+# Compute differential expression based on the empirical Bayes moderation of the
+# standard errors towards a common value.
+# The logCPM values can then be used in any standard limma pipeline, using the trend=TRUE
+# argument when running eBayes or treat. For example:
+veBayesFit <- eBayes(vfit, trend = TRUE, robust=TRUE)
+plotSA(veBayesFit, main = "Final Model: Mean-variance Trend")
+
+# Rather than worry about the normalization too much, better to explore the data. E.g. try a BCV plot to look for dispersion outliers, or try robust=TRUE with eBayes() to downweight dispersion outliers. 
+
+#disp <- estimateDisp(dge.filtered.norm, design, robust=TRUE)
+#plotBCV(disp)
+```
+
+# DEGs summary
+```{r}
+pval <- 0.05
+lfc.cutoff <- 0.25
+
+sumTable <- 
+  summary(decideTests(
+    veBayesFit,  # object
+    adjust.method = "BH", # by default the method = "separate"
+    p.value = pval,
+    lfc = lfc.cutoff  # numeric, minimum absolute log2-fold change required
+  ))
+
+print(paste0(" FDRq < ", pval,
+             " & absolute log2-fold change > ", lfc.cutoff))
+sumTable
+```
+# Add gene information to DEGs
+reformat genes table to only include relevant information
+```{r}
+genes_relevant <- select(genes, 1:4,10:12)
+```
+Check AD vs Control
+```{r}
+ADvsControl <- topTable(
+  veBayesFit, 
+  coef = 4,  
+  n = Inf, 
+  p.value = 1,
+  lfc = 0, 
+  sort.by = "P", 
+  genelist = genes_relevant, 
+  confint = TRUE # column of confidence interval 
+    )
+head(ADvsControl, 20)
+```
+# Save objects
+```{r}
+saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, "_", min_expression,".veBayesFit.rds"))
+saveRDS(voomCounts_covariates, file = paste0("../../rObjects/", condition, "_", min_expression,".voomCountsMatrix.rds"))
+```
+# Output DEG tables
+```{r}
+coef <- 1
+
+for (i in allComparisons) {
+  vTopTableAll <- topTable(
+    veBayesFit, 
+    coef = coef,  
+    n = Inf, 
+    p.value = 1,
+    lfc = 0, 
+    sort.by = "P", 
+    genelist = genes_relevant, 
+    confint = TRUE # column of confidence interval 
+    )
+    saveRDS(vTopTableAll, file = 
+            paste0("../../rObjects/", condition, "_", 
+                   i,"_gene_table.rds"))
+  path <- paste0("../../results/", tool, "/DEGs/", condition, "_", 
+  i, "_gene_DEGs_FDRq1.00.txt", sep = "") 
+  write.table(
+    vTopTableAll,
+    path,
+    sep = "\t",
+    row.names = FALSE,
+    quote = FALSE
+  )
+  # p < 0.05, log2fc > 0
+  vTopTable1 <-
+    topTable( 
+      veBayesFit,  
+      coef = coef,  
+      n = Inf, 
+      p.value = pval,
+      lfc = lfc.cutoff
+    )
+  path <- paste0("../../results/", tool, "/DEGs/", condition, "_", 
+  i, "_gene_DEGs_FDRq0.05_logFC_0.25.txt", sep = "") 
+  write.table(
+    vTopTable1,
+    path,
+    sep = "\t",
+    row.names = FALSE,
+    quote = FALSE
+  )
+  # increment 
+  coef <- coef + 1
+}
+remove(coef)
+```
+
+# PCA
+```{r}
+# Setting the N of genes to use
+ntop = length(dge.filtered.norm$genes$gene_id)
+# Sorting by the coefficient of variance
+means <- rowMeans(voomCounts_covariates)
+Pvars <- rowVars(voomCounts_covariates)
+cv2 <- Pvars / means ^ 2
+select <-
+  order(cv2, decreasing = TRUE)[seq_len(min(ntop, length(cv2)))]
+head(select)
+
+highly_variable_exp <- ((voomCounts_covariates)[select,])
+dim(highly_variable_exp)
+# Running PCA
+pca_exp <- prcomp(t(highly_variable_exp), scale = F, center = T)
+# scale a logical value indicating whether the variables should be scaled
+# to have unit variance before the analysis takes place.
+# a logical value indicating whether the variables should be shifted to be zero centered.
+head(pca_exp$x)[, 1:3]
+summary(pca_exp)
+# Dataframe with the first 10 PCs
+dim1_10 <- data.frame(pca_exp$x[, 1:10])
+# Adding metadata
+pcaWithMetadata <- merge(dim1_10, dge.filtered.norm$samples, by = 0, all = TRUE)
+pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE,
+                                 levels = c(CONTROL, AD, PA, LBD, NA))
+# Plotting
+ggplot(data = pcaWithMetadata, aes(
+  x = PC2,
+  y = PC3,
+  shape = group,
+  color = group
+)) +
+  geom_point(size = 2.5) +
+  theme_bw() +
+#  xlim(-150, 150) +
+#  ylim(-150, 150) +
+  scale_color_manual(values = c(control_color, AD_color,
+                                PA_color, LBD_color,
+                                "azure3")) +
+  scale_shape_manual(values = c(control_shape, AD_shape,
+                                PA_shape, LBD_shape)) +
+  theme(
+    plot.title = element_text(size = 12, face = "bold"),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    axis.title.x = element_text(size = 10),
+    axis.title.y = element_text(size = 10)
+  ) +
+  theme(legend.title = element_blank()) +
+  xlab("PC1 ") +
+  ylab("PC2 ")
+```
+# CCA PC1-10 & variables in model 
+```{r, eval = FALSE}
+form_PCA <- ~ TYPE + 
+  flowcell_and_lane +
+  sex_inferred + 
+  Age + 
+  RIN +
+  PCT_CODING_BASES +
+  PCT_INTERGENIC_BASES +
+  PCT_INTRONIC_BASES +
+  PC1 +
+  PC2 +
+  PC3 +
+  PC4 +
+  PC5 +
+  PC6 +
+  PC7 +
+  PC8 +
+  PC9 +
+  PC10
+  
+C = canCorPairs( form_PCA, pcaWithMetadata)
+# Plot correlation matrix
+cor.mtest <- function(C, ...) {
+    C <- as.matrix(C)
+    n <- ncol(C)
+    p.mat<- matrix(NA, n, n)
+    diag(p.mat) <- 0
+    for (i in 1:(n - 1)) {
+        for (j in (i + 1):n) {
+            tmp <- cor.test(C[, i], C[, j], ...)
+            p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+        }
+    }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(C)
+  p.mat
+}
+# matrix of the p-value of the correlation
+p.mat <- cor.mtest(C)
+col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
+  corrplot(C, method="color", col=col(200),  
+         type="upper", order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         diag=FALSE, col.lim = c(0, 1)
+         )
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_and_PC1_10")
+saveToPDF(paste0(path, ".pdf"), width = 16, height = 16)
+```
+# Blood & white matter marker expression among groups 
+```{r}
+# get the gene id that corresponds to the gene name 
+genes <- dge.filtered.norm$genes
+
+bloodmarker_gene_info <- subset(genes, 
+                                gene_name == "HBB" |  
+                                gene_name == "HBA1" |
+                                gene_name == "HBA2" |
+                                gene_name == "HBD" |
+                                gene_name == "HBQ1" |
+                                gene_name == "MOG" |
+                                gene_name == "MBP" |
+                                gene_name == "RBFOX3")
+bloodmarker_gene_id <- rownames(bloodmarker_gene_info)
+# subset counts 
+HBB_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% bloodmarker_gene_id)
+HBB_melt <- reshape2::melt(HBB_counts)
+names(HBB_melt)[names(HBB_melt) == "Var2"] <- "NPID"
+names(HBB_melt)[names(HBB_melt) == "Var1"] <- "gene_id"
+gene_id_gene_name <- data.frame(rownames(bloodmarker_gene_info), bloodmarker_gene_info$gene_name)
+names(gene_id_gene_name)[names(gene_id_gene_name) == "rownames.bloodmarker_gene_info."] <- "gene_id"
+names(gene_id_gene_name)[names(gene_id_gene_name) == "bloodmarker_gene_info.gene_name"] <- "gene_name"
+df <- merge(gene_id_gene_name, HBB_melt, by = "gene_id")
+df <- merge(df, info, by = "NPID")
+```
+
+```{r}
+column_variables <- c("HBB", "HBA1", "HBA2", "HBD", "HBQ1", "MOG", "MBP", "RBFOX3")
+my_comparisons <-
+  list(
+    c("CONTROL", "AD"),
+    c("CONTROL", "PA"),
+    c("CONTROL", "LBD"),
+    c("AD", "PA"),
+    c("AD", "LBD"),
+    c("PA", "LBD")
+  )
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_name == j)
+  ggplot(df, aes(TYPE, value, fill = TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("Disease group") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons) +
+    scale_fill_manual(values=TypeColors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/Type.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 5.5))
+
+
+# blood marker expression between VaD classification 
+column_variables <- c("HBB", "HBA1", "HBA2", "HBD", "HBQ1")
+my_comparisons <- list(c("0", "1"))
+df$VaD <- as.factor(df$VaD)
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_name == j)
+  ggplot(df, aes(VaD, value, fill = VaD)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("VaD classification") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/VaD.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 5.5))
+```
+
+```{r}
+sessionInfo()
+```
+
+
+

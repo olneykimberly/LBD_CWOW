@@ -1,0 +1,228 @@
+---
+title: "Differential expression in CWOW samples with effect of sex"
+author: "Kimberly Olney, Ph.D."
+date: "09/30/2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+params:
+  args: myarg
+---
+Samples have already been sex checked and realigned to the SCC reference. 
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+source(here::here("scripts/R", "gtf_path.R"))
+condition <- c("All_samples")
+min_expression <- "min_exp1"
+tool <- "star"
+
+dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
+metadata <- dge.filtered.norm$samples
+
+# Add new condition information for saving results 
+condition <- c("All_samples_sex_effect")
+```
+# Design matrix
+```{r}
+design <-
+  model.matrix(~ 0 + TYPE +
+      TYPE*sex_inferred + 
+      scale(RIN) + 
+      scale(Age) + 
+      flowcell_and_lane + 
+      scale(PCT_CODING_BASES) + 
+      scale(PCT_CODING_BASES) + 
+      scale(PCT_INTERGENIC_BASES) + 
+      scale(PCT_INTRONIC_BASES),
+    dge.filtered.norm$samples
+  )
+
+colnames(design) <-
+  c(
+    CONTROL,
+    AD,
+    PA,
+    LBD,
+    "sex",
+    "RIN",
+    "Age",
+    "Batch1",
+    "Batch2",
+    "Batch3",
+    "Batch4",
+    "Batch5",
+    "Batch6",
+    "Batch7",
+    "PCT_CODING_BASES",
+    "PCT_INTERGENIC_BASES",
+    "PCT_INTRONIC_BASES", 
+    "AD_SexEffect",
+    "PA_SexEffect",
+    "LBD_SexEffect"
+  )
+```
+# contrast
+```{r}
+contrasts <- makeContrasts(
+  LBDvsControl = LBD - CONTROL,
+  LBDvsAD = LBD - AD,
+  LBDvsPA = LBD - PA,
+  ADvsControl = AD - CONTROL, 
+  PAvsControl = PA - CONTROL,
+  ADvsPA = AD - PA, 
+  levels = colnames(design))
+head(contrasts)
+
+allComparisons <- colnames(contrasts)
+```
+
+# Volcano plots
+```{r}
+for (i in allComparisons) {
+  group1_vs_group2 <-
+    read.delim(
+      paste0(
+        "../../results/",
+        tool,
+        "/DEGs/",
+        condition,
+        "_",
+        i,
+        "_gene_DEGs_FDRq1.00.txt"
+      )
+    )
+  color_values <- vector()
+  max <- nrow(group1_vs_group2)
+  for (row in 1:max) {
+    if (group1_vs_group2$adj.P.Val[row] < 0.05) {
+      if (group1_vs_group2$logFC [row] > 0.25) {
+        color_values <- c(color_values, 1)
+      }
+      else if (group1_vs_group2$logFC[row] < -.25) {
+        color_values <- c(color_values, 2)
+      }
+      else {
+        color_values <- c(color_values, 3)
+      }
+    }
+    else{
+      color_values <- c(color_values, 3)
+    }
+  }
+  group1_vs_group2$color_adjpval_0.05 <- factor(color_values)
+  data <- group1_vs_group2
+  # plot only if there are DEGs with p_val_adj < 0.05
+  num <- subset(data, (adj.P.Val < 0.05 & logFC < -.25)  | (adj.P.Val < 0.05 & logFC > .25 ))
+  num <- nrow(num)
+  if (num != 0) {
+    up <- data[data$color_adjpval_0.05 == 1,]
+    up <- subset(up, gene_type == "protein_coding")
+    up10 <- up[1:10,]
+    down <- data[data$color_adjpval_0.05 == 2,]
+    down <- subset(down, gene_type == "protein_coding")
+    down10 <- down[1:10,]
+    if (!1 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("blue", "gray")
+    } else if (!2 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("red", "gray")
+    } else if (!1 %in% unique(data$color_adjpval_0.05) &&
+               !2 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("gray")
+    } else {
+      my_colors <- c("red", "blue", "gray")
+    }
+    hadjpval <- (-log10(max(data$P.Value[data$adj.P.Val < 0.05],
+                            na.rm = TRUE)))
+    negFC <- c(-.25)
+    posFC <- c(.25) 
+    p <-
+      ggplot(data = data,
+             aes(
+               x = logFC,
+               y = -log10(P.Value),
+               color = color_adjpval_0.05
+             )) +
+      geom_point(alpha = 0.8, size = 1) +
+      theme_bw() +
+      theme(legend.position = "none") +
+      scale_color_manual(values = my_colors) +
+      labs(
+        title = "",
+        x = expression(log[2](FC)),
+        y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
+      ) +
+      theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_text(size = 10)) +
+      geom_hline(yintercept = hadjpval,
+                 #  horizontal line
+                 colour = "#000000",
+                 linetype = "dashed") +
+      geom_vline(xintercept = negFC,
+                 #  horizontal line
+                 colour = "#000000",
+                 linetype = "dashed") +
+      geom_vline(xintercept = posFC,
+                 #  horizontal line
+                 colour = "#000000",
+                 linetype = "dashed") +
+      ggtitle(paste0(condition, " ", i, "\n", "adj.P.Val < 0.05 & absolute log2FC > 0.25")) +
+      geom_text_repel(
+        data = up10,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "maroon",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      ) +
+      geom_text_repel(
+        data = down10,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "navyblue",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      )
+    p
+    
+    # save
+    path <-
+      paste0(
+        "../../results/",
+        tool,
+        "/volcano/",
+        condition,
+        "_",
+        i,
+        "_gene_volcano_FDRq0.05"
+      )
+    pdf(paste0(path, ".pdf"),
+        height = 5,
+        width = 5)
+    print(p)
+    dev.off()
+    
+    print(paste("i =", i))
+    
+  }
+} 
+```
+
+```{r}
+```
