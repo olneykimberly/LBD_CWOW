@@ -20,7 +20,7 @@ knitr::opts_knit$set(root.dir = ".")
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
 
-condition <- c("Exclude_high_lib_size")
+condition <- c("All_samples")
 min_expression <- "min_exp1"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",

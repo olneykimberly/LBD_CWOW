@@ -34,7 +34,7 @@ for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
     tool,
-    "/DEGs/", condition, "_", min_expression, "_",
+    "/DEGs/", condition, "_", 
     i,
     "_gene_DEGs_FDRq1.00.txt"
   )
@@ -72,7 +72,7 @@ data[is.na(data)] <- 0
 CWOW <- subset(data, LBD_adj.P.Val <= 0.05)
 ROSMAP <- subset(data, AD_adj.P.Val <= 0.05)
 
-#data <- subset(data, AD_adj.P.Val <= 0.05 | LBD_adj.P.Val <= 0.05)
+data <- subset(data, AD_adj.P.Val <= 0.05 | LBD_adj.P.Val <= 0.05)
 data_goi <- subset(data, 
                         (AD_logFC < -0.5 & LBD_logFC < -0.5) | 
                           (AD_logFC > .5 & LBD_logFC > 0.5) | 
@@ -108,7 +108,7 @@ ggplot(data = data,
   theme(axis.title.y = element_text(size = 10),
         axis.text.y = element_text(size = 10)) +
   labs(
-    title = "DEGs shared and unique between our data and Marques-Coelho 2021",
+    title = "DEGs shared and unique between our data and ROSMAP PCC",
     x = expression(paste("Our data ", log[2](AD/control))),
     y = expression(paste("Marques-Coelho 2021 ", log[2](LBD/control))))+
   scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
@@ -131,7 +131,9 @@ data <-
         ADvsControl,
         by = "gene_name",
         all = T)
-data <- data[c(1,2,6,9,10,13,22,23,26)]
+#data <- data[c(1,2,6,9,10,13,22,23,26)]
+data <- data[c(1,2,6,8,11,14,22,25,28)]
+
 colnames(data) = c("gene_name", "chr", "gene_id", "LBD_logFC", "LBD_AveExpr", "LBD_adj.P.Val", "AD_logFC", "AD_AveExpr", "AD_adj.P.Val")
 
 #data[is.na(data)] <- 0
@@ -214,7 +216,7 @@ sp <- ggscatter(data, x = "AD_logFC", y = "LBD_logFC",
                 conf.int = TRUE) +
     labs(
     title = "Expressed in both synpase ROSMAP PCC & LBD_CWOW ADvsControl",
-    x = expression(paste("ROSMAP ", log[2](AD/control))),
+    x = expression(paste("AD CWOW ", log[2](AD/control))),
     y = expression(paste("LBD CWOW ", log[2](AD/control))))
 # Add correlation coefficient
 sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)

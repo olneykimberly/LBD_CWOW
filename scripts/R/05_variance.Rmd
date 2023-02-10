@@ -25,7 +25,7 @@ library('Hmisc')
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("Exclude_high_lib_size")
+condition <- c("All_samples")
 min_expression <- "min_exp1"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
@@ -39,8 +39,6 @@ typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
 # Read in DGE object & metadata
 ```{r}
-dge <- readRDS(paste0("../../rObjects/", condition, ".dge.raw.rds"))
-metadata <- dge$samples
 dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
 # some samples are missing RIN values. 
 # Replace NA with median RIN. 
@@ -64,7 +62,6 @@ scale is generic function whose default method centers and/or scales the columns
 
 Secondly, obtian voom$E counts to use in the BIC. See BIC 
 
-
 Finally, perform forwards stepwise regression Bayesian information criterion (BIC) to determine the best  model. 
 see: https://rdrr.io/github/GabrielHoffman/mvIC/man/mvIC_fit.html 
 ```{r}
@@ -79,12 +76,12 @@ scaled.info <-
     "APOE_E4_allele_count"
   )] %>% scale()
 scaled.info.df <- as.data.frame(scaled.info)
-
+# Add scaled information to the metadata called "info"
 info_with_scale <- cbind(info, scaled.info.df)
 ```
-
+Voom transform counts to use for BIC 
 ```{r}
-formula <- ( ~ 0 + TYPE)
+formula <- (~ 0 + TYPE)
 voom_with_weights <-
   variancePartition::voomWithDreamWeights(
     counts = dge.filtered.norm$counts,
@@ -131,6 +128,7 @@ rownames(Y) <-
     "PCT_INTRONIC_BASES"
   )
 # variables to consider in the model
+# categorical variables must be modeled using (1|)
 variables = c(
   "(1|sex_inferred)",
   "(1|Race)",
@@ -151,8 +149,7 @@ bestModel_voomcounts = mvForwardStepwise(voomCounts,
                                          variables = variables)
 bestModel_voomcounts
 ```
-Best model: ~ (1 | TYPE) + PCT_CODING_BASES + (1 | flowcell_and_lane) + (1 | TYPE:sex_inferred) + PCT_INTERGENIC_BASES + PCT_INTRONIC_BASES + RIN + Age 
-    
+
 # Design matrix
 ```{r}
 design <-
@@ -160,9 +157,7 @@ design <-
       TYPE + 
       sex_inferred + 
       scale(RIN) + 
-      scale(Age) + 
       flowcell_and_lane + 
-      scale(PCT_CODING_BASES) + 
       scale(PCT_CODING_BASES) + 
       scale(PCT_INTERGENIC_BASES) + 
       scale(PCT_INTRONIC_BASES),
@@ -177,7 +172,6 @@ colnames(design) <-
     LBD,
     "sex",
     "RIN",
-    "Age",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -199,9 +193,7 @@ form <- (
     TYPE +
     sex_inferred +
     scale(RIN) +
-    scale(Age) +
     flowcell_and_lane +
-    scale(PCT_CODING_BASES) +
     scale(PCT_CODING_BASES) +
     scale(PCT_INTERGENIC_BASES) +
     scale(PCT_INTRONIC_BASES)
@@ -209,7 +201,7 @@ form <- (
 voom_with_weights_and_covariates <-
   variancePartition::voomWithDreamWeights(
     counts = dge.filtered.norm$counts,
-    formula = formula,
+    formula = form,
     data = dge.filtered.norm$samples,
     BPPARAM = BiocParallel::SnowParam(cores),
     plot = TRUE
@@ -225,10 +217,10 @@ path <-
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 
 voomCounts_covariates <- voom_with_weights_and_covariates$E
+voomCountsMatrix <- voom_with_weights_and_covariates$E
 ```
 # Contrast plot
 ```{r}
-# form <- ~ 0 + TYPE
 myDreamContrasts <- c(LBDvsControl = "TYPELBD - TYPECONTROL",
   LBDvsAD = "TYPELBD - TYPEAD",
   LBDvsPA = "TYPELBD - TYPEPA",
@@ -243,13 +235,29 @@ rownames(L) <- gsub("TYPE","", rownames(L))
 
 # Visualize contrast matrix
 plotContrasts(L) 
+
+simple_form <- ~ 0 + TYPE
+myDreamContrasts <- c(LBDvsControl = "TYPELBD - TYPECONTROL",
+  LBDvsAD = "TYPELBD - TYPEAD",
+  LBDvsPA = "TYPELBD - TYPEPA",
+  ADvsControl = "TYPEAD - TYPECONTROL", 
+  PAvsControl = "TYPEPA - TYPECONTROL",
+  ADvsPA = "TYPEAD - TYPEPA")
+myDreamContrasts<- rev(myDreamContrasts)
+
+L = makeContrastsDream(simple_form, dge.filtered.norm$samples, contrasts = myDreamContrasts)
+colnames(L) <- gsub("TYPE","",colnames(L))
+rownames(L) <- gsub("TYPE","", rownames(L))
+
+# Visualize contrast matrix
+plotContrasts(L) 
 ```
 
 ```{r}
 # fits linear model for each gene given a series of arrays
 fit <- lmFit(voom_with_weights_and_covariates, design)
 coef.fit <- fit$coefficients
-head(coef.fit)
+#head(coef.fit)
 # contrast design for differential expression
 contrasts <- makeContrasts(
   LBDvsControl = LBD - CONTROL,
@@ -339,9 +347,8 @@ for (i in allComparisons) {
     )
     saveRDS(vTopTableAll, file = 
             paste0("../../rObjects/", condition, "_", 
-                   min_expression, "_", 
                    i,"_gene_table.rds"))
-  path <- paste0("../../results/", tool, "/DEGs/",
+  path <- paste0("../../results/", tool, "/DEGs/", condition, "_", 
   i, "_gene_DEGs_FDRq1.00.txt", sep = "") 
   write.table(
     vTopTableAll,
@@ -357,10 +364,11 @@ for (i in allComparisons) {
       coef = coef,  
       n = Inf, 
       p.value = pval,
-      lfc = lfc.cutoff
+      lfc = lfc.cutoff,
+      genelist = genes_relevant, 
+      confint = TRUE # column of confidence interval 
     )
-  path <- paste0("../../results/", tool, "/DEGs/", condition,"_", 
-                 min_expression, "_",
+  path <- paste0("../../results/", tool, "/DEGs/", condition, "_", 
   i, "_gene_DEGs_FDRq0.05_logFC_0.25.txt", sep = "") 
   write.table(
     vTopTable1,
@@ -377,11 +385,10 @@ remove(coef)
 # Fit variance 
 Fit to the voomCounts_covariates
 Repeat for the voomCounts without covariates added to the model 
-```{r, eval=FALSE}
+```{r}
 form_varPart <- ~ (1|TYPE) + 
   (1|sex_inferred) + 
   (1| flowcell_and_lane) +
-  Age + 
   RIN +
   PCT_CODING_BASES +
   PCT_INTERGENIC_BASES +
@@ -423,11 +430,10 @@ write.table(
 ```
 
 # CCA with the variables in the model 
-```{r, eval = FALSE}
+```{r}
 form <- ~ TYPE + 
   flowcell_and_lane +
   sex_inferred + 
-  Age + 
   RIN +
   PCT_CODING_BASES +
   PCT_INTERGENIC_BASES +
@@ -458,7 +464,7 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          tl.col="black", tl.srt=45, #Text label color and rotation
          diag=FALSE, col.lim = c(0, 1)
          )
-path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_type_sex_age_rin_alignment_metrics")
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_type_sex_APOE_rin_alignment_metrics")
 saveToPDF(paste0(path, ".pdf"), width = 9, height = 9)
 ```
 # PCA
@@ -489,40 +495,35 @@ pcaWithMetadata <- merge(dim1_10, dge.filtered.norm$samples, by = 0, all = TRUE)
 pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE,
                                  levels = c(CONTROL, AD, PA, LBD, NA))
 # Plotting
-ggplot(data = pcaWithMetadata, aes(
-  x = PC2,
-  y = PC3,
-  shape = group,
-  color = group
-)) +
+ggplot(data = pcaWithMetadata, aes(x = PC1, y = PC2, shape = group, color = group)) +
   geom_point(size = 2.5) +
   theme_bw() +
-#  xlim(-150, 150) +
-#  ylim(-150, 150) +
-  scale_color_manual(values = c(control_color, AD_color,
-                                PA_color, LBD_color,
-                                "azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape,
-                                PA_shape, LBD_shape)) +
-  theme(
-    plot.title = element_text(size = 12, face = "bold"),
-    legend.title = element_text(size = 12),
-    legend.text = element_text(size = 10),
-    axis.text.x = element_text(size = 10),
-    axis.text.y = element_text(size = 10),
-    axis.title.x = element_text(size = 10),
-    axis.title.y = element_text(size = 10)
-  ) +
-  theme(legend.title = element_blank()) +
-  xlab("PC1 ") +
-  ylab("PC2 ")
+  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
+  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+
+ggplot(data = pcaWithMetadata, aes(x = PC2, y = PC3, shape = group, color = group)) +
+  geom_point(size = 2.5) +
+  theme_bw() +
+  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
+  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+
+ggplot(data = pcaWithMetadata, aes(x = PC3, y = PC4, shape = group, color = group)) +
+  geom_point(size = 2.5) +
+  theme_bw() +
+  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
+  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+
+ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = group, color = group)) +
+  geom_point(size = 2.5) +
+  theme_bw() +
+  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
+  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
 ```
 # CCA PC1-10 & variables in model 
 ```{r, eval = FALSE}
 form_PCA <- ~ TYPE + 
   flowcell_and_lane +
   sex_inferred + 
-  Age + 
   RIN +
   PCT_CODING_BASES +
   PCT_INTERGENIC_BASES +
@@ -566,7 +567,100 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
 path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_and_PC1_10")
 saveToPDF(paste0(path, ".pdf"), width = 16, height = 16)
 ```
+# Blood & white matter marker expression among groups 
+```{r}
+# get the gene id that corresponds to the gene name 
+genes <- dge.filtered.norm$genes
 
+bloodmarker_gene_info <- subset(genes, 
+                                gene_name == "HBB" |  
+                                gene_name == "HBA1" |
+                                gene_name == "HBA2" |
+                                gene_name == "HBD" |
+                                gene_name == "HBQ1" |
+                                gene_name == "MOG" |
+                                gene_name == "MBP" |
+                                gene_name == "RBFOX3")
+bloodmarker_gene_id <- rownames(bloodmarker_gene_info)
+# subset counts 
+HBB_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% bloodmarker_gene_id)
+HBB_melt <- reshape2::melt(HBB_counts)
+names(HBB_melt)[names(HBB_melt) == "Var2"] <- "NPID"
+names(HBB_melt)[names(HBB_melt) == "Var1"] <- "gene_id"
+gene_id_gene_name <- data.frame(rownames(bloodmarker_gene_info), bloodmarker_gene_info$gene_name)
+names(gene_id_gene_name)[names(gene_id_gene_name) == "rownames.bloodmarker_gene_info."] <- "gene_id"
+names(gene_id_gene_name)[names(gene_id_gene_name) == "bloodmarker_gene_info.gene_name"] <- "gene_name"
+df <- merge(gene_id_gene_name, HBB_melt, by = "gene_id")
+df <- merge(df, info, by = "NPID")
+```
+
+```{r}
+column_variables <- c("HBB", "HBA1", "HBA2", "HBD", "HBQ1", "MOG", "MBP", "RBFOX3")
+my_comparisons <-
+  list(
+    c("CONTROL", "AD"),
+    c("CONTROL", "PA"),
+    c("CONTROL", "LBD"),
+    c("AD", "PA"),
+    c("AD", "LBD"),
+    c("PA", "LBD")
+  )
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_name == j)
+  ggplot(df, aes(TYPE, value, fill = TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("Disease group") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons) +
+    scale_fill_manual(values=TypeColors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/Type.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 5.5))
+
+
+# blood marker expression between VaD classification 
+column_variables <- c("HBB", "HBA1", "HBA2", "HBD", "HBQ1")
+my_comparisons <- list(c("0", "1"))
+df$VaD <- as.factor(df$VaD)
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_name == j)
+  ggplot(df, aes(VaD, value, fill = VaD)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("VaD classification") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/VaD.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 5.5))
+```
+
+```{r}
+sessionInfo()
+```
 
 
 
