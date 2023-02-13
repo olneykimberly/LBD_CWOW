@@ -300,7 +300,7 @@ for (i in 2:nsamples) {
 
 # Third, plot log2cpm.norm
 plot(density(log2cpm.norm[,1]), col = colors[1], lwd = 2, ylim = c(0,0.5), 
-     las = 2, main = "C. Normalized", xlab = expression('Log'[2]~CPM))
+     las = 2, main = "C. TMM", xlab = expression('Log'[2]~CPM))
 abline(v = edgeR::cpm(3, log = TRUE), lty = 3)
 for (i in 2:nsamples) {
   den <- density(log2cpm.norm[,i])

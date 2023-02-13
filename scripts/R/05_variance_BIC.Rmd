@@ -322,7 +322,7 @@ Check AD vs Control
 ```{r}
 ADvsControl <- topTable(
   veBayesFit, 
-  coef = 4,  
+  coef = "ADvsControl",  
   n = Inf, 
   p.value = 1,
   lfc = 0, 
@@ -331,6 +331,8 @@ ADvsControl <- topTable(
   confint = TRUE # column of confidence interval 
     )
 head(ADvsControl, 20)
+subset(ADvsControl, gene_name == "IL3RA") 
+# logFC = 0.4828615 FDRq = 0.0005156221
 ```
 # Save objects
 ```{r}
