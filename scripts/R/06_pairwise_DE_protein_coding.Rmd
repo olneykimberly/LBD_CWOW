@@ -18,7 +18,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_only")
+condition <- c("protein_coding")
 min_expression <- "min_exp1"
 tool <- "star"
 
@@ -140,9 +140,11 @@ for (i in allComparisons) {
     up <- data[data$color_adjpval_0.05 == 1,]
     up10 <- up[1:10,]
     upFold <- subset(up, logFC > 1)
+    upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
     down10 <- down[1:10,]
     downFold <- subset(down, logFC < -1)
+    downFold <- downFold[!(downFold$gene_name %in% down10$gene_name),]
     if (!1 %in% unique(data$color_adjpval_0.05)) {
       my_colors <- c("blue", "gray")
     } else if (!2 %in% unique(data$color_adjpval_0.05)) {
@@ -201,7 +203,7 @@ for (i in allComparisons) {
         color = "maroon",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       ) +
       geom_text_repel(
         data = upFold,
@@ -213,7 +215,7 @@ for (i in allComparisons) {
         color = "maroon",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       ) +
       geom_text_repel(
         data = down10,
@@ -225,7 +227,7 @@ for (i in allComparisons) {
         color = "navyblue",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       ) +
       geom_text_repel(
         data = downFold,
@@ -237,7 +239,7 @@ for (i in allComparisons) {
         color = "navyblue",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       )
     p
     

@@ -19,7 +19,7 @@ knitr::opts_knit$set(root.dir = ".")
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-condition <- c("All_samples_default_alignment")
+condition <- c("all_genes_default_alignment")
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
   "LBDvsAD = LBD - AD",
   "LBDvsPA = LBD - PA",

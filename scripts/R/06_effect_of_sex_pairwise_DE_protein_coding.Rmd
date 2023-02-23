@@ -18,7 +18,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_only")
+condition <- c("protein_coding")
 min_expression <- "min_exp1"
 tool <- "star"
 
@@ -109,12 +109,12 @@ contrasts <- makeContrasts(
   female_AD_vs_male_AD = AD_female - AD_male, 
   female_PA_vs_male_PA = PA_female - PA_male, 
   female_Control_vs_male_Control = CONTROL_female - CONTROL_male, 
-  ADvsControl_interaction_upfemale = ((AD_female - AD_male) - (CONTROL_female - CONTROL_male)),
-  PAvsControl_interaction_upfemale = ((PA_female - PA_male) - (CONTROL_female - CONTROL_male)),
-  LBDvsControl_interaction_upfemale = ((LBD_female - LBD_male) - (CONTROL_female - CONTROL_male)),
-  LBDvsAD_interaction_upfemale = ((LBD_female - LBD_male) - (AD_female - AD_male)),
-  LBDvsPA_interaction_upfemale = ((LBD_female - LBD_male) - (PA_female - PA_male)),
-  ADvsPA_interaction_upfemale = ((AD_female - AD_male) - (PA_female - PA_male)),
+  ADvsControl_sex_interaction = ((AD_female -  CONTROL_female) - (AD_male - CONTROL_male)),
+  PAvsControl_sex_interaction = ((PA_female - CONTROL_female) - (PA_male - CONTROL_male)),
+  LBDvsControl_sex_interaction = ((LBD_female - CONTROL_female) - (LBD_male - CONTROL_male)),
+  LBDvsAD_sex_interaction = ((LBD_female - AD_female ) - (LBD_male - AD_male)),
+  LBDvsPA_sex_interaction = ((LBD_female - PA_female ) - (LBD_male - PA_male)),
+  ADvsPA_sex_interaction = ((AD_female - PA_female) - (AD_male - PA_male)),
   levels = colnames(design))
 contrasts
 
@@ -163,9 +163,11 @@ for (i in allComparisons) {
     up <- data[data$color_adjpval_0.05 == 1,]
     up10 <- up[1:10,]
     upFold <- subset(up, logFC > 1)
+    upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
     down10 <- down[1:10,]
     downFold <- subset(down, logFC < -1)
+    downFold <- downFold[!(downFold$gene_name %in% down10$gene_name),]
     if (!1 %in% unique(data$color_adjpval_0.05)) {
       my_colors <- c("blue", "gray")
     } else if (!2 %in% unique(data$color_adjpval_0.05)) {
@@ -224,7 +226,7 @@ for (i in allComparisons) {
         color = "maroon",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       ) +
       geom_text_repel(
         data = upFold,
@@ -236,7 +238,7 @@ for (i in allComparisons) {
         color = "maroon",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       ) +
       geom_text_repel(
         data = down10,
@@ -248,7 +250,7 @@ for (i in allComparisons) {
         color = "navyblue",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       ) +
       geom_text_repel(
         data = downFold,
@@ -260,9 +262,9 @@ for (i in allComparisons) {
         color = "navyblue",
         fontface = "italic",
         size = 3,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       )
-  p
+    p
     
     # save
     path <-

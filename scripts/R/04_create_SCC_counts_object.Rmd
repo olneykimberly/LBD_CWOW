@@ -20,7 +20,7 @@ knitr::opts_knit$set(root.dir = ".")
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
 
-condition <- c("protein_coding_only") # All_samples
+condition <- c("protein_coding") # all_genes
 min_expression <- "min_exp1"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",

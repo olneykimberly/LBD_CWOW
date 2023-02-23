@@ -25,7 +25,7 @@ library('Hmisc')
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_only")
+condition <- c("protein_coding")
 min_expression <- "min_exp1"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
@@ -319,8 +319,8 @@ reformat genes table to only include relevant information
 genes_relevant <- select(genes, 1:4,10:12)
 ```
 Check AD vs Control
-```{r}
-ADvsControl <- topTable(
+```{r eval =FALSE}
+test <- topTable(
   veBayesFit, 
   coef = "LBDvsControl",  
   n = Inf, 
@@ -645,7 +645,7 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/Type._BIC_", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/Type.", .y, ".pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
@@ -672,7 +672,7 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/VaD._BIC_", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/VaD.", .y, ".pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 

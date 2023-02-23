@@ -18,7 +18,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("All_samples")
+condition <- c("all_genes")
 min_expression <- "min_exp1"
 tool <- "star"
 
@@ -141,11 +141,11 @@ for (i in allComparisons) {
   num <- nrow(num)
   if (num != 0) {
     up <- data[data$color_adjpval_0.05 == 1,]
-    up <- subset(up, gene_type == "protein_coding")
     up10 <- up[1:10,]
+    upFold <- subset(up, logFC > 1)
     down <- data[data$color_adjpval_0.05 == 2,]
-    down <- subset(down, gene_type == "protein_coding")
     down10 <- down[1:10,]
+    downFold <- subset(down, logFC < -1)
     if (!1 %in% unique(data$color_adjpval_0.05)) {
       my_colors <- c("blue", "gray")
     } else if (!2 %in% unique(data$color_adjpval_0.05)) {
@@ -207,7 +207,31 @@ for (i in allComparisons) {
         max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
       ) +
       geom_text_repel(
+        data = upFold,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "maroon",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      ) +
+      geom_text_repel(
         data = down10,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "navyblue",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      ) +
+      geom_text_repel(
+        data = downFold,
         aes(
           x = logFC,
           y = -log10(P.Value),
