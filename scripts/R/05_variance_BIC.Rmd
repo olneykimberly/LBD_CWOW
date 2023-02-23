@@ -25,7 +25,7 @@ library('Hmisc')
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("All_samples")
+condition <- c("protein_coding_only")
 min_expression <- "min_exp1"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
@@ -95,7 +95,7 @@ saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 voomCounts <- voom_with_weights$E
 ```
 
-```{r}
+```{r eval = FALSE}
 baseFormula <- ~ (1 | TYPE)
 # Combine responses on *rows*
 Y = with(
@@ -540,7 +540,7 @@ ggplot(data = pcaWithMetadata, aes(x = PC6, y = PC4, shape = sex_inferred, color
   scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape))
 ```
 # CCA PC1-10 & variables in model 
-```{r, eval = FALSE}
+```{r}
 form_PCA <- ~ TYPE + 
   flowcell_and_lane +
   sex_inferred + 

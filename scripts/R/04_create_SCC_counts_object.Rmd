@@ -20,7 +20,7 @@ knitr::opts_knit$set(root.dir = ".")
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
 
-condition <- c("All_samples")
+condition <- c("protein_coding_only") # All_samples
 min_expression <- "min_exp1"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
@@ -109,15 +109,7 @@ saveRDS(dge, file = paste0("../../rObjects/", condition, ".dge.raw.rds"))
 dge <- readRDS(paste0("../../rObjects/", condition, ".dge.raw.rds"))
 ```
 
-# Remove mitochondrial genes & keep only protein coding genes
-```{r MT_genes, eval = FALSE}
-#dim(dge)
-#removeMT <- dge$genes$seqnames != "chrM"  # true when NOT MT
-#dge <- dge[removeMT,,keep.lib.sizes = FALSE]
-#keepProtein <- dge$genes$gene_type == "protein_coding"
-#dge <- dge[keepProtein,,keep.lib.sizes = FALSE]
-#dim(dge)
-```
+
 # MDS
 convert counts to cpm and lcpm
 set colors and get data
@@ -179,7 +171,29 @@ keep.expr <- filterByExpr(edgeR::cpm(dge$counts), dge$samples$TYPE, min.count = 
 dge.filtered <- dge[keep.expr, , keep.lib.sizes = FALSE]
 dim(dge.filtered)
 table(dge.filtered$genes$gene_type)
+```
+# Remove mitochondrial genes & keep only protein coding genes
+```{r MT_genes, eval = TRUE}
+dim(dge.filtered)
+removeMT <- dge.filtered$genes$seqnames != "chrM"  # true when NOT MT
+dge.filtered <- dge.filtered[removeMT,,keep.lib.sizes = FALSE]
+keepProtein <- dge.filtered$genes$gene_type == "protein_coding"
+dge.filtered <- dge.filtered[keepProtein,,keep.lib.sizes = FALSE]
+dim(dge.filtered)
 
+```
+# Library sizes
+```{r}
+L <- mean(dge$samples$lib.size) * 1e-6
+M <- median(dge$samples$lib.size) * 1e-6
+c(L, M)
+
+L <- mean(dge.filtered$samples$lib.size) * 1e-6
+M <- median(dge.filtered$samples$lib.size) * 1e-6
+c(L, M)
+```
+
+```{r}
 # Now, method of trimmed mean of M-values (TMM)
 # Calculate scaling factors to convert raw library sizes into effective library sizes.
 dge.filtered.norm <- calcNormFactors(dge.filtered, method = "TMM")
@@ -189,6 +203,11 @@ summary(dge.filtered.norm$samples$norm.factors)
 normfactors <- (dge.filtered.norm$samples$norm.factors)
 metadata$normfactors <- normfactors
 plot(metadata$TYPE, metadata$normfactors)
+```
+
+```{r TMM_normalize}
+# norm factor summary
+summary(dge.filtered.norm$samples$norm.factors)
 ```
 
 ```{r}
@@ -257,10 +276,6 @@ saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 ```
 
 
-```{r TMM_normalize}
-# norm factor summary
-summary(dge.filtered.norm$samples$norm.factors)
-```
 
 # Density plot
 Density plots of log-intensity distribution of each library can be superposed 

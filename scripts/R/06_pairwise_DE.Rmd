@@ -1,5 +1,5 @@
 ---
-title: "Differential expression in CWOW samples with effect of sex"
+title: "Differential expression in CWOW samples"
 author: "Kimberly Olney, Ph.D."
 date: "09/30/2022"
 output:
@@ -23,34 +23,14 @@ min_expression <- "min_exp1"
 tool <- "star"
 
 dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
-metadata <- dge.filtered.norm$samples
-
-# add a new column with TYPE + sex inferred
-dge.filtered.norm$samples$TYPE_sex_inferred <-
-  paste0(dge.filtered.norm$samples$TYPE,
-         "_",
-         dge.filtered.norm$samples$sex_inferred)
-dge.filtered.norm$samples$TYPE_sex_inferred <-
-  factor(
-    dge.filtered.norm$samples$TYPE_sex_inferred,
-    levels = c(
-      "CONTROL_male",
-      "CONTROL_female",
-      "AD_male",
-      "AD_female",
-      "PA_male",
-      "PA_female",
-      "LBD_male",
-      "LBD_female"
-    )
-  )
-
+#metadata <- dge.filtered.norm$samples
 ```
-# Design matrix
+# design
 ```{r}
 design <-
-  model.matrix(~ 0 +
-      TYPE_sex_inferred +
+  model.matrix(~ 0 + 
+      TYPE + 
+      sex_inferred + 
       scale(RIN) + 
       APOE +
       flowcell_and_lane + 
@@ -61,19 +41,17 @@ design <-
   )
 
 colnames(design) <-
-  c("CONTROL_male", 
-    "CONTROL_female", 
-    "AD_male", 
-    "AD_female", 
-    "PA_male",
-    "PA_female", 
-    "LBD_male",
-    "LBD_female",
-    "RIN",
+  c(
+    CONTROL,
+    AD,
+    PA,
+    LBD,
+    "sex",
     "APOEE3E3",
     "APOEE2E4",
     "APOEE3E4",
     "APOEE4E4",
+    "RIN",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -88,40 +66,39 @@ colnames(design) <-
 ```
 # contrast
 ```{r}
-colnames(design)
 contrasts <- makeContrasts(
-  LBDvsControl_no_sex_correction = (LBD_male + LBD_female)/2 - (CONTROL_male + CONTROL_female)/2,
-  LBDvsAD_no_sex_correction  = (LBD_male + LBD_female)/2 - (AD_male + AD_female)/2,
-  LBDvsPA_no_sex_correction  = (LBD_male + LBD_female)/2 - (PA_male + PA_female)/2,
-  ADvsControl_no_sex_correction  = (AD_male + AD_female)/2 - (CONTROL_male + CONTROL_female)/2,
-  PAvsControl_no_sex_correction  = (PA_male + PA_female)/2 - (CONTROL_male + CONTROL_female)/2,
-  ADvsPA_no_sex_correction  = (AD_male + AD_female)/2 - (PA_male + PA_female)/2,
-  male_XY_LBDvsControl = LBD_male - CONTROL_male,
-  male_XY_LBDvsAD = LBD_male  - AD_male,
-  male_XY_LBDvsPA = LBD_male - PA_male,
-  male_XY_ADvsControl = AD_male - CONTROL_male,
-  male_XY_PAvsControl = PA_male - CONTROL_male,
-  male_XY_ADvsPA = AD_male  - PA_male,
-  female_XX_LBDvsControl = LBD_female - CONTROL_female,
-  female_XX_LBDvsAD = LBD_female  - AD_female,
-  female_XX_LBDvsPA = LBD_female - PA_female,
-  female_XX_ADvsControl = AD_female - CONTROL_female,
-  female_XX_PAvsControl = PA_female - CONTROL_female,
-  female_XX_ADvsPA = AD_female  - PA_female,
-  female_LBD_vs_male_LBD = LBD_female - LBD_male, 
-  female_AD_vs_male_AD = AD_female - AD_male, 
-  female_PA_vs_male_PA = PA_female - PA_male, 
-  female_Control_vs_male_Control = CONTROL_female - CONTROL_male, 
-  ADvsControl_interaction_upfemale = ((AD_female - AD_male) - (CONTROL_female - CONTROL_male)),
-  PAvsControl_interaction_upfemale = ((PA_female - PA_male) - (CONTROL_female - CONTROL_male)),
-  LBDvsControl_interaction_upfemale = ((LBD_female - LBD_male) - (CONTROL_female - CONTROL_male)),
-  LBDvsAD_interaction_upfemale = ((LBD_female - LBD_male) - (AD_female - AD_male)),
-  LBDvsPA_interaction_upfemale = ((LBD_female - LBD_male) - (PA_female - PA_male)),
-  ADvsPA_interaction_upfemale = ((AD_female - AD_male) - (PA_female - PA_male)),
+  LBDvsControl = LBD - CONTROL,
+  LBDvsAD = LBD - AD,
+  LBDvsPA = LBD - PA,
+  ADvsControl = AD - CONTROL, 
+  PAvsControl = PA - CONTROL,
+  ADvsPA = AD - PA, 
   levels = colnames(design))
-contrasts
+head(contrasts)
 
 allComparisons <- colnames(contrasts)
+```
+# DEG tables
+```{r}
+coef <- 1
+for (i in allComparisons) {
+  filepath <- paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition, "_BIC_",
+    i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(paste0(i),
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+  # increment
+  coef <- coef + 1
+}
 ```
 
 # Volcano plots
@@ -265,6 +242,5 @@ for (i in allComparisons) {
   }
 } 
 ```
-
 ```{r}
 ```

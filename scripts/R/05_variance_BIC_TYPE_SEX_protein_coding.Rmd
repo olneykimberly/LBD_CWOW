@@ -25,7 +25,7 @@ library('Hmisc')
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("All_samples")
+condition <- c("protein_coding_only")
 min_expression <- "min_exp1"
 tool = c("star")
 typeOfCount <-  c(".bamReadsPerGene.out.tab")
@@ -87,9 +87,9 @@ dge.filtered.norm$samples$TYPE_sex_inferred <-
 design <-
   model.matrix(~ 0 +
       TYPE_sex_inferred +
-      scale(RIN) + 
-      APOE +
+      scale(RIN) +
       flowcell_and_lane + 
+      scale(Age) +
       scale(PCT_CODING_BASES) + 
       scale(PCT_INTERGENIC_BASES) + 
       scale(PCT_INTRONIC_BASES),
@@ -106,10 +106,6 @@ colnames(design) <-
     "LBD_male",
     "LBD_female",
     "RIN",
-    "APOEE3E3",
-    "APOEE2E4",
-    "APOEE3E4",
-    "APOEE4E4",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -117,6 +113,7 @@ colnames(design) <-
     "Batch5",
     "Batch6",
     "Batch7",
+    "Age",
     "PCT_CODING_BASES",
     "PCT_INTERGENIC_BASES",
     "PCT_INTRONIC_BASES"
@@ -129,8 +126,8 @@ If the data are very noisy, one can apply the same between-array normalization m
 form <- (~ 0 +
       TYPE_sex_inferred +
       scale(RIN) + 
-      APOE +
       flowcell_and_lane + 
+      scale(Age) +
       scale(PCT_CODING_BASES) + 
       scale(PCT_INTERGENIC_BASES) + 
       scale(PCT_INTRONIC_BASES)
@@ -289,7 +286,7 @@ Check AD vs Control
 ```{r eval = FALSE}
 ADvsControl <- topTable(
   veBayesFit, 
-  coef = "ADvsControl_interaction_male", # female_AD_vs_male_AD, female_Control_vs_male_Control,  ADvsControl, ADvsControl_interaction_female, ADvsControl_interaction_male, female_ADvsControl, male_ADvsControl
+  coef = "LBDvsControl_interaction_upmale", # female_AD_vs_male_AD, female_Control_vs_male_Control,  ADvsControl, ADvsControl_interaction_female, ADvsControl_interaction_male, female_ADvsControl, male_ADvsControl
   n = Inf, 
   p.value = 1,
   lfc = 0, 

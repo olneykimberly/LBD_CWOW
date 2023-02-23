@@ -25,7 +25,7 @@ library('Hmisc')
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("All_samples")
+condition <- c("protein_coding_only")
 min_expression <- "min_exp1"
 
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
@@ -149,7 +149,11 @@ bestModel_voomcounts = mvForwardStepwise(voomCounts,
                                          variables = variables)
 bestModel_voomcounts
 ```
+Only protein coding genes:
+  Best model: ~ (1 | TYPE) + PCT_CODING_BASES + (1 | flowcell_and_lane) + (1 | sex_inferred) + PCT_INTRONIC_BASES + PCT_INTERGENIC_BASES + RIN + Age 
 
+All genes:
+Best model: ~ (1 | TYPE) + PCT_CODING_BASES + RIN + (1 | flowcell_and_lane) + PCT_INTRONIC_BASES + PCT_INTERGENIC_BASES + (1 | sex_inferred) + (1 | APOE) 
 # Design matrix
 ```{r}
 design <-
@@ -158,6 +162,7 @@ design <-
       sex_inferred + 
       scale(RIN) + 
       flowcell_and_lane + 
+      scale(Age) +
       scale(PCT_CODING_BASES) + 
       scale(PCT_INTERGENIC_BASES) + 
       scale(PCT_INTRONIC_BASES),
@@ -179,6 +184,7 @@ colnames(design) <-
     "Batch5",
     "Batch6",
     "Batch7",
+    "Age",
     "PCT_CODING_BASES",
     "PCT_INTERGENIC_BASES",
     "PCT_INTRONIC_BASES"
@@ -194,6 +200,7 @@ form <- (
     sex_inferred +
     scale(RIN) +
     flowcell_and_lane +
+    scale(Age) +
     scale(PCT_CODING_BASES) +
     scale(PCT_INTERGENIC_BASES) +
     scale(PCT_INTRONIC_BASES)
@@ -213,7 +220,7 @@ path <-
          condition,
          "_",
          min_expression,
-         "_gene_mean_voom_with_weights_and_covariates")
+         "_gene_mean_voom_with_weights_and_covariates_BIC")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 
 voomCounts_covariates <- voom_with_weights_and_covariates$E
@@ -315,7 +322,7 @@ Check AD vs Control
 ```{r}
 ADvsControl <- topTable(
   veBayesFit, 
-  coef = 4,  
+  coef = "LBDvsControl",  
   n = Inf, 
   p.value = 1,
   lfc = 0, 
@@ -324,11 +331,13 @@ ADvsControl <- topTable(
   confint = TRUE # column of confidence interval 
     )
 head(ADvsControl, 20)
+subset(ADvsControl, gene_name == "IL3RA") 
+# logFC = 0.4828615 FDRq = 0.0005156221
 ```
 # Save objects
 ```{r}
-saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, "_", min_expression,".veBayesFit.rds"))
-saveRDS(voomCounts_covariates, file = paste0("../../rObjects/", condition, "_", min_expression,".voomCountsMatrix.rds"))
+saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, "_", min_expression,"_BIC.veBayesFit.rds"))
+saveRDS(voomCounts_covariates, file = paste0("../../rObjects/", condition, "_", min_expression,"_BIC.voomCountsMatrix.rds"))
 ```
 # Output DEG tables
 ```{r}
@@ -348,7 +357,7 @@ for (i in allComparisons) {
     saveRDS(vTopTableAll, file = 
             paste0("../../rObjects/", condition, "_", 
                    i,"_gene_table.rds"))
-  path <- paste0("../../results/", tool, "/DEGs/", condition, "_", 
+  path <- paste0("../../results/", tool, "/DEGs/", condition, "_BIC_", 
   i, "_gene_DEGs_FDRq1.00.txt", sep = "") 
   write.table(
     vTopTableAll,
@@ -368,7 +377,7 @@ for (i in allComparisons) {
       genelist = genes_relevant, 
       confint = TRUE # column of confidence interval 
     )
-  path <- paste0("../../results/", tool, "/DEGs/", condition, "_", 
+  path <- paste0("../../results/", tool, "/DEGs/", condition, "_BIC_", 
   i, "_gene_DEGs_FDRq0.05_logFC_0.25.txt", sep = "") 
   write.table(
     vTopTable1,
@@ -388,7 +397,9 @@ Repeat for the voomCounts without covariates added to the model
 ```{r}
 form_varPart <- ~ (1|TYPE) + 
   (1|sex_inferred) + 
-  (1| flowcell_and_lane) +
+  (1|flowcell_and_lane) +
+#  (1|APOE) +
+  Age +
   RIN +
   PCT_CODING_BASES +
   PCT_INTERGENIC_BASES +
@@ -409,7 +420,7 @@ path <-
     tool,
     "/varpart/",
     condition,
-    "_varpart_voomCounts_covariates"
+    "_varpart_voomCounts_covariates_BIC"
   )
 saveToPDF(paste0(path, ".pdf"), width = 8.2, height = 5.2)
 
@@ -422,7 +433,7 @@ write.table(
     tool ,
     "/varpart/",
     condition,
-    "_variance_explained_voomCounts_covariates.tsv"
+    "_variance_explained_voomCounts_covariates_BIC.tsv"
   ),
   sep = "\t",
   quote = FALSE
@@ -434,6 +445,7 @@ write.table(
 form <- ~ TYPE + 
   flowcell_and_lane +
   sex_inferred + 
+  Age +
   RIN +
   PCT_CODING_BASES +
   PCT_INTERGENIC_BASES +
@@ -464,7 +476,7 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          tl.col="black", tl.srt=45, #Text label color and rotation
          diag=FALSE, col.lim = c(0, 1)
          )
-path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_type_sex_APOE_rin_alignment_metrics")
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_BIC")
 saveToPDF(paste0(path, ".pdf"), width = 9, height = 9)
 ```
 # PCA
@@ -517,13 +529,23 @@ ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = group, color = grou
   geom_point(size = 2.5) +
   theme_bw() +
   scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape))
+
+ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = sex_inferred, color = sex_inferred)) +
+  geom_point(size = 2.5) 
+
+ggplot(data = pcaWithMetadata, aes(x = PC6, y = PC4, shape = sex_inferred, color = group)) +
+  geom_point(size = 2.5) +
+  theme_bw() +
+  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
+  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape))
 ```
 # CCA PC1-10 & variables in model 
-```{r, eval = FALSE}
+```{r}
 form_PCA <- ~ TYPE + 
   flowcell_and_lane +
   sex_inferred + 
+  APOE +
   RIN +
   PCT_CODING_BASES +
   PCT_INTERGENIC_BASES +
@@ -539,7 +561,7 @@ form_PCA <- ~ TYPE +
   PC9 +
   PC10
   
-C = canCorPairs( form_PCA, pcaWithMetadata)
+C = canCorPairs(form_PCA, pcaWithMetadata)
 # Plot correlation matrix
 cor.mtest <- function(C, ...) {
     C <- as.matrix(C)
@@ -564,8 +586,8 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          tl.col="black", tl.srt=45, #Text label color and rotation
          diag=FALSE, col.lim = c(0, 1)
          )
-path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_and_PC1_10")
-saveToPDF(paste0(path, ".pdf"), width = 16, height = 16)
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_BIC_and_PC1_10")
+saveToPDF(paste0(path, ".pdf"), width = 19, height = 19)
 ```
 # Blood & white matter marker expression among groups 
 ```{r}
@@ -623,12 +645,11 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/Type.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/Type._BIC_", .y, ".pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 5.5))
-
 
 # blood marker expression between VaD classification 
 column_variables <- c("HBB", "HBA1", "HBA2", "HBD", "HBQ1")
@@ -651,13 +672,12 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/VaD.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/VaD._BIC_", .y, ".pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 5.5))
 ```
-
 ```{r}
 sessionInfo()
 ```

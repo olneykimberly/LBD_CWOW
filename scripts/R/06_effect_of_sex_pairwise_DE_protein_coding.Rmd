@@ -18,7 +18,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("All_samples")
+condition <- c("protein_coding_only")
 min_expression <- "min_exp1"
 tool <- "star"
 
@@ -52,8 +52,8 @@ design <-
   model.matrix(~ 0 +
       TYPE_sex_inferred +
       scale(RIN) + 
-      APOE +
       flowcell_and_lane + 
+      scale(Age) +
       scale(PCT_CODING_BASES) + 
       scale(PCT_INTERGENIC_BASES) + 
       scale(PCT_INTRONIC_BASES),
@@ -70,10 +70,6 @@ colnames(design) <-
     "LBD_male",
     "LBD_female",
     "RIN",
-    "APOEE3E3",
-    "APOEE2E4",
-    "APOEE3E4",
-    "APOEE4E4",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -81,6 +77,7 @@ colnames(design) <-
     "Batch5",
     "Batch6",
     "Batch7",
+    "Age",
     "PCT_CODING_BASES",
     "PCT_INTERGENIC_BASES",
     "PCT_INTRONIC_BASES"
@@ -164,11 +161,11 @@ for (i in allComparisons) {
   num <- nrow(num)
   if (num != 0) {
     up <- data[data$color_adjpval_0.05 == 1,]
-    up <- subset(up, gene_type == "protein_coding")
     up10 <- up[1:10,]
+    upFold <- subset(up, logFC > 1)
     down <- data[data$color_adjpval_0.05 == 2,]
-    down <- subset(down, gene_type == "protein_coding")
     down10 <- down[1:10,]
+    downFold <- subset(down, logFC < -1)
     if (!1 %in% unique(data$color_adjpval_0.05)) {
       my_colors <- c("blue", "gray")
     } else if (!2 %in% unique(data$color_adjpval_0.05)) {
@@ -230,6 +227,18 @@ for (i in allComparisons) {
         max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
       ) +
       geom_text_repel(
+        data = upFold,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "maroon",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      ) +
+      geom_text_repel(
         data = down10,
         aes(
           x = logFC,
@@ -240,8 +249,20 @@ for (i in allComparisons) {
         fontface = "italic",
         size = 3,
         max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+      ) +
+      geom_text_repel(
+        data = downFold,
+        aes(
+          x = logFC,
+          y = -log10(P.Value),
+          label = gene_name
+        ),
+        color = "navyblue",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
       )
-    p
+  p
     
     # save
     path <-
