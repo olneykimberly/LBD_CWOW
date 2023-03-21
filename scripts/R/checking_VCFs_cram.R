@@ -4,6 +4,10 @@ setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/scripts/R")
 # read in metadata
 pathToRawData = c("/research/labs/neurology/fryer/projects/LBD_CWOW/")
 metadata <- vroom(paste0(pathToRawData, "RNA_metadata.tsv"))
+WGS_sampleID <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/scripts/R/CWOW_WGS_230301.txt", sep = "\t", header = T)
+
+shared <- intersect(WGS_sampleID$NPID,metadata$NPID)
+
 WGS_sampleID <- read.delim("/research/labs/neurology/fryer/projects/LBD_CWOW/WGS_sampleID.txt", sep = "\t", header = T)
 
 #----------------

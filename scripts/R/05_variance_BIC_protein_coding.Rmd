@@ -54,6 +54,74 @@ info <- as.data.frame(dge.filtered.norm$samples)
 genes <- dge.filtered.norm$genes
 log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
 ```
+# RPKM values
+```{r}
+biomart_gene_lengths <- read.delim("gene_id_gene_length_QC.txt")
+# remove version information from gene_id so files can be merged
+#genes$gene_id <- gsub("\\..*","",genes$gene_id)
+gene_info <- merge(genes, biomart_gene_lengths, by = "gene_id")
+dge.filtered.norm$genes$gene_id <- gsub("\\..*","",dge.filtered.norm$genes$gene_id)
+gene_info <- merge(dge.filtered.norm$genes, biomart_gene_lengths, by = "gene_id", all.x=T)
+
+gene_info <- gene_info[match(dge.filtered.norm$genes$gene_id, gene_info$gene_id),] 
+rpkm_protein_coding <- rpkm(dge.filtered.norm, gene.length = gene_info$length)
+
+
+#devtools::install_github('dviraran/xCell')
+rownames(rpkm_protein_coding) <- gene_info$gene_name
+write.table(
+  rpkm_protein_coding,
+  paste0("../../results/", tool, "/counts/", condition, "_", min_expression, "_rpkm.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+NO_DUPS <- rpkm_protein_coding[!duplicated(rownames(rpkm_protein_coding)), ]
+
+write.table(
+  NO_DUPS,
+  paste0("../../results/", tool, "/counts/", condition, "_", min_expression, "_rpkm.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+dim(NO_DUPS)
+library(xCell)
+
+xCell_scores <- xCellAnalysis(NO_DUPS)
+library(tidyverse)
+
+df <- as.data.frame(xCell_scores)
+dt2 <- df %>%
+  rownames_to_column() %>%
+  gather(colname, value, -rowname)
+head(dt2)
+ggplot(dt2, aes(x = colname, y = rowname, fill = value)) +
+  geom_tile()
+
+hc.cols <- hclust(dist(t(df)))
+ord <- hclust(dist(df, method = "euclidean"), method = "ward.D" )$order
+ord
+
+dge_xCell <- xCell_scores
+
+colnames(xCell_scores) <- dge.filtered.norm$samples$sex_inferred
+heatmap(
+   as.matrix(xCell_scores), Rowv=NA,
+   Colv=as.dendrogram(hclust(dist(t(as.matrix(xCell_scores)))))
+ )
+
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+saveToPDF(paste0(path, ".pdf"), width = 30, height = 7)
+
+
+library("RColorBrewer")
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+heatmap(xCell_scores, scale = "none", col =  col)
+heatmap(xCell_scores, scale = "none")
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+saveToPDF(paste0(path, ".pdf"), width = 12, height = 12)
+```
 
 # BIC with forward stepwise regression
 First, we will scale some of the continuous variables. 

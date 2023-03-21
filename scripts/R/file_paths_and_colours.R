@@ -27,6 +27,7 @@ library(DEGreport)
 library(dittoSeq)
 library(Hmisc)
 library(mvIC)
+library(tidyr)
 
 
 # paths, colors, shapes and more

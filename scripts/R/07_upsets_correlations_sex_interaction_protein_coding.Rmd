@@ -43,7 +43,7 @@ makePaddedDataFrame <- function(l, ...) {
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-condition <- c("all_genes")
+condition <- c("protein_coding")
 tool <- "star"
 min_expression <- "min_exp1"
 # save contrast names
@@ -1777,6 +1777,7 @@ path <-
   )
 saveToPDF(paste0(path, ".pdf"), width = 4, height = 9)
 ```
+
 ```{r}
 AD_FandM <-
   merge(ADvsControl_female_XX,
@@ -1835,7 +1836,7 @@ path <-
     "/heatmap/", condition, 
     "_ADvsControl_log2FC_bt_sexes"
   )
-saveToPDF(paste0(path, ".pdf"), width = 4, height = 25)
+saveToPDF(paste0(path, ".pdf"), width = 4, height = 20)
 ```
 
 # Bar plot
@@ -1909,9 +1910,9 @@ path <-
     "/bar/", condition, 
     "_ADvsControl_log2FC_bt_sexes"
   )
-saveToPDF(paste0(path, ".pdf"), width = 5, height = 20)
+saveToPDF(paste0(path, ".pdf"), width = 5, height = 25)
 ```
-```{r}
 
+```{r}
 ```
 

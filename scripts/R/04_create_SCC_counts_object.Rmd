@@ -291,7 +291,7 @@ log2cpm.filtered <- edgeR::cpm(dge.filtered, log = TRUE)
 log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
 
 # set colors
-colors <- colorbindColors
+colors <- TypeColors[dge$samples$TYPE]
 nsamples <- ncol(dge)
 
 # First, plot the first column of the log2cpm.tech density

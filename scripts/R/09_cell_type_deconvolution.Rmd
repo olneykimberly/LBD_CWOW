@@ -1,0 +1,255 @@
+---
+title: "cell type enrichment & deconvolution"
+author: "Kimberly Olney, Ph.D."
+date: "03/09/2023"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+params:
+  args: myarg
+---
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+# Libraries
+```{r}
+# devtools::install_github('dviraran/xCell')
+# install_github("hagenaue/BrainInABlender")
+
+library(xCell)
+library(tidyverse)
+library(devtools)
+library(BrainInABlender) # see https://github.com/hagenaue/BrainInABlender 
+```
+
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+source(here::here("scripts/R", "gtf_path.R"))
+condition <- c("protein_coding")
+min_expression <- "min_exp1"
+tool <- "star"
+```
+
+# Read in DGE object & metadata
+```{r}
+dge.filtered.norm <-
+  readRDS(
+    paste0(
+      "../../rObjects/",
+      condition,
+      "_",
+      min_expression,
+      ".dge.filtered.norm.rds"
+    )
+  )
+info <- as.data.frame(dge.filtered.norm$samples)
+genes <- dge.filtered.norm$genes
+log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
+
+biomart_gene_lengths <- read.delim("gene_id_gene_length_QC.txt")
+# see biomart_gene_length_and_GC_content.R for more information on how the text file was created
+```
+
+# RPKM values
+```{r}
+# remove version information from gene_id so files can be merged
+dge.filtered.norm$genes$gene_id <-
+  gsub("\\..*", "", dge.filtered.norm$genes$gene_id)
+gene_info <-
+  merge(dge.filtered.norm$genes,
+        biomart_gene_lengths,
+        by = "gene_id",
+        all.x = T) # all by dge TRUE
+
+# reorder gene_info so it matches the order of the dge object
+gene_info <-
+  gene_info[match(dge.filtered.norm$genes$gene_id, gene_info$gene_id), ]
+# compute RPKM values
+rpkm_protein_coding <-
+  rpkm(dge.filtered.norm, gene.length = gene_info$length)
+
+# There is a gene that is duplicated. Remove or else run into errors.
+rownames(rpkm_protein_coding) <- gene_info$gene_name
+RPKM_no_dups <-
+  rpkm_protein_coding[!duplicated(rownames(rpkm_protein_coding)),]
+
+# output RPKM table
+write.table(
+  RPKM_no_dups,
+  paste0(
+    "../../results/",
+    tool,
+    "/counts/",
+    condition,
+    "_",
+    min_expression,
+    "_rpkm.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+```
+
+# xCell 
+```{r}
+xCell_scores <- xCellAnalysis(RPKM_no_dups)
+df <- as.data.frame(xCell_scores)
+dt2 <- df %>%
+  rownames_to_column() %>%
+  gather(colname, value, -rowname)
+head(dt2) # check 
+head(xCell_scores)
+ggplot(dt2, aes(x = colname, y = rowname, fill = value)) +
+  geom_tile()
+
+hc.cols <- hclust(dist(t(df)))
+ord <- hclust(dist(df, method = "euclidean"), method = "ward.D" )$order
+ord
+
+dge_xCell <- xCell_scores
+
+colnames(xCell_scores) <- dge.filtered.norm$samples$TYPE
+heatmap(
+   as.matrix(xCell_scores), Rowv=NA,
+   Colv=as.dendrogram(hclust(dist(t(as.matrix(xCell_scores)))))
+ )
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+saveToPDF(paste0(path, ".pdf"), width = 30, height = 7)
+
+cormat <- round(cor(dge_xCell),2)
+head(cormat)
+library(reshape2)
+melted_cormat <- reshape2::melt(cormat)
+head(melted_cormat)
+library(ggplot2)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+
+
+library("RColorBrewer")
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+heatmap(xCell_scores, scale = "none", col =  col)
+heatmap(xCell_scores, scale = "none")
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+saveToPDF(paste0(path, ".pdf"), width = 12, height = 12)
+```
+
+# Brain in a blender
+Input: A dataframe containing the gene expression data for the samples (RNAseq or microarray data that has already been variance stabilized and received appropriate quality control to remove outlier samples and large-scale technical artifacts), including one column of gene symbols.
+You must also have single character string indicating the species from which the data were derived, currently allows the values "mouse", "Mouse", "human", or "Human".
+### with voomCounts
+```{r}
+# read in voom counts matrix
+protein_coding_min_exp1_BIC.voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/protein_coding_min_exp1_BIC.voomCountsMatrix.rds")
+# save as a dataframe (required for Sir_UnMixALot function below)
+voomCounts <- as.data.frame(protein_coding_min_exp1_BIC.voomCountsMatrix)
+# add gene_name column to voomCounts
+voomCounts$gene_id <- rownames(voomCounts)
+
+hi <- dge.filtered.norm$samples %>% arrange(TYPE)
+
+library(data.table)
+NEW <- setcolorder(voomCounts, hi$NPID)
+NEW$gene_id <- rownames(NEW)
+
+# remove gene id version information
+NEW$gene_id <- gsub("\\..*","",NEW$gene_id)
+voomCounts_gene_name <- merge(NEW, gene_info, by ="gene_id", all.x= T)
+BinB_voom <- Sir_UnMixALot(userInput=voomCounts_gene_name, dataColumns=c(2:625), geneColumn=636, species="human")
+
+BinB_ave_celltype <- as.data.frame(BinB_voom$AveragePrimary_CellTypeIndex)
+
+heatmap(
+   as.matrix(BinB_ave_celltype))
+
+BinB_ave_celltype <- as.data.frame(BinB_voom$AveragePrimary_CellTypeIndex)
+colnames(BinB_ave_celltype) <- dge.filtered.norm$samples$TYPE
+col_order <- factor(dge.filtered.norm$samples$TYPE, levels = c("CONTROL", "PA", "AD", "LBD"))
+BinB_ave_celltype <- BinB_ave_celltype[, col_order]
+BinB_ave_celltype
+dge.filtered.norm$samples$TYPE
+
+heatmap(
+   as.matrix(BinB_ave_celltype), Colv = NA) # ordered by TYPE 
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_BrainInABlender_voomCounts_col_order_by_TYPE")
+saveToPDF(paste0(path, ".pdf"), width = 12, height = 8)
+
+heatmap(BinB_voom$AveragePrimary_CellTypeIndex, col=heat.colors(100))
+help(heatmap)
+# Plot a corresponding legend
+legend(x="right", legend=c("min", "med", "max"),fill=heat.colors(3))
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_BrainInABlender_voomCounts")
+saveToPDF(paste0(path, ".pdf"), width = 12, height = 8)
+
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+heatmap(BinB_voom$AveragePrimary_CellTypeIndex, scale = "none", col =  col, 
+        RowSideColors = rep(c("blue", "pink"), each = 16),
+        ColSideColors = c(rep("purple", 5), rep("orange", 6)))
+
+type <- dge.filtered.norm$samples$TYPE
+colnames(BinB_voom$AveragePrimary_CellTypeIndex) <- dge.filtered.norm$samples$TYPE
+
+pheatmap(BinB_voom$AveragePrimary_CellTypeIndex,scale="row", show_colnames = F,
+         cluster_cols = TRUE,
+         color=colorRampPalette(c("navy", "white", "red"))(50))
+
+help(pheatmap)
+
+# get column order
+hc <- hclust(dist(BinB_voom$AveragePrimary_CellTypeIndex))
+hc$order
+dd <- as.dendrogram(hc)
+order.dendrogram(dd) ## the same :
+stopifnot(hc$order == order.dendrogram(dd))
+
+
+hc.cols <- hclust(dist(t(BinB_voom$AveragePrimary_CellTypeIndex)))
+ord <- hclust(dist(BinB_voom$AveragePrimary_CellTypeIndex, method = "euclidean"), method = "ward.D" )$order
+ord
+
+hc <- hclust(BinB_voom$AveragePrimary_CellTypeIndex, method="single")
+
+plot(hc)
+```
+### with RPKM values
+```{r}
+#---- with RPKM values 
+rpkm_protein_coding$gene_name <- rownames()
+RPKM_df <- as.data.frame(NO_DUPS)
+RPKM_df$gene_name <- rownames(RPKM_df)
+Sir_UnMixALot(userInput=RPKM_df, dataColumns=c(1:624), geneColumn=625, species="human")
+
+dge.filtered.norm$counts
+
+heatmap(abigtest$AveragePrimary_CellTypeIndex, scale = "none")
+colnames(abigtest$AveragePrimary_CellTypeIndex) <- dge.filtered.norm$samples$TYPE
+heatmap(abigtest$AveragePrimary_CellTypeIndex, scale = "none")
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_BrainInABlender")
+saveToPDF(paste0(path, ".pdf"), width = 36, height = 26)
+
+
+mat <- abigtest$AveragePrimary_CellTypeIndex
+library(pheatmap)
+#create data frame for annotations
+dfh<-data.frame(sample=as.character(colnames(mat)),dex="Treatment")%>%
+                column_to_rownames("sample")
+dfh$dex<-ifelse(rownames(dfh) %in% c("508","512","516","520"),
+                "untrt","trt")
+dfh
+
+
+dfh<-data.frame(sample=as.character(colnames(mat)),dex="Treatment")%>%
+                column_to_rownames("sample")
+dfh$dex<-ifelse(rownames(dfh) %in% c("508","512","516","520"),
+                "untrt","trt")
+dfh
+dfh <- as.data.frame(dge.filtered.norm$samples$TYPE, dge.filtered.norm$samples$sex_inferred)
+
+library(pheatmap)
+pheatmap(BinB_voom$AveragePrimary_CellTypeIndex,scale="row", annotation_col = dfh,
+         color=colorRampPalette(c("navy", "white", "red"))(50))
+```
