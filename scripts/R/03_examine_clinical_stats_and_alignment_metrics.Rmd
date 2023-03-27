@@ -37,8 +37,15 @@ metadata <-
   read.delim(paste0(pathToRawData, "metadata_expanded.tsv"),
              header = TRUE,
              sep = "\t")
+
+subset(metadata, NPID == "NA20-102")
 # remove technical replicates (i.e lane 1 and lane 2)
 metadata <- metadata[!duplicated(metadata[, c('NPID')]), ]
+# remove samples that have missing A-T-S scores or that don't fit into an A-T-S category 
+excluded_IDs <-  c("NA18-272", "5510", "NA01-135", "NA20-102", "NA20-104", "NA06-159")
+metadata <- metadata[ ! metadata$NPID %in% excluded_IDs, ]
+
+
 APOE <- read.delim(paste0(pathToRawData, "APOE.tsv"),
              header = TRUE,
              sep = "\t")
@@ -55,7 +62,7 @@ metadata <- metadata %>%
   mutate(across('TYPE', str_replace, 'CONTROL - AD', 'AD'))
 metadata <- metadata %>%
   mutate(across('TYPE', str_replace, 'CONTROL - PA', 'PA'))
-metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "AD", "PA", "LBD"))
+metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "PA", "AD", "LBD"))
 
 metadata <- metadata %>% mutate(sex_chr = case_when(
   startsWith(sex_inferred, "female") ~ "XX", 
@@ -403,11 +410,26 @@ metadata$ATS_names <-
 
 plot by A-T-S score
 ```{r}
+# Samples with missing A-T-S scores
+subset(metadata, ATS_names == "NA")
+subset(metadata, is.na(metadata$ATS_names))
 # Drop samples with NA ATS score
 df <- metadata %>% drop_na(ATS_names)
 df <- subset(df, ATS_names != "NA")
-df$ATS_names <- factor(df$ATS_names, levels = c("amyloid + synuclein + tau", "high amyloid + synuclein", "low amyloid + synuclein", "pure synuclein", "amyloid + tau", "amyloid", "no pathology"))
+df$ATS_names <- factor(df$ATS_names, levels = c("no pathology", "amyloid", "amyloid + tau", "pure synuclein", "low amyloid + synuclein", "high amyloid + synuclein", "amyloid + synuclein + tau"))
+```
 
+```{r}
+write.table(
+  df,
+  paste0("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+```
+
+```{r}
 # create bar plot showing number of samples for each end point criteria
 bar <- ggplot(df, aes(TYPE, after_stat(count), fill = ATS_names)) +
   geom_bar() +
@@ -434,8 +456,15 @@ bar <- ggplot(df, aes(ATS_names, after_stat(count), fill = ATS_names)) +
   xlab("Disease group") +
   ggtitle("Bulk RNAseq sample count by A-T-S scores") +
   theme_bw() + 
+  geom_text(
+    stat = 'count',
+    aes(label = after_stat(count)),
+    vjust = 1.6,
+    color = "black",
+    size = 3.5
+  ) +
   theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5, hjust=1),
+        axis.text.x = element_text(size = 10, angle = 75, vjust = 1, hjust=1),
         axis.title.y = element_text(size = 10),
         axis.text.y = element_text(size = 10),
         plot.title = element_text(size = 10),
@@ -620,12 +649,12 @@ walk2(plotnames,
 metadata_continuous <-
   data.frame(metadata$Brain.wt, metadata$Duration, metadata$Age, metadata$PMI, metadata$Concentration.ng.ul, metadata$Volume.ul, metadata$Total.RNA.ng, metadata$RIN) 
 column_variables <- c("Brain.wt","Duration", "Age", "PMI", "Concentration.ng.ul", "Volume.ul", "Total.RNA.ng", "RIN")
-my_comparisons <- list(c("CONTROL", "AD"), c("CONTROL", "PA"), c("CONTROL", "LBD"), c("AD", "PA"), c("AD", "LBD"), c("PA", "LBD"))
+my_comparisons <- list(c("CONTROL", "PA"), c("CONTROL", "AD"), c("CONTROL", "LBD"), c("PA", "AD"), c("PA", "LBD"), c("AD", "LBD"))
 
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(TYPE, i, fill = TYPE)) +
     geom_violin() +
-    geom_boxplot(width = 0.1) + 
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2)) +
     theme_bw() + 
     ggtitle(j) +
@@ -656,7 +685,7 @@ my_comparisons <- list(c("E2E3", "E2E4"), c("E2E3", "E3E3"), c("E2E3", "E3E4"), 
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(APOE, i, fill = APOE)) +
     geom_violin() +
-    geom_boxplot(width = 0.1) + 
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2)) +
     theme_bw() + 
     ggtitle(j) +
@@ -681,12 +710,12 @@ walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y,
 metadata_continuous <-
   data.frame(metadata$Brain.wt, metadata$Duration, metadata$Age, metadata$PMI) 
 column_variables <- c("Brain.wt","Duration", "Age", "PMI")
-my_comparisons <- list(c("CONTROL", "AD"), c("CONTROL", "PA"), c("CONTROL", "LBD"), c("AD", "PA"), c("AD", "LBD"), c("PA", "LBD"))
+my_comparisons <- list(c("CONTROL", "PA"), c("CONTROL", "AD"), c("CONTROL", "LBD"), c("PA", "AD"), c("PA", "LBD"), c("AD", "LBD"))
 
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(TYPE, i, fill = sex_inferred)) +
     geom_violin() +
-    geom_boxplot(width = 0.1) + 
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2)) +
     theme_bw() + 
     ggtitle(j) +
@@ -712,12 +741,12 @@ walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y,
 metrics_metadata <-
   data.frame(metadata$PCT_PF_READS, metadata$PCT_CODING_BASES, metadata$PCT_INTERGENIC_BASES, metadata$PCT_INTRONIC_BASES, metadata$TOTAL_READS) 
 column_variables <- c("PCT_PF_READS","PCT_CODING_BASES", "PCT_INTERGENIC_BASES", "PCT_INTRONIC_BASES", "TOTAL_READS")
-my_comparisons <- list(c("CONTROL", "AD"), c("CONTROL", "PA"), c("CONTROL", "LBD"), c("AD", "PA"), c("AD", "LBD"), c("PA", "LBD"))
+my_comparisons <- list(c("CONTROL", "PA"), c("CONTROL", "AD"), c("CONTROL", "LBD"), c("PA", "AD"), c("PA", "LBD"), c("AD", "LBD"))
 
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(TYPE, i, fill = TYPE)) +
     geom_violin() +
-    geom_boxplot(width = 0.1) + 
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2)) +
     theme_bw() + 
     ggtitle(j) +
@@ -771,4 +800,5 @@ corrplot(
 path <- paste0("../../results/clinical/correlation_continuous_variables")
 saveToPDF(paste0(path, ".pdf"), width = 10, height = 10)
 ```
+
 

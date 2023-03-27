@@ -1,5 +1,5 @@
 ---
-title: "cell type enrichment & deconvolution"
+title: "cell type enrichment"
 author: "Kimberly Olney, Ph.D."
 date: "03/09/2023"
 output:
@@ -17,7 +17,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r}
 # To install run:
 # devtools::install_github('dviraran/xCell')
-# install_github("hagenaue/BrainInABlender")
+# devtools::install_github("hagenaue/BrainInABlender")
 
 library(xCell)
 library(tidyverse)
@@ -240,7 +240,7 @@ BinB_voom <- Sir_UnMixALot(userInput=voomCounts_gene_name, dataColumns=c(2:625),
 ### read in out BinB outputs
 ```{r}
 Zscore_Expression_CellType_NoPrimaryOverlap_Mean <- read_csv("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender/Zscore_Expression_CellType_NoPrimaryOverlap_Mean.csv")
-abc <- melt(Zscore_Expression_CellType_NoPrimaryOverlap_Mean)
+#This file includes the average cell type indices for each primary cell type for each sample: the average of the publication- specific cell type indices.
 Zscore_CellType_melt <- melt(Zscore_Expression_CellType_NoPrimaryOverlap_Mean)
 ```
 

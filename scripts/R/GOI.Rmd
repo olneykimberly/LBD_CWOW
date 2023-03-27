@@ -1,0 +1,230 @@
+---
+title: "GOI"
+author: "Kimberly Olney"
+date: "3/21/2023"
+output: html_document
+---
+
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+
+```{r libraries, message=FALSE, warning=FALSE}
+```
+
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+source(here::here("scripts/R", "gtf_path.R"))
+condition <- c("protein_coding")
+min_expression <- "min_exp1"
+
+myContrasts <- c("LBDvsControl = LBD - CONTROL",
+  "LBDvsAD = LBD - AD",
+  "LBDvsPA = LBD - PA",
+  "ADvsControl = AD - CONTROL", 
+  "PAvsControl = PA - CONTROL",
+  "ADvsPA = AD - PA")
+tool = c("star")
+typeOfCount <-  c(".bamReadsPerGene.out.tab")
+```
+# read in voom counts matrix & dge object 
+```{r}
+dge.filtered.norm <-
+  readRDS(
+    paste0(
+      "../../rObjects/",
+      condition,
+      "_",
+      min_expression,
+      ".dge.filtered.norm.rds"
+    )
+  )
+info <- as.data.frame(dge.filtered.norm$samples)
+genes <- dge.filtered.norm$genes
+log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
+
+# read in voom counts matrix
+voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/protein_coding_min_exp1_BIC.voomCountsMatrix.rds")
+```
+
+# read in genotype information
+```{r}
+# from Xu and Wolf at Mayo Clinic
+GWAS <- read.delim("../../GWAS_phospho-ubiquitin/APOE_ZMIZ1_genotype.txt")
+# rename npid to NPID
+colnames(GWAS)[1] ="NPID"
+# merge with metadata by NPID
+info_GWAS <- merge(info, GWAS, by = "NPID")
+```
+
+```{r}
+# get the gene id that corresponds to the gene name 
+genes <- dge.filtered.norm$genes
+
+bloodmarker_gene_info <- subset(genes, 
+                                gene_name == "APOE" | 
+                                gene_name == "ZMIZ1" |
+                                gene_name == "GFAP" | 
+                                gene_name == "MAP2" )
+rownames(bloodmarker_gene_info)
+bloodmarker_gene_id <- rownames(bloodmarker_gene_info)
+# subset counts 
+HBB_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% bloodmarker_gene_id)
+HBB_melt <- reshape2::melt(HBB_counts)
+names(HBB_melt)[names(HBB_melt) == "Var2"] <- "NPID"
+names(HBB_melt)[names(HBB_melt) == "Var1"] <- "gene_id"
+gene_id_gene_name <- data.frame(rownames(bloodmarker_gene_info), bloodmarker_gene_info$gene_name)
+names(gene_id_gene_name)[names(gene_id_gene_name) == "rownames.bloodmarker_gene_info."] <- "gene_id"
+names(gene_id_gene_name)[names(gene_id_gene_name) == "bloodmarker_gene_info.gene_name"] <- "gene_name"
+df <- merge(gene_id_gene_name, HBB_melt, by = "gene_id")
+df <- merge(df, info, by = "NPID")
+```
+plot APOE 
+```{r}
+column_variables <- c("APOE")
+df$APOE <- as.factor(df$APOE)
+my_comparisons <-
+  list(
+    c("E2E3", "E2E4"),
+    c("E2E3", "E3E3"),
+    c("E2E3", "E3E4"),
+    c("E2E3", "E4E4"),
+    c("E2E4", "E3E3"),
+    c("E2E4", "E3E4"),
+    c("E2E4", "E4E4"),
+    c("E3E3", "E3E4"),
+    c("E3E3", "E4E4"),
+    c("E3E4", "E4E4")
+  )
+colors <- brewer.pal(n = 5, name = "RdBu")
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_name == j)
+  ggplot(df, aes(APOE, value, fill = APOE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("APOE genotype") +
+    ylab(j) +
+    stat_compare_means(method = "anova") +
+    scale_fill_manual(values=colors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/genotype.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 6.5))
+```
+
+
+plot APOE 
+```{r}
+column_variables <- c("APOE")
+df$APOE <- as.factor(df$APOE)
+my_comparisons <-
+  list(
+    c("E2E3", "E2E4"),
+    c("E2E3", "E3E3"),
+    c("E2E3", "E3E4"),
+    c("E2E3", "E4E4"),
+    c("E2E4", "E3E3"),
+    c("E2E4", "E3E4"),
+    c("E2E4", "E4E4"),
+    c("E3E3", "E3E4"),
+    c("E3E3", "E4E4"),
+    c("E3E4", "E4E4")
+  )
+colors <- brewer.pal(n = 5, name = "RdBu")
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_name == j)
+  ggplot(df, aes(APOE, value, fill = APOE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("APOE genotype") +
+    ylab(j) +
+    stat_compare_means(method = "anova") +
+    scale_fill_manual(values=colors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/genotype.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 6.5))
+```
+
+```{r}
+remove(df)
+df <- merge(gene_id_gene_name, HBB_melt, by = "gene_id")
+# merge by info_GWAS
+df <- merge(df, info_GWAS, by = "NPID")
+```
+plot
+```{r}
+column_variables <- c("ZMIZ1")
+df$rs6480922_cnt <- as.factor(df$rs6480922_cnt)
+my_comparisons <-
+  list(
+    c("0", "1"),
+    c("0", "2"),
+    c("1", "2")
+  )
+colors <- brewer.pal(n = 5, name = "RdBu")
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_name == j)
+  ggplot(df, aes(rs6480922_cnt, value, fill = rs6480922_cnt)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("number of T alleles") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    scale_fill_manual(values=colors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/genotype.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 6.5))
+```
+
+```{r}
+df_compare_means <- subset(df, df$gene_name == "ZMIZ1")
+
+shapiro.test(df_compare_means$value)
+
+# Compute the analysis of variance
+res.aov <- aov(value ~ rs6480922_cnt, data = df_compare_means)
+# Summary of the analysis
+summary(res.aov)
+
+kruskal.test(value ~ rs6480922_cnt, data = df_compare_means)
+
+pairwise.wilcox.test(df_compare_means$value, df_compare_means$rs6480922_cnt,
+                 p.adjust.method = "BH")
+
+
+write.table(df_compare_means, "ZMIZ1_genotype_and_log2CPM_expression.txt", row.names = F, quote = F, sep = "\t")
+```

@@ -61,6 +61,11 @@ saveToPDF <- function(...) {
 # read in metadata
 # the expanded metadata contains inferred sex, RIN, and WGS sample IDs
 metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
+# read in metadata with A-T-S score information 
+metadata <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt")
+
+#metadata <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_cellType_Zscore.txt")
+
 # remove duplicates if any 
 #metadata <- metadata[!duplicated(metadata[,c('RNA.config.ID')]),]
 # rename columns for easier plotting 
@@ -69,7 +74,7 @@ metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
 #  mutate(across('TYPE', str_replace, 'CONTROL - AD', 'AD'))
 #metadata <- metadata %>%
 #  mutate(across('TYPE', str_replace, 'CONTROL - PA', 'PA'))
-metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "AD", "PA", "LBD"))
+metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "PA", "AD", "LBD"))
 
 
 #metadata <- metadata %>% mutate(sex_chr = case_when(

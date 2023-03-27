@@ -43,7 +43,7 @@ makePaddedDataFrame <- function(l, ...) {
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-condition <- c("protein_coding_cellType_zscores")
+condition <- c("protein_coding")
 tool <- "star"
 min_expression <- "min_exp1"
 # save contrast names
@@ -73,8 +73,62 @@ for (i in allComparisons) {
            sep = "\t",
            stringsAsFactors = FALSE
          ))
-  # increment
 }
+
+condition <- c("protein_coding_cellType_zscores")
+
+allComparisons <- c("BIC_LBDvsControl", 
+                    "BIC_LBDvsAD", 
+                    "BIC_LBDvsPA", 
+                    "BIC_ADvsControl", 
+                    "BIC_PAvsControl", 
+                    "BIC_ADvsPA")
+allComparisons 
+
+for (i in allComparisons) {
+  filepath <- paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition, "_",
+    i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(paste0(i),
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+}
+
+condition <- c("protein_coding_cellType_zscores")
+
+allComparisons <- c("short_model_BIC_LBDvsControl", 
+                    "short_model_BIC_LBDvsAD", 
+                    "short_model_BIC_LBDvsPA", 
+                    "short_model_BIC_ADvsControl", 
+                    "short_model_BIC_PAvsControl", 
+                    "short_model_BIC_ADvsPA")
+allComparisons 
+
+for (i in allComparisons) {
+  filepath <- paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition, "_",
+    i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(paste0(i),
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+}
+
 ```
 
 # DEGs by FDRq <= 0.05
@@ -86,9 +140,230 @@ ADvsControl_up <- subset(ADvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
 ADvsControl_down <- subset(ADvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
 PAvsControl_up <- subset(PAvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
 PAvsControl_down <- subset(PAvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
+
+# ct stands for cell type 
+ct_LBDvsControl_up <- subset(BIC_LBDvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
+ct_LBDvsControl_down <- subset(BIC_LBDvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
+ct_ADvsControl_up <- subset(BIC_ADvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
+ct_ADvsControl_down <- subset(BIC_ADvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
+ct_PAvsControl_up <- subset(BIC_PAvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
+ct_PAvsControl_down <- subset(BIC_PAvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
+
+# ct stands for cell type short model 
+cts_LBDvsControl_up <- subset(short_model_BIC_LBDvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
+cts_LBDvsControl_down <- subset(short_model_BIC_LBDvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
+cts_ADvsControl_up <- subset(short_model_BIC_ADvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
+cts_ADvsControl_down <- subset(short_model_BIC_ADvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
+cts_PAvsControl_up <- subset(short_model_BIC_PAvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
+cts_PAvsControl_down <- subset(short_model_BIC_PAvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
 ```
 
 # Upset of DEGs
+```{r}
+list_input <- list("AD down-regulated" = ADvsControl_down$gene_name,
+                   "AD up-regulated" = ADvsControl_up$gene_name,
+                   "ct AD down-regulated" = ct_ADvsControl_down$gene_name,
+                   "ct AD up-regulated" = ct_ADvsControl_up$gene_name,
+                   "cts AD down-regulated" = cts_ADvsControl_down$gene_name,
+                   "cts AD up-regulated" = cts_ADvsControl_up$gene_name
+                   )
+data <- fromList(list_input)
+subset(data, rownames(data) == "SNCA")
+```
+### Upset between LBDvsControl with and without correcting for cell type 
+```{r}
+list_input <- list("LBD down-regulated" = LBDvsControl_down$gene_name,
+                   "LBD up-regulated" = LBDvsControl_up$gene_name,
+                   "ct LBD down-regulated" = ct_LBDvsControl_down$gene_name,
+                   "ct LBD up-regulated" = ct_LBDvsControl_up$gene_name,
+                   "cts LBD down-regulated" = cts_LBDvsControl_down$gene_name,
+                   "cts LBD up-regulated" = cts_LBDvsControl_up$gene_name
+                   )
+data <- fromList(list_input)
+subset(data, rownames(data) == "TMEM175")
+upset(data, intersect = c('LBD down-regulated',
+        'ct LBD down-regulated',
+        'cts LBD down-regulated',
+        'LBD up-regulated',
+        'ct LBD up-regulated', 
+        'cts LBD up-regulated'))
+```
+
+```{r}
+upset_gene <- upset(data, set_sizes = FALSE,
+      c('LBD down-regulated',
+        'ct LBD down-regulated',
+        'cts LBD down-regulated',
+        'LBD up-regulated',
+        'ct LBD up-regulated', 
+        'cts LBD up-regulated'),
+      themes=upset_modify_themes(
+        list('intersections_matrix'=theme(text=element_text(size=10),
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")))),
+  queries=list(
+    upset_query(set='LBD down-regulated', fill='blue'),
+    upset_query(set='ct LBD down-regulated', fill='blue'),
+    upset_query(set='cts LBD down-regulated', fill='blue'),   
+    upset_query(set='LBD up-regulated', fill='red'),
+    upset_query(set='ct LBD up-regulated', fill='red'),
+    upset_query(set='cts LBD up-regulated', fill='red')
+  ),
+  intersections = list(c('LBD down-regulated', 'ct LBD down-regulated', 'cts LBD down-regulated'),
+                      c('LBD down-regulated', 'ct LBD down-regulated'), 
+                       'LBD down-regulated',
+                       'ct LBD down-regulated', 
+                       c('LBD up-regulated', 'ct LBD up-regulated'), 
+                       'LBD up-regulated',
+                       'ct LBD up-regulated', 
+                       c('LBD up-regulated', 'ct LBD down-regulated'),
+                       c('ct LBD up-regulated', 'LBD down-regulated')
+
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        size=2,
+        text = list(size = 3),
+        text_mapping = aes(),
+        bar_number_threshold=3,  # show all numbers on top of bars
+        width=0.3,   # reduce width of the bars
+        mapping=aes(fill='bars_color')
+      )
+      + scale_fill_manual(values=c('grey'), guide='none')
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          axis.line=element_line(colour='black')))),
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=2,
+        stroke=0.45)) +
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+    sort_sets=FALSE,
+  sort_intersections=FALSE)
+upset_gene
+```
+
+```{r}
+# save
+path <- paste0("../../results/", tool, 
+               "/upset/", condition, "_LBD_vs_LBD_FDRq0.05_logFC_0.25")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+
+upset(data, intersect = c('LBD down-regulated',
+        'AD down-regulated',
+        'LBD up-regulated',
+        'AD up-regulated'))
+
+path <- paste0("../../results/", tool,
+               "/upset/", condition, "_LBD_vs_LBD_FDRq0.05_logFC_0.25_simple")
+saveToPDF(paste0(path, ".pdf"), width = 9, height = 6)
+
+# Binary table with colnames:
+write.table(
+  data,
+  paste0("../../results/",
+  tool,
+  "/upset/", condition, 
+  "_LBD_AD_FDRq0.05_logFC_0.25_list_binary_results.txt"),
+  sep = "\t",
+  quote = FALSE
+)
+```
+### Correlation
+```{r}
+LBDandLBD <-
+  merge(BIC_LBDvsControl,
+        LBDvsControl,
+        by = "gene_name",
+        all = T)
+LBDandLBD <- LBDandLBD[c(1,2,6,7,8:15,22:29)]
+colnames(LBDandLBD) = c("gene_name", "chr", "gene_id","gene_type", "AD_logFC", "AD_CI.L", "AD_CI.R", "AD_AveExpr", "AD_t","AD_P.val", "AD_adj.P.Val", "AD_B", "LBD_logFC", "LBD_CI.L", "LBD_CI.R", "LBD_AveExpr", "LBD_t","LBD_P.val", "LBD_adj.P.Val", "LBD_B")
+
+LBDandLBD_goi <- subset(LBDandLBD, 
+                        (AD_logFC < -0.5 & LBD_logFC < -0.5) | # down in both
+                          (AD_logFC > .5 & LBD_logFC > 0.5) | # up in both
+                          (AD_logFC > .5 & LBD_logFC < 0) | # up in AD, down in LBD
+                          (AD_logFC < -.5 & LBD_logFC > 0)) # up in LBD, down in AD
+
+ADandLBD_corr_plot <- ggplot(data = LBDandLBD, 
+  aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 2.75,
+    ymin = 2.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -2.25,
+    ymin = 0,
+    ymax = -2.25,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = LBDandLBD_goi, 
+    aes(
+      x = AD_logFC, 
+      y = LBD_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "LBD and AD",
+    x = expression(paste("  ", log[2](AD/control))),
+    y = expression(paste("  ", log[2](LBD/control))))+
+  scale_y_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.5), expand = c(0,0))
+ADandLBD_corr_plot
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_ADandLBD"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(ADandLBD, x = "AD_logFC", y = "LBD_logFC",
+                add = "reg.line",  # Add regression line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+```
+
+
+#---------------------------------------
 ### all pathologies compared to control 
 ```{r}
 list_input <- list("LBD down-regulated" = LBDvsControl_down$gene_name,
