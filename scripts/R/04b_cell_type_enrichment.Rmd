@@ -1,0 +1,497 @@
+---
+title: "cell type enrichment"
+author: "Kimberly Olney, Ph.D."
+date: "03/09/2023"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+params:
+  args: myarg
+---
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+# Libraries
+```{r}
+# To install run:
+# devtools::install_github('dviraran/xCell')
+# devtools::install_github("hagenaue/BrainInABlender")
+
+library(xCell)
+library(tidyverse)
+library(devtools)
+library(BrainInABlender) # see https://github.com/hagenaue/BrainInABlender 
+library(reshape2)
+library(ggplot2)
+library(data.table)
+```
+
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+source(here::here("scripts/R", "gtf_path.R"))
+condition <- c("protein_coding_ATS")
+min_expression <- "min_exp1"
+tool <- "star"
+```
+
+# Read in DGE object & metadata
+```{r}
+dge.filtered.norm <-
+  readRDS(
+    paste0(
+      "../../rObjects/",
+      condition,
+      "_",
+      min_expression,
+      ".dge.filtered.norm.rds"
+    )
+  )
+info <- as.data.frame(dge.filtered.norm$samples)
+genes <- dge.filtered.norm$genes
+log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
+
+biomart_gene_lengths <- read.delim("gene_id_gene_length_QC.txt")
+# see biomart_gene_length_and_GC_content.R for more information on how the text file was created
+```
+
+# RPKM values
+```{r}
+# remove version information from gene_id so files can be merged
+dge.filtered.norm$genes$gene_id <-
+  gsub("\\..*", "", dge.filtered.norm$genes$gene_id)
+gene_info <-
+  merge(dge.filtered.norm$genes,
+        biomart_gene_lengths,
+        by = "gene_id",
+        all.x = T) # all by dge TRUE
+
+# reorder gene_info so it matches the order of the dge object
+gene_info <-
+  gene_info[match(dge.filtered.norm$genes$gene_id, gene_info$gene_id), ]
+# compute RPKM values
+rpkm_protein_coding <-
+  rpkm(dge.filtered.norm, gene.length = gene_info$length)
+
+# There is a gene that is duplicated. Remove or else run into errors.
+rownames(rpkm_protein_coding) <- gene_info$gene_name
+RPKM_no_dups <-
+  rpkm_protein_coding[!duplicated(rownames(rpkm_protein_coding)),]
+
+# output RPKM table
+write.table(
+  RPKM_no_dups,
+  paste0(
+    "../../results/",
+    tool,
+    "/counts/",
+    condition,
+    "_",
+    min_expression,
+    "_rpkm.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+```
+
+# xCell 
+xCell performs cell type enrichment analysis from gene expression data for 64 immune and stroma cell types. xCell is a gene signatures-based method learned from thousands of pure cell types from various sources. xCell applies a novel technique for reducing associations between closely related cell types. xCell signatures were validated using extensive in-silico simulations and also cytometry immunophenotyping, and were shown to outperform previous methods. xCell allows researchers to reliably portray the cellular heterogeneity landscape of tissue expression profiles. For more informations please refer to the xCell manuscript.
+https://link.springer.com/epdf/10.1186/s13059-017-1349-1?author_access_token=DVtns3PR3raQv61Z6RD4Ym_BpE1tBhCbnbw3BuzI2RO7SD-w75iAhrQ7gjSGzw_zJO6jHEpDqZzy8CsttNZVysUprXQi0WGX-FRCguKfv2d96DcweRBG2ni-01x6T6bpU3-cfZ5nkfzCQeNeg-mMUQ== 
+
+The expression matrix should be a matrix with genes in rows and samples in columns. The rownames should be gene symbols. If the data contains non-unique gene symbols, rows with same gene symbols will be averaged. xCell uses the expression levels ranking and not the actual values, thus normalization does not have an effect, however normalizing to gene length (RPKM/FPKM/TPM/RSEM) is required. Hence why we obtained RPKM values first. 
+
+Importantly, xCell performs best with heterogenous dataset. Thus it is recommended to use all data combined in one run, and not break down to pieces (especially not cases and control in different runs).
+```{r}
+# run xCellAnalysis
+xCell_scores <- xCellAnalysis(RPKM_no_dups)
+# save as dataframe for reformatting and plotting 
+df <- as.data.frame(xCell_scores) 
+xCell_dt <- df %>%
+  rownames_to_column() %>%
+  gather(colname, value, -rowname)
+# rowname is cell type
+# colname is sample ID
+# value is the cell type enrichment score. 
+# plot 
+ggplot(xCell_dt, aes(x = colname, y = rowname, fill = value)) +
+  geom_tile()
+```
+re-plot the xCell enrichment scores by clustering samples using the euclidean method
+```{r}
+# Obtain euclidean distance 
+hc.cols <- hclust(dist(t(df)))
+ord <- hclust(dist(df, method = "euclidean"), method = "ward.D" )$order
+
+# change column names to disease type so we can see if it groups by pathology 
+colnames(xCell_scores) <- dge.filtered.norm$samples$TYPE
+
+heatmap(
+   as.matrix(xCell_scores), Rowv=NA,
+   Colv=as.dendrogram(hclust(dist(t(as.matrix(xCell_scores)))))
+ )
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+saveToPDF(paste0(path, ".pdf"), width = 30, height = 7)
+
+# group by cell type enrichment & pathology 
+heatmap(xCell_scores, scale = "none")
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+saveToPDF(paste0(path, ".pdf"), width = 12, height = 12)
+```
+correlation of xCell enrichment scores among pathologies 
+```{r}
+dge_xCell <- xCell_scores
+cormat <- round(cor(dge_xCell),2)
+melted_cormat <- reshape2::melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+```
+save xCell cell type enrichment information
+```{r}
+# output RPKM table
+write.table(
+  xCell_scores,
+  paste0(
+    "../../results/",
+    tool,
+    "/cell_type_enrichment/xCell/",
+    condition,
+    "_",
+    min_expression,
+    "_xCell_scores.txt"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+```
+
+```{r}
+# clean up
+remove(xCell_scores, xCell_dt, melted_cormat, hc.cols, dge_xCell, cormat, df)
+```
+
+# Brain in a blender
+Input: A dataframe containing the gene expression data for the samples (RNAseq or microarray data that has already been variance stabilized and received appropriate quality control to remove outlier samples and large-scale technical artifacts), including one column of gene symbols.
+You must also have single character string indicating the species from which the data were derived, currently allows the values "mouse", "Mouse", "human", or "Human".
+```{r}
+# read in voom counts matrix
+protein_coding_min_exp1_BIC.voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/protein_coding_min_exp1_BIC.voomCountsMatrix.rds")
+# save as a dataframe (required for Sir_UnMixALot function below)
+voomCounts <- as.data.frame(protein_coding_min_exp1_BIC.voomCountsMatrix)
+# add gene_id column to voomCounts
+voomCounts$gene_id <- rownames(voomCounts)
+
+# re-arrange data by disease type 
+ByType <- dge.filtered.norm$samples %>% arrange(TYPE)
+ByType_colors <- setcolorder(voomCounts, ByType$NPID)
+ByType_colors$gene_id <- rownames(ByType_colors)
+
+# remove gene id version information
+ByType_colors$gene_id <- gsub("\\..*","",ByType_colors$gene_id)
+# merge voom counts with gene_info
+voomCounts_gene_name <- merge(ByType_colors, gene_info, by ="gene_id", all.x= T)
+# change directory or else the results will output to the current working directory which is the scripts folder. 
+setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender")
+# run brain in a blender
+BinB_voom <- Sir_UnMixALot(userInput=voomCounts_gene_name, dataColumns=c(2:625), geneColumn=636, species="human")
+```
+### output notes 
+ Output added to working directory: ZscoreInput.csv
+ ...ZscoreInput.csv is a data frame that includes a a z-scored version of your input (centered and scaled by row), with all rows removed that had zero variability.
+ The number of unique gene symbols (rows) included in the user's input after filtering out genes with expression that completely lacked variability (sd=0):
+ 14166
+ The gene symbols are not unique, the z-scored data will be averaged by gene symbol and then re-z-scored
+ Output added to working directory: ZscoreInput_AveragedByGeneSymbol.csv
+ ...ZscoreInput_AveragedByGeneSymbol.csv is a data frame that includes a a z-scored version of your input, with all rows removed that had zero variability. Data was then averaged by gene symbol, and z-scored again so that the data for each gene symbol is centered and scaled.
+ Output added to working directory: ZscoreInput_Expression_CellType.csv
+ ...ZscoreInput_Expression_CellType.csv is a data frame listing all of the cell type specific genes in your dataset and their respective expression for each sample (in z-scores).
+ ...Please note that the cell type specific genes included in this output have not yet been filtered based on whether they were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
+ A file has been outputted to your working directory NumberOfGenesInYourDatasetFoundInEachPublicationsCellTypeSpecificGeneList.csv.csv that tells you the number of gene symbols included in your dataset that were found in each publication's cell type specific gene list.
+ Output added to working directory: AVE_Expression_CellType_Tag_bySample.csv, CorrelationMatrixCellIndexVsCellIndex.csv
+ ...The file AVE_Expression_CellType_Tag_bySample.csv includes the average z-score for each sample for all genes identified as cell type specific for each cell type from each publication - a cell type index. This can be treated as one type of estimate of the relative balance of each cell type across all samples.
+ ...The file CorrelationMatrixCellIndexVsCellIndex.csv shows the correlation between each of these cell type indices.
+ ...Please note that the cell type specific genes included in this output have not yet been filtered based on whether they were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
+ Output added to working directory: CellTypeSpecificGenes_Master3_Overlap.csv
+ ...CellTypeSpecificGenes_Master3_Overlap.csv indicates how many of the gene symbols included in your dataset are indicated to be cell type specific in cell type specific gene lists from different publications or for different cell types
+ Output added to working directory: ZscoreInput_Expression_CellType_NoPrimaryOverlap.csv
+ ...A data frame listing all of the cell type specific genes in your dataset and their respective expression for each sample (in z-scores).
+ ...The cell type specific genes included in this output have been filtered so that the data is now removed that was associated with gene symbols that were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
+ Output added to working directory: NumberOfGenesInYourDatasetFoundInEachPublicationsCellTypeSpecificGeneList_NoNonSpecific.csv and  NumberOfGenesInYourDatasetSpecificToEachPrimaryCellType.csv
+ ...NumberOfGenesInYourDatasetFoundInEachPublicationsCellTypeSpecificGeneList_NoNonSpecific.csv that tells you the number of gene symbols included in your dataset that were found in each publication's cell type specific gene list. The cell type specific genes included in this output have been filtered so that the data is now removed that was associated with gene symbols that were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
+ ...The file  NumberOfGenesInYourDatasetSpecificToEachPrimaryCellType.csv tells you how many genes included in your dataset were found to be specific to each primary cell type.
+ Output added to working directory: ZscoreInput_Expression_CellType_NoPrimaryOverlap_MeanTag
+ ... ZscoreInput_Expression_CellType_NoPrimaryOverlap_MeanTag is a data frame that includes the publication-specific cell type indices for each sample: the average z-score for each publication's cell type specific gene lists, after having filtered out the genes that are found to be specific to different kinds of cells in different publications (i.e., genes that have expression that is actually non-cell type specific!).
+ A subdirectory named Cell Type Histograms has been created within your working directory.
+ ...This directory contains histograms illustrating the distribution of each of your publication-specific cell type indices across samples. You probably want to examine these for extreme outliers.
+ Output added to working directory: CellType_NoPrimaryOverlap_MeanTag_CorrMatrix.csv and Heatmap_CellType_NoPrimaryOverlap_MeanTag.png.
+ ...Both of these files illustrate the correlations between your publication-specific cell type indices.
+ Output added to working directory: Zscore_Expression_CellType_NoPrimaryOverlap_Mean.csv.
+ ...This file includes the average cell type indices for each primary cell type for each sample: the average of the publication- specific cell type indices.
+ A subdirectory named Primary cell type Histograms has been created within your working directory.
+ ...This directory contains histograms illustrating the distribution of each of the averaged cell type indices for each primary cell type across samples. You probably want to examine these for extreme outliers.
+ Output added to working directory: CellTypeIndexNoNA3_NormBest_NoPrimaryOverlap_CorrMatrix.csv and Heatmap_CorMatrixPrimaryCellsNoOverlap.png.
+ ...Both of these files illustrate the correlations between the averaged cell type indices for each primary cell type across samples.
+ The output returned to your workspace is a list containing two data frames: PublicationSpecific_CellTypeIndex and AveragePrimary_CellTypeIndex. These dataframes provide estimates for the relative balance of each cell type across samples.
+### read in out BinB outputs
+```{r}
+Zscore_Expression_CellType_NoPrimaryOverlap_Mean <- read_csv("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender/Zscore_Expression_CellType_NoPrimaryOverlap_Mean.csv")
+#This file includes the average cell type indices for each primary cell type for each sample: the average of the publication- specific cell type indices.
+Zscore_CellType_melt <- melt(Zscore_Expression_CellType_NoPrimaryOverlap_Mean)
+```
+
+### merge Zscore information with metadata to compare between disease groups
+```{r}
+# get cell types
+Zscore_CellType_melt$...1 <- as.factor(Zscore_CellType_melt$...1)
+# save levels to loop through to make a dataframe for each 
+CellTypes <- levels(Zscore_CellType_melt$...1)
+
+for (i in CellTypes) {
+  CellType_df <-  Zscore_CellType_melt[Zscore_CellType_melt$...1 == i, ]
+  CellType_df <- CellType_df %>% 
+        rename("CellType" = "...1",
+               "NPID" = "variable",
+               "Zscore" = "value")  
+  colnames(CellType_df)[3] = paste0(i, ".Zscore")
+  CellType_df$CellType <- NULL
+  CellType_df$NPID <- gsub(".", "-", CellType_df$NPID, fixed =TRUE)
+  CellType_df$NPID <- sub("X", "", CellType_df$NPID, fixed =TRUE)
+  path <- paste0("../../results/",tool,"/cell_type_enrichment/BrainInABlender/", condition, "_",i,".txt") 
+  write.table(
+    CellType_df,
+    path,
+    sep = "\t",
+    row.names = FALSE,
+    quote = FALSE
+  )
+}
+
+# read in each CellType_df
+for (i in CellTypes) {
+  path <- paste0("../../results/",tool,"/cell_type_enrichment/BrainInABlender/", condition, "_",i,".txt") 
+  assign(paste0(i),
+         read.delim(
+           path,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+}
+# put all cell type data frames into list
+df_list <- list(Astrocyte, Endothelial, Microglia, Mural, Neuron_All, Neuron_Interneuron, Neuron_Projection, Oligodendrocyte, Oligodendrocyte_Immature, RBC)
+# merge all data frames in list
+all_CellTypes <- df_list %>% reduce(full_join, by='NPID')
+# merge with metadata data info
+cellType <- merge(info, all_CellTypes, by = "NPID")
+```
+### plot cell type zscore between disease groups
+```{r}
+metadata_continuous <-
+  data.frame(cellType$Astrocyte.Zscore, cellType$Endothelial.Zscore, cellType$Microglia.Zscore, cellType$Mural.Zscore, cellType$Neuron_All.Zscore, cellType$Neuron_Interneuron.Zscore, cellType$Neuron_Projection.Zscore, cellType$Oligodendrocyte.Zscore, cellType$Oligodendrocyte_Immature.Zscore, cellType$RBC.Zscore)
+column_variables <- c("Astrocyte.Zscore", "Endothelial.Zscore", "Microglia.Zscore", "Mural.Zscore", "Neuron_All.Zscore", "Neuron_Interneuron.Zscore", "Neuron_Projection.Zscore", "Oligodendrocyte.Zscore", "Oligodendrocyte_Immature.Zscore", "RBC.Zscore")
+my_comparisons <- list(c("CONTROL", "PA"), c("CONTROL", "AD"), c("CONTROL", "LBD"), c("PA", "AD"), c("PA", "LBD"), c("AD", "LBD"))
+violin_plot_fun <- function(i, j) {
+  ggplot(cellType, aes(TYPE, i, fill = TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("Disease group") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    scale_fill_manual(values=TypeColors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/ByType.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 5.5))
+```
+### plot by disease, split by sex 
+```{r}
+metadata_continuous <-
+  data.frame(cellType$Astrocyte.Zscore, cellType$Endothelial.Zscore, cellType$Microglia.Zscore, cellType$Mural.Zscore, cellType$Neuron_All.Zscore, cellType$Neuron_Interneuron.Zscore, cellType$Neuron_Projection.Zscore, cellType$Oligodendrocyte.Zscore, cellType$Oligodendrocyte_Immature.Zscore, cellType$RBC.Zscore)
+column_variables <- c("Astrocyte.Zscore", "Endothelial.Zscore", "Microglia.Zscore", "Mural.Zscore", "Neuron_All.Zscore", "Neuron_Interneuron.Zscore", "Neuron_Projection.Zscore", "Oligodendrocyte.Zscore", "Oligodendrocyte_Immature.Zscore", "RBC.Zscore")
+my_comparisons <- list(c("CONTROL", "PA"), c("CONTROL", "AD"), c("CONTROL", "LBD"), c("PA", "AD"), c("PA", "LBD"), c("AD", "LBD"))
+violin_plot_fun <- function(i, j) {
+  ggplot(cellType, aes(TYPE, i,  fill = sex_inferred)) +
+    geom_violin(position=position_dodge(.8)) +
+    geom_boxplot(width = 0.1, outlier.shape = NA, aes(fill=sex_inferred), position=position_dodge(.8), colour = "white") + 
+   # geom_jitter(shape=16, position=position_dodge(1.2),  aes(fill=sex_inferred)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("Disease group") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    scale_fill_manual(values=SexColors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/ByTypeEachSex.", .y, ".pdf")) %>%
+  flatten()
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 5.5))
+
+violin_plot_fun <- function(i, j) {
+  ggplot(cellType, aes(TYPE, i, fill = TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("Disease group") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    scale_fill_manual(values=TypeColors) +
+    theme(legend.position = "none") +
+    facet_grid(. ~ sex_inferred)
+}
+violin_plots <-
+  Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/ByTypeFacetSex.", .y, ".pdf")) %>%
+  flatten()
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 4, width = 8.5))
+```
+### plot cell type zscore between A-T-S groups 
+```{r}
+cellType$ATS_names <- factor(cellType$ATS_names, levels = c("no pathology", "amyloid", "amyloid + tau", "pure synuclein", "low amyloid + synuclein", "high amyloid + synuclein", "amyloid + synuclein + tau"))
+
+metadata_continuous <-
+  data.frame(cellType$Astrocyte.Zscore, cellType$Endothelial.Zscore, cellType$Microglia.Zscore, cellType$Mural.Zscore, cellType$Neuron_All.Zscore, cellType$Neuron_Interneuron.Zscore, cellType$Neuron_Projection.Zscore, cellType$Oligodendrocyte.Zscore, cellType$Oligodendrocyte_Immature.Zscore, cellType$RBC.Zscore)
+column_variables <- c("Astrocyte.Zscore", "Endothelial.Zscore", "Microglia.Zscore", "Mural.Zscore", "Neuron_All.Zscore", "Neuron_Interneuron.Zscore", "Neuron_Projection.Zscore", "Oligodendrocyte.Zscore", "Oligodendrocyte_Immature.Zscore", "RBC.Zscore")
+
+my_comparisons <- list(c("no pathology", "amyloid"), c("no pathology", "amyloid + tau"), c("no pathology", "low amyloid + synuclein"), 
+                       c("no pathology", "high amyloid + synuclein"), c("no pathology","amyloid + synuclein + tau"))
+
+violin_plot_fun <- function(i, j) {
+  ggplot(cellType, aes(ATS_names, i, fill = ATS_names)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("A-T-S groups") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    scale_fill_manual(values=colorbindColors) +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 75, vjust = 1, hjust=1))
+}
+violin_plots <-
+  Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/ByATS.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 6, width = 6.5))
+
+violin_plot_fun <- function(i, j) {
+  ggplot(cellType, aes(ATS_names, i, fill = ATS_names)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape = NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() + 
+    ggtitle(j) +
+    xlab("A-T-S groups") +
+    ylab(j) +
+    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    scale_fill_manual(values=colorbindColors) +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 75, vjust = 1, hjust=1))+
+        facet_grid(. ~ sex_inferred)
+
+}
+violin_plots <-
+  Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/ByATSFacetSex.", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 6, width = 11))
+```
+
+### formal test of difference among groups 
+```{r}
+kruskal.test(Astrocyte.Zscore ~ TYPE, data = cellType)
+kruskal.test(Endothelial.Zscore ~ TYPE, data = cellType)
+kruskal.test(Microglia.Zscore ~ TYPE, data = cellType)
+kruskal.test(Mural.Zscore ~ TYPE, data = cellType)
+kruskal.test(Neuron_All.Zscore ~ TYPE, data = cellType)
+kruskal.test(Neuron_Interneuron.Zscore ~ TYPE, data = cellType)
+kruskal.test(Neuron_Projection.Zscore ~ TYPE, data = cellType)
+kruskal.test(Oligodendrocyte.Zscore ~ TYPE, data = cellType)
+kruskal.test(Oligodendrocyte_Immature.Zscore ~ TYPE, data = cellType)
+kruskal.test(RBC.Zscore ~ TYPE, data = cellType)
+
+kruskal.test(Astrocyte.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Endothelial.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Microglia.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Mural.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Neuron_All.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Neuron_Interneuron.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Neuron_Projection.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Oligodendrocyte.Zscore ~ ATS_names, data = cellType)
+kruskal.test(Oligodendrocyte_Immature.Zscore ~ ATS_names, data = cellType)
+kruskal.test(RBC.Zscore ~ ATS_names, data = cellType)
+
+wilcox.test(Astrocyte.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Endothelial.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Microglia.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Mural.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Neuron_All.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Neuron_Interneuron.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Neuron_Projection.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Oligodendrocyte.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(Oligodendrocyte_Immature.Zscore ~ sex_inferred, data = cellType)
+wilcox.test(RBC.Zscore ~ sex_inferred, data = cellType)
+
+
+pairwise.wilcox.test(cellType$Microglia.Zscore, cellType$ATS_names,
+                 p.adjust.method = "BH")
+
+pairwise.wilcox.test(cellType$Neuron_Projection.Zscore, cellType$ATS_names,
+                 p.adjust.method = "BH")
+```
+
+
+
+### heatmap 
+```{r}
+# save results as dataframe
+BinB_ave_celltype <- as.data.frame(BinB_voom$AveragePrimary_CellTypeIndex)
+# heatmap of results 
+heatmap(as.matrix(BinB_ave_celltype))
+path <- paste0("../../results/", tool ,"/cell_type_enrichment/BrainInABlender/heatmap_AveragePrimary_CellTypeIndex")
+saveToPDF(paste0(path, ".pdf"), width = 5, height = 8)
+```
+### save metadata with cell type information
+```{r}
+write.table(
+  cellType,
+  paste0("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_cellType_Zscore.txt"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+```
+

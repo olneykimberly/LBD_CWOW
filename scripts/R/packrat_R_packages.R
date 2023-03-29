@@ -1,5 +1,6 @@
 # Step 1: Install and load packrat
-install.packages("packrat")
+#install.packages("packrat")
+setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/scripts/R/package_manager")
 library(packrat)
 
 # Step 2: Initialize packrat
@@ -8,7 +9,7 @@ packrat::init(project = "/research/labs/neurology/fryer/m239830/LBD_CWOW/scripts
 
 # Step 3: Turn packrat on/off, see how library path changes
 packrat::on()
-.libPaths()
+#.libPaths()
 #packrat::off()
 #.libPaths()
 
@@ -16,21 +17,21 @@ packrat::on()
 packrat::snapshot()
 # initiat
 packrat::init()
-packrat::bundle()
+#packrat::bundle()
 
 #--------- Notes 
 # Basic Commands
 # Remove packages
-remove.packages("plyr")
+#remove.packages("plyr")
 # Install local source packages
-packrat::set_opts(local.repos = "<path_to_repo>")
+#packrat::set_opts(local.repos = "<path_to_repo>")
 # Save the current state of your library
-packrat::snapshot()
+#packrat::snapshot()
 # Restore the library state saved in the most recent snapshot
-packrat::restore()
+#packrat::restore()
 # Remove unused packages from your library
-packrat::clean()
+#packrat::clean()
 # Bundle a packrat project, for easy sharing
-packrat::bundle()
+#packrat::bundle()
 # Unbundle a packrat project, generating a project directory with libraries restored from the most recent snapshot
-packrat::unbundle()
+#packrat::unbundle()

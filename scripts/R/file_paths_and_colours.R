@@ -36,8 +36,8 @@ AD <- "AD"
 PA <- "PA"
 CONTROL <- "CONTROL"
 control_color <- "#4682B4" # gray
-AD_color <- "#B4464B" # yellow gold
-PA_color <- "#B4AF46" # brown gold
+AD_color <- "#B4AF46" # yellow gold
+PA_color <- "#B4464B" # brown gold
 LBD_color <- "gray35" # green 
 control_shape <- c(15) # square
 AD_shape <- c(16) # circle
@@ -62,10 +62,13 @@ saveToPDF <- function(...) {
 # the expanded metadata contains inferred sex, RIN, and WGS sample IDs
 metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
 # read in metadata with A-T-S score information 
-metadata <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt")
+metadata_ATS <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt")
+# keep NPID and ATS information to merge with BinB metadata
+keep <- c("NPID","A", "T", "S", "ATS", "ATS_names")
+df <- metadata_ATS[,(names(metadata_ATS) %in% keep)]
 
-#metadata <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_cellType_Zscore.txt")
-
+metadata_BinB <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_cellType_Zscore.txt")
+metadata <- merge(metadata_BinB, df, by ="NPID")
 # remove duplicates if any 
 #metadata <- metadata[!duplicated(metadata[,c('RNA.config.ID')]),]
 # rename columns for easier plotting 
@@ -75,7 +78,7 @@ metadata <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects
 #metadata <- metadata %>%
 #  mutate(across('TYPE', str_replace, 'CONTROL - PA', 'PA'))
 metadata$TYPE <- factor(metadata$TYPE, levels = c("CONTROL", "PA", "AD", "LBD"))
-
+metadata$ATS_names <- factor(metadata$ATS_names, levels = c("no pathology", "amyloid", "amyloid + tau", "pure synuclein", "low amyloid + synuclein", "high amyloid + synuclein", "amyloid + synuclein + tau"))
 
 #metadata <- metadata %>% mutate(sex_chr = case_when(
 #  startsWith(sex_inferred, "female") ~ "XX", 
