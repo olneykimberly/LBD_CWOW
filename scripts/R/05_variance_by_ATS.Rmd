@@ -27,15 +27,7 @@ source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
 condition <- c("protein_coding_ATS") #  protein_coding
 min_expression <- "min_exp1"
-
-myContrasts <- c("LBDvsControl = LBD - CONTROL",
-  "LBDvsAD = LBD - AD",
-  "LBDvsPA = LBD - PA",
-  "ADvsControl = AD - CONTROL", 
-  "PAvsControl = PA - CONTROL",
-  "ADvsPA = AD - PA")
 tool = c("star")
-typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
 # Read in DGE object & metadata
 ```{r}
@@ -82,7 +74,7 @@ dge.filtered.norm$samples. <- info_with_scale
 ```
 Voom transform counts to use for BIC 
 ```{r}
-formula <- (~ 0 + TYPE)
+formula <- (~ 0 + ATS_names)
 voom_with_weights <-
   variancePartition::voomWithDreamWeights(
     counts = dge.filtered.norm$counts,
@@ -96,8 +88,8 @@ saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 voomCounts <- voom_with_weights$E
 ```
 
-```{r}
-baseFormula <- ~ (1 | TYPE)
+```{r eval = FALSE}
+baseFormula <- ~ (1 | ATS_names)
 # Combine responses on *rows*
 Y = with(
   info,
@@ -188,13 +180,10 @@ Only protein coding genes with cell Type zscore:
 
 All genes:
 Best model: ~ (1 | TYPE) + PCT_CODING_BASES + RIN + (1 | flowcell_and_lane) + PCT_INTRONIC_BASES + PCT_INTERGENIC_BASES + (1 | sex_inferred) + (1 | APOE) 
+
 # Design matrix
-
-
 ```{r}
 # make a new condition for saving outputs
-condition <- "protein_coding_cellType_zscores_by_ATS"
-
 design <-
   model.matrix(~ 0 + 
       ATS_names + 
@@ -209,7 +198,6 @@ design <-
       RBC.Zscore,
     dge.filtered.norm$samples
   )
-
 
 colnames(design) <-
   c(
@@ -425,23 +413,16 @@ remove(coef)
 Fit to the voomCounts_covariates
 Repeat for the voomCounts without covariates added to the model 
 ```{r}
-form_varPart <- ~ (1|TYPE) + 
+form_varPart <- ~ (1|ATS_names) + 
   (1|sex_inferred) + 
   (1|flowcell_and_lane) +
-#  (1|APOE) +
   Age +
   RIN +
-  PCT_CODING_BASES +
-  PCT_INTERGENIC_BASES +
-  PCT_INTRONIC_BASES +
   Neuron_All.Zscore +
   Oligodendrocyte_Immature.Zscore +
-  Mural.Zscore +
   Astrocyte.Zscore +
-  Microglia.Zscore +
   Endothelial.Zscore +
   RBC.Zscore
-
   
 # fit model and extract variance percents
 varPart <- fitExtractVarPartModel(voomCounts_covariates, form_varPart, info,
@@ -484,17 +465,17 @@ form <- ~ TYPE +
   sex_inferred + 
   Age +
   RIN +
-  PCT_CODING_BASES +
-  PCT_INTERGENIC_BASES +
-  PCT_INTRONIC_BASES +
+ # PCT_CODING_BASES +
+#  PCT_INTERGENIC_BASES +
+#  PCT_INTRONIC_BASES +
   Astrocyte.Zscore +
   Endothelial.Zscore +
-  Microglia.Zscore +
-  Mural.Zscore +
+#  Microglia.Zscore +
+#  Mural.Zscore +
   Neuron_All.Zscore +
-  Neuron_Interneuron.Zscore +
-  Neuron_Projection.Zscore +
-  Oligodendrocyte.Zscore +
+#  Neuron_Interneuron.Zscore +
+#  Neuron_Projection.Zscore +
+#  Oligodendrocyte.Zscore +
   Oligodendrocyte_Immature.Zscore +
   RBC.Zscore
   
@@ -524,7 +505,7 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          diag=FALSE, col.lim = c(0, 1)
          )
 path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_BIC")
-saveToPDF(paste0(path, ".pdf"), width = 9, height = 9)
+saveToPDF(paste0(path, ".pdf"), width = 10, height = 10)
 ```
 # PCA
 ```{r}
@@ -553,52 +534,36 @@ dim1_10 <- data.frame(pca_exp$x[, 1:10])
 dim1_10$NPID <- rownames(dim1_10)
 pcaWithMetadata <- merge(dim1_10, info, by = "NPID", all = TRUE)
 
-pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE,
-                                 levels = c(CONTROL, AD, PA, LBD, NA))
+#pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE,
+ #                                levels = c(CONTROL, AD, PA, LBD, NA))
+
+pcaWithMetadata$group <- pcaWithMetadata$ATS_names
+
 # Plotting
 ggplot(data = pcaWithMetadata, aes(x = PC1, y = PC2, shape = group, color = group)) +
   geom_point(size = 2.5) +
   theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+  scale_color_manual(values = colorbindColors) 
 
 ggplot(data = pcaWithMetadata, aes(x = PC2, y = PC3, shape = group, color = group)) +
   geom_point(size = 2.5) +
   theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+  scale_color_manual(values = colorbindColors) 
 
 ggplot(data = pcaWithMetadata, aes(x = PC3, y = PC4, shape = group, color = group)) +
   geom_point(size = 2.5) +
-  theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
-
-ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = group, color = group)) +
-  geom_point(size = 2.5) +
-  theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape))
+  theme_bw()
 
 ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = sex_inferred, color = sex_inferred)) +
   geom_point(size = 2.5) 
 
-ggplot(data = pcaWithMetadata, aes(x = PC6, y = PC4, shape = sex_inferred, color = group)) +
-  geom_point(size = 2.5) +
-  theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape))
 ```
 # CCA PC1-10 & variables in model 
 ```{r}
-form_PCA <- ~ TYPE + 
+form_PCA <- ~ ATS_names + 
   flowcell_and_lane +
   sex_inferred + 
-  APOE +
   RIN +
-  PCT_CODING_BASES +
-  PCT_INTERGENIC_BASES +
-  PCT_INTRONIC_BASES +
   PC1 +
   PC2 +
   PC3 +
@@ -611,13 +576,8 @@ form_PCA <- ~ TYPE +
   PC10 +
   Astrocyte.Zscore +
   Endothelial.Zscore +
-  Microglia.Zscore +
-  Mural.Zscore +
   Neuron_All.Zscore +
-  Neuron_Interneuron.Zscore +
-  Neuron_Projection.Zscore +
   Oligodendrocyte.Zscore +
-  Oligodendrocyte_Immature.Zscore +
   RBC.Zscore
   
 C = canCorPairs(form_PCA, pcaWithMetadata)
@@ -646,99 +606,33 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          diag=FALSE, col.lim = c(0, 1)
          )
 path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_BIC_and_PC1_10")
-saveToPDF(paste0(path, ".pdf"), width = 35, height = 35)
+saveToPDF(paste0(path, ".pdf"), width = 20, height = 20)
 ```
-# Blood & white matter marker expression among groups 
+
+# Correlation heatmap
+scale() function is used to ensure that variables measured in different scales (e.g. age of death vs RIN) are comparable.
+same results with and without the use of scale
 ```{r}
-# get the gene id that corresponds to the gene name 
-genes <- dge.filtered.norm$genes
+cor_mat <- rcorr(as.matrix(C))
 
-bloodmarker_gene_info <- subset(genes, 
-                                gene_name == "HBB" |  
-                                gene_name == "HBA1" |
-                                gene_name == "HBA2" |
-                                gene_name == "HBD" |
-                                gene_name == "HBQ1" |
-                                gene_name == "MOG" |
-                                gene_name == "MBP" |
-                                gene_name == "RBFOX3")
-bloodmarker_gene_id <- rownames(bloodmarker_gene_info)
-# subset counts 
-HBB_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% bloodmarker_gene_id)
-HBB_melt <- reshape2::melt(HBB_counts)
-names(HBB_melt)[names(HBB_melt) == "Var2"] <- "NPID"
-names(HBB_melt)[names(HBB_melt) == "Var1"] <- "gene_id"
-gene_id_gene_name <- data.frame(rownames(bloodmarker_gene_info), bloodmarker_gene_info$gene_name)
-names(gene_id_gene_name)[names(gene_id_gene_name) == "rownames.bloodmarker_gene_info."] <- "gene_id"
-names(gene_id_gene_name)[names(gene_id_gene_name) == "bloodmarker_gene_info.gene_name"] <- "gene_name"
-df <- merge(gene_id_gene_name, HBB_melt, by = "gene_id")
-df <- merge(df, info, by = "NPID")
+corrplot(
+  cor_mat$r,
+  method = "color",
+  col = correlationColors(200),
+  type = "upper",
+  order = "hclust",
+  p.mat = cor_mat$P,
+  addCoef.col = "black",
+  # Add coefficient of correlation
+  tl.col = "black",
+  tl.srt = 45,
+  #Text label color and rotation
+  diag = FALSE,
+  col.lim = c(-1, 1)
+)
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_BIC_and_PC1_10_sig")
+saveToPDF(paste0(path, ".pdf"), width = 13.5, height = 13.5)
 ```
-
-```{r}
-column_variables <- c("HBB", "HBA1", "HBA2", "HBD", "HBQ1", "MOG", "MBP", "RBFOX3")
-my_comparisons <-
-  list(
-    c("CONTROL", "AD"),
-    c("CONTROL", "PA"),
-    c("CONTROL", "LBD"),
-    c("AD", "PA"),
-    c("AD", "LBD"),
-    c("PA", "LBD")
-  )
-violin_plot_fun <- function(j) {
-  df <- subset(df, gene_name == j)
-  ggplot(df, aes(TYPE, value, fill = TYPE)) +
-    geom_violin() +
-    geom_boxplot(width = 0.1) + 
-    geom_jitter(shape=16, position=position_jitter(0.2)) +
-    theme_bw() + 
-    ggtitle(j) +
-    xlab("Disease group") +
-    ylab(j) +
-    stat_compare_means(comparisons = my_comparisons) +
-    scale_fill_manual(values=TypeColors) +
-    theme(legend.position = "none")
-}
-violin_plots <-
-  Map(violin_plot_fun, j = column_variables)
-violin_plots
-
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/Type.", .y, ".pdf")) %>%
-  flatten()
-plotnames
-walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
-                                    height = 4, width = 5.5))
-
-# blood marker expression between VaD classification 
-column_variables <- c("HBB", "HBA1", "HBA2", "HBD", "HBQ1")
-my_comparisons <- list(c("0", "1"))
-df$VaD <- as.factor(df$VaD)
-violin_plot_fun <- function(j) {
-  df <- subset(df, gene_name == j)
-  ggplot(df, aes(VaD, value, fill = VaD)) +
-    geom_violin() +
-    geom_boxplot(width = 0.1) + 
-    geom_jitter(shape=16, position=position_jitter(0.2)) +
-    theme_bw() + 
-    ggtitle(j) +
-    xlab("VaD classification") +
-    ylab(j) +
-    stat_compare_means(comparisons = my_comparisons) +
-    theme(legend.position = "none")
-}
-violin_plots <-
-  Map(violin_plot_fun, j = column_variables)
-violin_plots
-
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/blood_markers/VaD.", .y, ".pdf")) %>%
-  flatten()
-plotnames
-walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
-                                    height = 4, width = 5.5))
-```
-
-
 ```{r}
 sessionInfo()
 ```
