@@ -25,10 +25,9 @@ library('Hmisc')
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding")
+condition <- c("protein_coding_ATS")
 min_expression <- "min_exp1"
 tool = c("star")
-typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
 # Read in DGE object & metadata
 ```{r}
@@ -82,18 +81,53 @@ dge.filtered.norm$samples$TYPE_sex_inferred <-
   )
 info$TYPE_sex_inferred <- dge.filtered.norm$samples$TYPE_sex_inferred
 ```
+# scale information
+```{r }
+scaled.info <-
+  info[c(
+    "Race_numeric",
+    "RIN",
+    "Age",
+    "PCT_CODING_BASES",
+    "PCT_INTERGENIC_BASES",
+    "PCT_INTRONIC_BASES",
+    "APOE_E4_allele_count"
+  )] %>% scale()
+scaled.info.df <- as.data.frame(scaled.info)
+# Add scaled information to the metadata called "info"
+info_with_scale <- cbind(info, scaled.info.df)
+dge.filtered.norm$samples. <- info_with_scale
+```
+Voom transform counts to use for BIC 
+```{r}
+# make a new condition for saving outputs
+condition <- c("protein_coding_TYPE_SEX") #  protein_coding, okay to leave ATS names 
 
+formula <- (~ 0 + TYPE_sex_inferred)
+voom_with_weights <-
+  variancePartition::voomWithDreamWeights(
+    counts = dge.filtered.norm$counts,
+    formula = formula,
+    data = dge.filtered.norm$samples,
+    BPPARAM = BiocParallel::SnowParam(cores),
+    plot = TRUE
+  )
+path <- paste0("../../results/", tool, "/voom/", condition, "_", min_expression, "_gene_mean_voom_with_weights_no_covariates")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+voomCounts <- voom_with_weights$E
+```
 # Design matrix
 ```{r}
 design <-
   model.matrix(~ 0 +
       TYPE_sex_inferred +
-      scale(RIN) +
       flowcell_and_lane + 
       scale(Age) +
-      scale(PCT_CODING_BASES) + 
-      scale(PCT_INTERGENIC_BASES) + 
-      scale(PCT_INTRONIC_BASES),
+      Neuron_All.Zscore +
+   #   Oligodendrocyte_Immature.Zscore +
+      Astrocyte.Zscore +
+      Endothelial.Zscore +
+      RBC.Zscore,
     dge.filtered.norm$samples
   )
 
@@ -106,7 +140,7 @@ colnames(design) <-
     "PA_female", 
     "LBD_male",
     "LBD_female",
-    "RIN",
+ #   "RIN",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -115,23 +149,28 @@ colnames(design) <-
     "Batch6",
     "Batch7",
     "Age",
-    "PCT_CODING_BASES",
-    "PCT_INTERGENIC_BASES",
-    "PCT_INTRONIC_BASES"
+    "Neuron_All.Zscore",
+ #   "Oligodendrocyte_Immature.Zscore",
+    "Astrocyte.Zscore", 
+    "Endothelial.Zscore", 
+    "RBC.Zscore"
   )
 ```
+
 # Voom
 When the library sizes are quite variable between samples, then the voom approach is theoretically more powerful than limma-trend. 
 If the data are very noisy, one can apply the same between-array normalization methods as would be used for microarrays, for example:
 ```{r voom}
 form <- (~ 0 +
-      TYPE_sex_inferred +
-      scale(RIN) + 
-      flowcell_and_lane + 
-      scale(Age) +
-      scale(PCT_CODING_BASES) + 
-      scale(PCT_INTERGENIC_BASES) + 
-      scale(PCT_INTRONIC_BASES)
+    TYPE_sex_inferred +
+  #  scale(RIN) +
+    flowcell_and_lane +
+    scale(Age) +
+    Neuron_All.Zscore +
+ #   Oligodendrocyte_Immature.Zscore +
+    Astrocyte.Zscore +
+    Endothelial.Zscore +
+    RBC.Zscore
 )
 voom_with_weights_and_covariates <-
   variancePartition::voomWithDreamWeights(
@@ -148,67 +187,13 @@ path <-
          condition,
          "_",
          min_expression,
-         "_gene_mean_voom_with_weights_and_covariates_TYPE_SEX")
+         "_gene_mean_voom_with_weights_and_covariates_BIC")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 
 voomCounts_covariates <- voom_with_weights_and_covariates$E
 voomCountsMatrix <- voom_with_weights_and_covariates$E
 ```
-# BIC
-```{r eval = FALSE}
-baseFormula <- ~ (1 | TYPE)
-# Combine responses on *rows*
-Y = with(
-  info,
-  rbind(
-    sex_inferred,
-    Race,
-    flowcell_and_lane,
-    APOE,
-    scaled.info.df$RIN,
-    scaled.info.df$Age,
-    scaled.info.df$APOE_E4_allele_count,
-    scaled.info.df$PCT_CODING_BASES,
-    scaled.info.df$PCT_INTERGENIC_BASES,
-    scaled.info.df$PCT_INTRONIC_BASES
-  )
-)
 
-rownames(Y) <-
-  c(
-    "sex_inferred",
-    "Race",
-    "flowcell_and_lane",
-    "APOE",
-    "RIN",
-    "Age",
-    "APOE_E4_allele_count",
-    "PCT_CODING_BASES",
-    "PCT_INTERGENIC_BASES",
-    "PCT_INTRONIC_BASES"
-  )
-# variables to consider in the model
-# categorical variables must be modeled using (1|)
-variables = c(
-  "(1|sex_inferred)",
-  "(1|Race)",
-  "(1|flowcell_and_lane)",
-  "(1|APOE)",
-  "RIN",
-  "Age",
-  "APOE_E4_allele_count",
-  "PCT_CODING_BASES",
-  "PCT_INTERGENIC_BASES",
-  "PCT_INTRONIC_BASES"
-)
-
-# fit forward stepwise regression starting
-bestModel_voomcounts = mvForwardStepwise(voomCounts,
-                                         baseFormula,
-                                         data = info,
-                                         variables = variables)
-bestModel_voomcounts
-```
 
 # Visualize contrast matrix 
 ```{r}
@@ -284,8 +269,6 @@ contrasts <- makeContrasts(
   levels = colnames(design))
 contrasts
 
-help(makeContrasts)
-
 # save contrast names
 allComparisons <- colnames(contrasts)
 allComparisons # check
@@ -332,7 +315,7 @@ Check AD vs Control
 ```{r eval = FALSE}
 test <- topTable(
   veBayesFit, 
-  coef = "LBDvsControl_interaction_upmale", # female_AD_vs_male_AD, female_Control_vs_male_Control,  ADvsControl, ADvsControl_interaction_female, ADvsControl_interaction_male, female_ADvsControl, male_ADvsControl
+  coef = "LBDvsControl_sex_interaction", # female_AD_vs_male_AD, female_Control_vs_male_Control,  ADvsControl, ADvsControl_interaction_female, ADvsControl_interaction_male, female_ADvsControl, male_ADvsControl
   n = Inf, 
   p.value = 1,
   lfc = 0, 
@@ -340,13 +323,6 @@ test <- topTable(
   genelist = genes_relevant, 
   confint = TRUE # column of confidence interval 
     )
-# within AD female_AD_vs_male_AD 8.913649 up in females 
-# within controls female_Control_vs_male_Control 8.391023 up in females 
-# AD vs Control all samples 0.3 up in AD, FDRq = 0.03883119 (not regressing out the effect of sex)
-# ADvsControl_interaction_female 0.522 up and not significant, FDRq = 0.9996765
-# female_ADvsControl 0.5883286 up FDRq = 0.008118471	
-# male_ADvsControl 0.06570235 no significant 
-# regressing out sex 0.4828615 FDRq = 0.0005156221
 ```
 # Save objects
 ```{r}
@@ -412,12 +388,13 @@ Repeat for the voomCounts without covariates added to the model
 ```{r}
 form_varPart <- ~ (1|TYPE_sex_inferred) + 
   (1|flowcell_and_lane) +
-#  (1|APOE) +
   Age +
-  RIN +
-  PCT_CODING_BASES +
-  PCT_INTERGENIC_BASES +
-  PCT_INTRONIC_BASES
+ # RIN +
+  Neuron_All.Zscore +
+#  Oligodendrocyte_Immature.Zscore +
+  Astrocyte.Zscore +
+  Endothelial.Zscore +
+  RBC.Zscore
   
 # fit model and extract variance percents
 varPart <- fitExtractVarPartModel(voomCounts_covariates, form_varPart, info,
@@ -426,17 +403,16 @@ varPart <- fitExtractVarPartModel(voomCounts_covariates, form_varPart, info,
 Save results 
 
 ```{r}
-plotVarPart(sortCols(varPart), label.angle = 60)
-
+plotVarPart(sortCols(varPart), label.angle = 90)
 path <-
   paste0(
     "../../results/",
     tool,
     "/varpart/",
     condition,
-    "_varpart_voomCounts_covariates_BIC_TYPE_SEX"
+    "_varpart_voomCounts_covariates_BIC"
   )
-saveToPDF(paste0(path, ".pdf"), width = 8.2, height = 5.2)
+saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
 
 varPart$gene_id <- rownames(varPart)
 variance_explained <- merge(varPart, genes, by = "gene_id")
@@ -447,23 +423,22 @@ write.table(
     tool ,
     "/varpart/",
     condition,
-    "_variance_explained_voomCounts_covariates_BIC_TYPE_SEX.tsv"
+    "_variance_explained_voomCounts_covariates_BIC.tsv"
   ),
   sep = "\t",
   quote = FALSE
 )
 ```
-
 # CCA with the variables in the model 
 ```{r}
 form <- ~ TYPE_sex_inferred + 
   flowcell_and_lane +
   Age +
-  RIN +
-  PCT_CODING_BASES +
-  PCT_INTERGENIC_BASES +
-  PCT_INTRONIC_BASES
-
+  Astrocyte.Zscore +
+  Endothelial.Zscore +
+  Neuron_All.Zscore +
+  RBC.Zscore
+  
 C = canCorPairs( form, info)
 # Plot correlation matrix
 cor.mtest <- function(C, ...) {
@@ -489,8 +464,8 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          tl.col="black", tl.srt=45, #Text label color and rotation
          diag=FALSE, col.lim = c(0, 1)
          )
-path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_BIC_TYPE_SEX")
-saveToPDF(paste0(path, ".pdf"), width = 9, height = 9)
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_BIC")
+saveToPDF(paste0(path, ".pdf"), width = 10, height = 10)
 ```
 # PCA
 ```{r}
@@ -516,54 +491,34 @@ summary(pca_exp)
 # Dataframe with the first 10 PCs
 dim1_10 <- data.frame(pca_exp$x[, 1:10])
 # Adding metadata
-pcaWithMetadata <- merge(dim1_10, dge.filtered.norm$samples, by = 0, all = TRUE)
-pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE,
-                                 levels = c(CONTROL, AD, PA, LBD, NA))
+dim1_10$NPID <- rownames(dim1_10)
+pcaWithMetadata <- merge(dim1_10, info, by = "NPID", all = TRUE)
+
+pcaWithMetadata$group <- factor(pcaWithMetadata$TYPE_sex_inferred)
+
 # Plotting
 ggplot(data = pcaWithMetadata, aes(x = PC1, y = PC2, shape = group, color = group)) +
   geom_point(size = 2.5) +
   theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+  scale_color_manual(values = colorbindColors) 
 
 ggplot(data = pcaWithMetadata, aes(x = PC2, y = PC3, shape = group, color = group)) +
   geom_point(size = 2.5) +
   theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
+  scale_color_manual(values = colorbindColors) 
 
 ggplot(data = pcaWithMetadata, aes(x = PC3, y = PC4, shape = group, color = group)) +
   geom_point(size = 2.5) +
-  theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape)) 
-
-ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = group, color = group)) +
-  geom_point(size = 2.5) +
-  theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape))
+  theme_bw()
 
 ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = sex_inferred, color = sex_inferred)) +
   geom_point(size = 2.5) 
 
-ggplot(data = pcaWithMetadata, aes(x = PC6, y = PC4, shape = sex_inferred, color = group)) +
-  geom_point(size = 2.5) +
-  theme_bw() +
-  scale_color_manual(values = c(control_color, AD_color, PA_color, LBD_color,"azure3")) +
-  scale_shape_manual(values = c(control_shape, AD_shape, PA_shape, LBD_shape))
 ```
 # CCA PC1-10 & variables in model 
 ```{r}
 form_PCA <- ~ TYPE_sex_inferred + 
   flowcell_and_lane +
-  sex_inferred + 
-  APOE +
-  Age +
-  RIN +
-  PCT_CODING_BASES +
-  PCT_INTERGENIC_BASES +
-  PCT_INTRONIC_BASES +
   PC1 +
   PC2 +
   PC3 +
@@ -573,7 +528,11 @@ form_PCA <- ~ TYPE_sex_inferred +
   PC7 +
   PC8 +
   PC9 +
-  PC10
+  PC10 +
+  Astrocyte.Zscore +
+  Endothelial.Zscore +
+  Neuron_All.Zscore +
+  RBC.Zscore
   
 C = canCorPairs(form_PCA, pcaWithMetadata)
 # Plot correlation matrix
@@ -600,13 +559,39 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          tl.col="black", tl.srt=45, #Text label color and rotation
          diag=FALSE, col.lim = c(0, 1)
          )
-path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_BIC_TYPE_SEX_and_PC1_10")
-saveToPDF(paste0(path, ".pdf"), width = 19, height = 19)
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_BIC_and_PC1_10")
+saveToPDF(paste0(path, ".pdf"), width = 20, height = 20)
 ```
 
+# Correlation heatmap
+scale() function is used to ensure that variables measured in different scales (e.g. age of death vs RIN) are comparable.
+same results with and without the use of scale
+```{r}
+cor_mat <- rcorr(as.matrix(C))
+
+corrplot(
+  cor_mat$r,
+  method = "color",
+  col = correlationColors(200),
+  type = "upper",
+  order = "hclust",
+  p.mat = cor_mat$P,
+  addCoef.col = "black",
+  # Add coefficient of correlation
+  tl.col = "black",
+  tl.srt = 45,
+  #Text label color and rotation
+  diag = FALSE,
+  col.lim = c(-1, 1)
+)
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_covariartes_BIC_and_PC1_10_sig")
+saveToPDF(paste0(path, ".pdf"), width = 13.5, height = 13.5)
+```
 ```{r}
 sessionInfo()
 ```
+
+
 
 
 

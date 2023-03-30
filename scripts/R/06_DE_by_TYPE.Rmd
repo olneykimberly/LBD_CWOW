@@ -18,7 +18,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding")
+condition <- c("protein_coding_ATS")
 min_expression <- "min_exp1"
 tool <- "star"
 
@@ -27,23 +27,17 @@ dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expre
 ```
 # design
 ```{r}
-condition <- "protein_coding_cellType_zscores"
-
+condition <- c("protein_coding_TYPE") #  protein_coding, okay to leave ATS names 
 design <-
   model.matrix(~ 0 + 
       TYPE + 
       sex_inferred + 
-      scale(RIN) + 
+   #   scale(RIN) + 
       flowcell_and_lane + 
       scale(Age) +
-      scale(PCT_CODING_BASES) + 
-      scale(PCT_INTERGENIC_BASES) + 
-      scale(PCT_INTRONIC_BASES)+ 
       Neuron_All.Zscore +
-      Oligodendrocyte_Immature.Zscore +
-      Mural.Zscore +
+   #   Oligodendrocyte_Immature.Zscore +
       Astrocyte.Zscore +
-      Microglia.Zscore +
       Endothelial.Zscore +
       RBC.Zscore,
     dge.filtered.norm$samples
@@ -56,7 +50,7 @@ colnames(design) <-
     AD,
     LBD,
     "sex",
-    "RIN",
+ #   "RIN",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -65,14 +59,9 @@ colnames(design) <-
     "Batch6",
     "Batch7",
     "Age",
-    "PCT_CODING_BASES",
-    "PCT_INTERGENIC_BASES",
-    "PCT_INTRONIC_BASES", 
     "Neuron_All.Zscore",
-    "Oligodendrocyte_Immature.Zscore",
-    "Mural.Zscore", 
+ #   "Oligodendrocyte_Immature.Zscore",
     "Astrocyte.Zscore", 
-    "Microglia.Zscore", 
     "Endothelial.Zscore", 
     "RBC.Zscore"
   )

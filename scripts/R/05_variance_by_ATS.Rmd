@@ -188,11 +188,11 @@ design <-
   model.matrix(~ 0 + 
       ATS_names + 
       sex_inferred + 
-      scale(RIN) + 
+   #   scale(RIN) + 
       flowcell_and_lane + 
       scale(Age) +
       Neuron_All.Zscore +
-      Oligodendrocyte_Immature.Zscore +
+   #   Oligodendrocyte_Immature.Zscore +
       Astrocyte.Zscore +
       Endothelial.Zscore +
       RBC.Zscore,
@@ -209,7 +209,7 @@ colnames(design) <-
     "high_amyloid_synuclein",
     "amyloid_synuclein_tau",
     "sex",
-    "RIN",
+ #   "RIN",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -219,7 +219,7 @@ colnames(design) <-
     "Batch7",
     "Age",
     "Neuron_All.Zscore",
-    "Oligodendrocyte_Immature.Zscore",
+ #   "Oligodendrocyte_Immature.Zscore",
     "Astrocyte.Zscore", 
     "Endothelial.Zscore", 
     "RBC.Zscore"
@@ -233,11 +233,11 @@ form <- (
   ~ 0 +
     ATS_names +
     sex_inferred +
-    scale(RIN) +
+  #  scale(RIN) +
     flowcell_and_lane +
     scale(Age) +
     Neuron_All.Zscore +
-    Oligodendrocyte_Immature.Zscore +
+ #   Oligodendrocyte_Immature.Zscore +
     Astrocyte.Zscore +
     Endothelial.Zscore +
     RBC.Zscore
@@ -340,7 +340,7 @@ Check AD vs Control
 ```{r eval =FALSE}
 test <- topTable(
   veBayesFit, 
-  coef = "high_amyloid_synuclein_vs_low_amyloid_synuclein",  
+  coef = "amyloid_vs_no_pathology",  
   n = Inf, 
   p.value = 1,
   lfc = 0, 
@@ -417,9 +417,9 @@ form_varPart <- ~ (1|ATS_names) +
   (1|sex_inferred) + 
   (1|flowcell_and_lane) +
   Age +
-  RIN +
+ # RIN +
   Neuron_All.Zscore +
-  Oligodendrocyte_Immature.Zscore +
+#  Oligodendrocyte_Immature.Zscore +
   Astrocyte.Zscore +
   Endothelial.Zscore +
   RBC.Zscore
@@ -460,11 +460,11 @@ write.table(
 
 # CCA with the variables in the model 
 ```{r}
-form <- ~ TYPE + 
+form <- ~ ATS_names + 
   flowcell_and_lane +
   sex_inferred + 
   Age +
-  RIN +
+#  RIN +
  # PCT_CODING_BASES +
 #  PCT_INTERGENIC_BASES +
 #  PCT_INTRONIC_BASES +
@@ -476,7 +476,7 @@ form <- ~ TYPE +
 #  Neuron_Interneuron.Zscore +
 #  Neuron_Projection.Zscore +
 #  Oligodendrocyte.Zscore +
-  Oligodendrocyte_Immature.Zscore +
+#  Oligodendrocyte_Immature.Zscore +
   RBC.Zscore
   
 C = canCorPairs( form, info)
@@ -563,7 +563,7 @@ ggplot(data = pcaWithMetadata, aes(x = PC5, y = PC6, shape = sex_inferred, color
 form_PCA <- ~ ATS_names + 
   flowcell_and_lane +
   sex_inferred + 
-  RIN +
+#  RIN +
   PC1 +
   PC2 +
   PC3 +
@@ -577,7 +577,7 @@ form_PCA <- ~ ATS_names +
   Astrocyte.Zscore +
   Endothelial.Zscore +
   Neuron_All.Zscore +
-  Oligodendrocyte.Zscore +
+ # Oligodendrocyte_Imma.Zscore +
   RBC.Zscore
   
 C = canCorPairs(form_PCA, pcaWithMetadata)
