@@ -14,15 +14,11 @@ Samples have already been sex checked and realigned to the SCC reference.
 ```{r setup}
 knitr::opts_knit$set(root.dir = ".")
 ```
-
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-
-condition <- c("protein_coding_ATS") # all_genes
-min_expression <- "min_exp1"
-
+condition <- c("") # all_genes
 myContrasts <- c("LBDvsControl = LBD - CONTROL",
   "LBDvsAD = LBD - AD",
   "LBDvsPA = LBD - PA",
@@ -32,9 +28,8 @@ myContrasts <- c("LBDvsControl = LBD - CONTROL",
 tool = c("star")
 typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
-
 # Read data
-### metadata
+### Metadata
 ```{r read_data}
 # example of file naming:
 # NA12-254_FCHCLTJDMXY_L1_STAR_XY.bamReadsPerGene.out.tab
@@ -53,7 +48,7 @@ names(count_files) <- paste0(metadata$NPID)
 metadata$path <- count_files
 # make sure there is only unique paths
 ```
-### create a counts matrix
+### Create a counts matrix
 ```{r}
 counts <- data.frame(fread(count_files[1]))[c(1, 2)]
 # Loop and read the 2nd column remaining files
@@ -87,7 +82,6 @@ counts$V1 <- NULL
 # set column names to NPID sample ID
 colnames(counts) <- metadata$NPID
 ```
-
 # Check inputs
 ```{r}
 all.equal(rownames(counts), genes.gtf$gene_id)
@@ -106,11 +100,9 @@ table(dge$samples$ATS_names)
 
 # Save R object
 ```{r, eval=TRUE}
-saveRDS(dge, file = paste0("../../rObjects/", condition, ".dge.raw.rds"))
-dge <- readRDS(paste0("../../rObjects/", condition, ".dge.raw.rds"))
+saveRDS(dge, file = paste0("../../rObjects/", condition, "dge.raw.rds"))
+dge <- readRDS(paste0("../../rObjects/", condition, "dge.raw.rds"))
 ```
-
-
 # MDS
 convert counts to cpm and lcpm
 set colors and get data
@@ -122,7 +114,6 @@ cpm <- edgeR::cpm(dge$counts, log = FALSE)
 dge$samples$sex_inferred <- as.factor(dge$samples$sex_inferred)
 sex_colors <- c(SexColors)[dge$samples$sex_inferred]
 ```
-
 
 ```{r}
 par(bg = 'white')
@@ -141,7 +132,7 @@ plotMDS(
 title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 
 path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_", min_expression, "_MDS_label_sex_dim1&2")
+               condition,"label_sex_dim1&2")
 saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 
 # plot MDS
@@ -157,7 +148,7 @@ plotMDS(
 )
 title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_", min_expression, "_MDS_label_sex_dim2&3")
+               condition,"label_sex_dim2&3")
 saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 ```
 
@@ -169,7 +160,7 @@ great enough count value to keep.  We will filter by group.  This means at least
 ```{r}
 # first filter by expression
 dim(dge)
-keep.expr <- filterByExpr(edgeR::cpm(dge$counts), dge$samples$TYPE, min.count = 1, min.prop=0.3)
+keep.expr <- filterByExpr(edgeR::cpm(dge$counts), dge$samples$ATS_names, min.count = 1, min.prop=0.3)
 dge.filtered <- dge[keep.expr, , keep.lib.sizes = FALSE]
 dim(dge.filtered)
 table(dge.filtered$genes$gene_type)
@@ -182,7 +173,6 @@ dge.filtered <- dge.filtered[removeMT,,keep.lib.sizes = FALSE]
 keepProtein <- dge.filtered$genes$gene_type == "protein_coding"
 dge.filtered <- dge.filtered[keepProtein,,keep.lib.sizes = FALSE]
 dim(dge.filtered)
-
 ```
 # Library sizes
 ```{r}
@@ -205,6 +195,7 @@ summary(dge.filtered.norm$samples$norm.factors)
 normfactors <- (dge.filtered.norm$samples$norm.factors)
 metadata$normfactors <- normfactors
 plot(metadata$TYPE, metadata$normfactors)
+plot(metadata$ATS_names, metadata$normfactors)
 ```
 
 ```{r TMM_normalize}
@@ -225,7 +216,7 @@ axis(2)
 axis(1,at=1:nsamples,labels=(dge.filtered.norm$samples$RIN),las=2,cex.axis=0.8)
 
 path <- paste0("../../results/", tool, "/library/", condition,
-               "_", min_expression, "_boxplot_RIN")
+               "boxplot_RIN")
 saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
 ```
 
@@ -237,25 +228,23 @@ box <- dge.filtered.norm$samples
 cor(box$RIN, box$lib.size, method = c("pearson", "kendall", "spearman"))
 cor.test(box$RIN, box$lib.size, method=c("pearson", "kendall", "spearman"))
 
-# is the data normally distrubited 
+# is the data normally distributed 
 ggqqplot(box$lib.size, ylab = "library size")
-# wt
 ggqqplot(box$RIN, ylab = "RIN")
 res <- cor.test(box$lib.size, box$RIN, 
                 method = "pearson")
 res
-
 ggscatter(box, x = "RIN", y = "lib.size", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
           ylab = "library size", xlab = "RIN value") 
 
 path <- paste0("../../results/", tool, "/library/", condition, 
-               "_", min_expression, "_corr_RIN_lib_size")
+               "corr_RIN_library_size")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 6)
 ```
 
-# Raw MDS
+# MDS - normalized counts
 ```{r}
 par(bg = 'white')
 
@@ -273,16 +262,11 @@ plotMDS(
 title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 
 path <- paste0("../../results/", tool, "/MDS/", 
-               condition, "_", min_expression, "_gene_MDS_label_sex_dim1&2")
+               condition, "label_sex_dim1&2")
 saveToPDF(paste0(path, ".pdf"), width = 5.2, height = 5.2)
 ```
-
-
-
 # Density plot
-Density plots of log-intensity distribution of each library can be superposed 
-on a single graph for a better comparison between libraries and for 
-identification of libraries with weird distribution. 
+Density plots of log-intensity distribution of each library can be superposed on a single graph for a better comparison between libraries and for identification of libraries with weird distribution. 
 ```{r density_plots}
 # set graphical parameter
 par(mfrow = c(1,3))
@@ -299,6 +283,42 @@ nsamples <- ncol(dge)
 # First, plot the first column of the log2cpm.tech density
 plot(density(log2cpm.tech[,1]), col = colors[1], lwd = 2, ylim = c(0,0.5), 
      las = 2, main = "A. Raw", xlab = expression('Log'[2]~CPM))
+# For each sample plot the lcpm density
+for (i in 1:nsamples){
+  den <- density(log2cpm.tech[,i]) #subset each column
+  lines(den$x, den$y, col = colors[i], lwd = 2) 
+}
+
+# Second, plot log2cpm.filtered
+plot(density(log2cpm.filtered[,1]), col = colors[1], lwd = 2, ylim = c(0,0.5), 
+     las = 2, main = "B. Filtered", xlab = expression('Log'[2]~CPM))
+for (i in 2:nsamples) {
+  den <- density(log2cpm.filtered[,i])
+  lines(den$x, den$y, col = colors[i], lwd = 2)
+}
+
+# Third, plot log2cpm.norm
+plot(density(log2cpm.norm[,1]), col = colors[1], lwd = 2, ylim = c(0,0.5), 
+     las = 2, main = "C. TMM", xlab = expression('Log'[2]~CPM))
+for (i in 2:nsamples) {
+  den <- density(log2cpm.norm[,i])
+  lines(den$x, den$y, col = colors[i], lwd = 2)
+}
+
+# save
+path <- paste0("../../results/", tool, "/library/TYPE.gene_density")
+saveToPDF(paste0(path, ".pdf"), width = 7, height = 5)
+
+# set graphical parameter
+par(mfrow = c(1,3))
+
+# set colors
+colors <- colorbindColors[dge$samples$ATS_names]
+nsamples <- ncol(dge)
+
+# First, plot the first column of the log2cpm.tech density
+plot(density(log2cpm.tech[,1]), col = colors[1], lwd = 2, ylim = c(0,0.5), 
+     las = 2, main = "A. Raw", xlab = expression('Log'[2]~CPM))
 
 # For each sample plot the lcpm density
 for (i in 2:nsamples){
@@ -309,7 +329,6 @@ for (i in 2:nsamples){
 # Second, plot log2cpm.filtered
 plot(density(log2cpm.filtered[,1]), col = colors[1], lwd = 2, ylim = c(0,0.5), 
      las = 2, main = "B. Filtered", xlab = expression('Log'[2]~CPM))
-abline(v = edgeR::cpm(3, log = TRUE), lty = 3)
 for (i in 2:nsamples) {
   den <- density(log2cpm.filtered[,i])
   lines(den$x, den$y, col = colors[i], lwd = 2)
@@ -318,14 +337,13 @@ for (i in 2:nsamples) {
 # Third, plot log2cpm.norm
 plot(density(log2cpm.norm[,1]), col = colors[1], lwd = 2, ylim = c(0,0.5), 
      las = 2, main = "C. TMM", xlab = expression('Log'[2]~CPM))
-abline(v = edgeR::cpm(3, log = TRUE), lty = 3)
 for (i in 2:nsamples) {
   den <- density(log2cpm.norm[,i])
   lines(den$x, den$y, col = colors[i], lwd = 2)
 }
 
 # save
-path <- paste0("../../results/", tool, "/library/", condition,"_", min_expression, "_gene_density")
+path <- paste0("../../results/", tool, "/library/ATS.gene_density")
 saveToPDF(paste0(path, ".pdf"), width = 7, height = 5)
 ```
 
@@ -346,7 +364,7 @@ remove(
 
 # Save R object
 ```{r}
-saveRDS(dge.filtered.norm, file = paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
+saveRDS(dge.filtered.norm, file = paste0("../../rObjects/", condition, "dge.filtered.norm.rds"))
 ```
 
 ```{r}

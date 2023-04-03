@@ -18,7 +18,6 @@ knitr::opts_knit$set(root.dir = ".")
 # To install run:
 # devtools::install_github('dviraran/xCell')
 # devtools::install_github("hagenaue/BrainInABlender")
-
 library(xCell)
 library(tidyverse)
 library(devtools)
@@ -32,8 +31,7 @@ library(data.table)
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_ATS")
-min_expression <- "min_exp1"
+condition <- c("")
 tool <- "star"
 ```
 
@@ -43,10 +41,7 @@ dge.filtered.norm <-
   readRDS(
     paste0(
       "../../rObjects/",
-      condition,
-      "_",
-      min_expression,
-      ".dge.filtered.norm.rds"
+      condition, "dge.filtered.norm.rds"
     )
   )
 info <- as.data.frame(dge.filtered.norm$samples)
@@ -56,7 +51,43 @@ log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
 biomart_gene_lengths <- read.delim("gene_id_gene_length_QC.txt")
 # see biomart_gene_length_and_GC_content.R for more information on how the text file was created
 ```
+# Voom transform 
+```{r}
+formula <- (~ 0 + ATS_names)
+voom <-
+  variancePartition::voomWithDreamWeights(
+    counts = dge.filtered.norm$counts,
+    formula = formula,
+    data = dge.filtered.norm$samples,
+    BPPARAM = BiocParallel::SnowParam(cores),
+    plot = TRUE
+  )
+path <- paste0("../../results/", tool, "/voom/", condition,
+               "voom")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
+voomCounts <- voom$E
+```
+# Design simple
+```{r}
+design <-
+  model.matrix(~ 0 + 
+      dge.filtered.norm$samples$ATS_names)
 
+colnames(voom$design) <-
+  c("no_pathology",
+    "amyloid",
+    "amyloid_tau",
+    "pure_synuclein",
+    "low_amyloid_synuclein",
+    "high_amyloid_synuclein",
+    "amyloid_synuclein_tau")
+fit <- lmFit(voom, design)
+efit <- eBayes(fit)
+atest <- fit$pivot
+
+help(lmfit)
+coef.fit <- fit$coefficients
+```
 # RPKM values
 ```{r}
 # remove version information from gene_id so files can be merged
@@ -88,9 +119,7 @@ write.table(
     tool,
     "/counts/",
     condition,
-    "_",
-    min_expression,
-    "_rpkm.txt"
+    "RPKM.txt"
   ),
   sep = "\t",
   quote = FALSE,
@@ -133,12 +162,12 @@ heatmap(
    as.matrix(xCell_scores), Rowv=NA,
    Colv=as.dendrogram(hclust(dist(t(as.matrix(xCell_scores)))))
  )
-path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "xCell")
 saveToPDF(paste0(path, ".pdf"), width = 30, height = 7)
 
 # group by cell type enrichment & pathology 
 heatmap(xCell_scores, scale = "none")
-path <- paste0("../../results/", tool ,"/heatmap/", condition, "_xCell")
+path <- paste0("../../results/", tool ,"/heatmap/", condition, "xCell")
 saveToPDF(paste0(path, ".pdf"), width = 12, height = 12)
 ```
 correlation of xCell enrichment scores among pathologies 
@@ -159,9 +188,7 @@ write.table(
     tool,
     "/cell_type_enrichment/xCell/",
     condition,
-    "_",
-    min_expression,
-    "_xCell_scores.txt"
+    "xCell_scores.txt"
   ),
   sep = "\t",
   quote = FALSE,
@@ -177,11 +204,14 @@ remove(xCell_scores, xCell_dt, melted_cormat, hc.cols, dge_xCell, cormat, df)
 # Brain in a blender
 Input: A dataframe containing the gene expression data for the samples (RNAseq or microarray data that has already been variance stabilized and received appropriate quality control to remove outlier samples and large-scale technical artifacts), including one column of gene symbols.
 You must also have single character string indicating the species from which the data were derived, currently allows the values "mouse", "Mouse", "human", or "Human".
+
+- ouput will be a list of 2 data frames \
+- PublicationSpecific_CellTypeIndex - provides estimates based on the cell type specific gene lists provided by particular publications ("cell type indices") \ 
+- AveragePrimary_CellTypeIndex - averages each of the publication-specific cell type indices to create an average cell type index for each primary cell type \
+- A z-score measures how many standard deviations a data point is from the mean in a distribution \
 ```{r}
-# read in voom counts matrix
-protein_coding_min_exp1_BIC.voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/protein_coding_min_exp1_BIC.voomCountsMatrix.rds")
 # save as a dataframe (required for Sir_UnMixALot function below)
-voomCounts <- as.data.frame(protein_coding_min_exp1_BIC.voomCountsMatrix)
+voomCounts <- as.data.frame(voomCounts)
 # add gene_id column to voomCounts
 voomCounts$gene_id <- rownames(voomCounts)
 
@@ -197,45 +227,17 @@ voomCounts_gene_name <- merge(ByType_colors, gene_info, by ="gene_id", all.x= T)
 # change directory or else the results will output to the current working directory which is the scripts folder. 
 setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender")
 # run brain in a blender
-BinB_voom <- Sir_UnMixALot(userInput=voomCounts_gene_name, dataColumns=c(2:625), geneColumn=636, species="human")
+BinB_voom <- Sir_UnMixALot(userInput=voomCounts_gene_name, dataColumns=c(2:620), geneColumn=631, species="human")
+setwd(".")
+```
+reformat
+```{r}
+zscores <- as.data.frame(t(BinB_voom[[2]]))
+colnames(zscores) <- paste0(colnames(zscores),".Zscore")
+zscores$group <- dge.filtered.norm$samples$ATS_names
+dge.filtered.norm$samples <- cbind(dge.filtered.norm$samples, zscores)
 ```
 ### output notes 
- Output added to working directory: ZscoreInput.csv
- ...ZscoreInput.csv is a data frame that includes a a z-scored version of your input (centered and scaled by row), with all rows removed that had zero variability.
- The number of unique gene symbols (rows) included in the user's input after filtering out genes with expression that completely lacked variability (sd=0):
- 14166
- The gene symbols are not unique, the z-scored data will be averaged by gene symbol and then re-z-scored
- Output added to working directory: ZscoreInput_AveragedByGeneSymbol.csv
- ...ZscoreInput_AveragedByGeneSymbol.csv is a data frame that includes a a z-scored version of your input, with all rows removed that had zero variability. Data was then averaged by gene symbol, and z-scored again so that the data for each gene symbol is centered and scaled.
- Output added to working directory: ZscoreInput_Expression_CellType.csv
- ...ZscoreInput_Expression_CellType.csv is a data frame listing all of the cell type specific genes in your dataset and their respective expression for each sample (in z-scores).
- ...Please note that the cell type specific genes included in this output have not yet been filtered based on whether they were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
- A file has been outputted to your working directory NumberOfGenesInYourDatasetFoundInEachPublicationsCellTypeSpecificGeneList.csv.csv that tells you the number of gene symbols included in your dataset that were found in each publication's cell type specific gene list.
- Output added to working directory: AVE_Expression_CellType_Tag_bySample.csv, CorrelationMatrixCellIndexVsCellIndex.csv
- ...The file AVE_Expression_CellType_Tag_bySample.csv includes the average z-score for each sample for all genes identified as cell type specific for each cell type from each publication - a cell type index. This can be treated as one type of estimate of the relative balance of each cell type across all samples.
- ...The file CorrelationMatrixCellIndexVsCellIndex.csv shows the correlation between each of these cell type indices.
- ...Please note that the cell type specific genes included in this output have not yet been filtered based on whether they were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
- Output added to working directory: CellTypeSpecificGenes_Master3_Overlap.csv
- ...CellTypeSpecificGenes_Master3_Overlap.csv indicates how many of the gene symbols included in your dataset are indicated to be cell type specific in cell type specific gene lists from different publications or for different cell types
- Output added to working directory: ZscoreInput_Expression_CellType_NoPrimaryOverlap.csv
- ...A data frame listing all of the cell type specific genes in your dataset and their respective expression for each sample (in z-scores).
- ...The cell type specific genes included in this output have been filtered so that the data is now removed that was associated with gene symbols that were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
- Output added to working directory: NumberOfGenesInYourDatasetFoundInEachPublicationsCellTypeSpecificGeneList_NoNonSpecific.csv and  NumberOfGenesInYourDatasetSpecificToEachPrimaryCellType.csv
- ...NumberOfGenesInYourDatasetFoundInEachPublicationsCellTypeSpecificGeneList_NoNonSpecific.csv that tells you the number of gene symbols included in your dataset that were found in each publication's cell type specific gene list. The cell type specific genes included in this output have been filtered so that the data is now removed that was associated with gene symbols that were identified as specifically expressed in different cell types in different publications (e.g. a gene that has been identified as specifically expressed in astrocytes in one publication but identified as specifically expressed in neurons in another publication).
- ...The file  NumberOfGenesInYourDatasetSpecificToEachPrimaryCellType.csv tells you how many genes included in your dataset were found to be specific to each primary cell type.
- Output added to working directory: ZscoreInput_Expression_CellType_NoPrimaryOverlap_MeanTag
- ... ZscoreInput_Expression_CellType_NoPrimaryOverlap_MeanTag is a data frame that includes the publication-specific cell type indices for each sample: the average z-score for each publication's cell type specific gene lists, after having filtered out the genes that are found to be specific to different kinds of cells in different publications (i.e., genes that have expression that is actually non-cell type specific!).
- A subdirectory named Cell Type Histograms has been created within your working directory.
- ...This directory contains histograms illustrating the distribution of each of your publication-specific cell type indices across samples. You probably want to examine these for extreme outliers.
- Output added to working directory: CellType_NoPrimaryOverlap_MeanTag_CorrMatrix.csv and Heatmap_CellType_NoPrimaryOverlap_MeanTag.png.
- ...Both of these files illustrate the correlations between your publication-specific cell type indices.
- Output added to working directory: Zscore_Expression_CellType_NoPrimaryOverlap_Mean.csv.
- ...This file includes the average cell type indices for each primary cell type for each sample: the average of the publication- specific cell type indices.
- A subdirectory named Primary cell type Histograms has been created within your working directory.
- ...This directory contains histograms illustrating the distribution of each of the averaged cell type indices for each primary cell type across samples. You probably want to examine these for extreme outliers.
- Output added to working directory: CellTypeIndexNoNA3_NormBest_NoPrimaryOverlap_CorrMatrix.csv and Heatmap_CorMatrixPrimaryCellsNoOverlap.png.
- ...Both of these files illustrate the correlations between the averaged cell type indices for each primary cell type across samples.
- The output returned to your workspace is a list containing two data frames: PublicationSpecific_CellTypeIndex and AveragePrimary_CellTypeIndex. These dataframes provide estimates for the relative balance of each cell type across samples.
 ### read in out BinB outputs
 ```{r}
 Zscore_Expression_CellType_NoPrimaryOverlap_Mean <- read_csv("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender/Zscore_Expression_CellType_NoPrimaryOverlap_Mean.csv")
@@ -272,7 +274,7 @@ for (i in CellTypes) {
 
 # read in each CellType_df
 for (i in CellTypes) {
-  path <- paste0("../../results/",tool,"/cell_type_enrichment/BrainInABlender/", condition, "_",i,".txt") 
+  path <- paste0("../../results/",tool,"/cell_type_enrichment/BrainInABlender/", condition,i,".txt") 
   assign(paste0(i),
          read.delim(
            path,
@@ -292,6 +294,7 @@ cellType <- merge(info, all_CellTypes, by = "NPID")
 ```{r}
 metadata_continuous <-
   data.frame(cellType$Astrocyte.Zscore, cellType$Endothelial.Zscore, cellType$Microglia.Zscore, cellType$Mural.Zscore, cellType$Neuron_All.Zscore, cellType$Neuron_Interneuron.Zscore, cellType$Neuron_Projection.Zscore, cellType$Oligodendrocyte.Zscore, cellType$Oligodendrocyte_Immature.Zscore, cellType$RBC.Zscore)
+
 column_variables <- c("Astrocyte.Zscore", "Endothelial.Zscore", "Microglia.Zscore", "Mural.Zscore", "Neuron_All.Zscore", "Neuron_Interneuron.Zscore", "Neuron_Projection.Zscore", "Oligodendrocyte.Zscore", "Oligodendrocyte_Immature.Zscore", "RBC.Zscore")
 my_comparisons <- list(c("CONTROL", "PA"), c("CONTROL", "AD"), c("CONTROL", "LBD"), c("PA", "AD"), c("PA", "LBD"), c("AD", "LBD"))
 violin_plot_fun <- function(i, j) {

@@ -230,8 +230,8 @@ contrasts <- makeContrasts(
   female_amyloid_synuclein_tau_vs_male_amyloid_synuclein_tau = amyloid_synuclein_tau_female - amyloid_synuclein_tau_male, 
   female_amyloid_tau_vs_male_amyloid_tau = amyloid_tau_female - amyloid_tau_male, 
   female_amyloid_vs_male_amyloid = amyloid_female - amyloid_male, 
-  female_low_amyloid_synuclein_vs_female_low_amyloid_synuclein = low_amyloid_synuclein_female - low_amyloid_synuclein_male,
-  female_high_amyloid_synuclein_vs_no_pathology = high_amyloid_synuclein_female  - high_amyloid_synuclein_male,
+  female_low_amyloid_synuclein_vs_male_low_amyloid_synuclein = low_amyloid_synuclein_female - low_amyloid_synuclein_male,
+  female_high_amyloid_synuclein_vs_male_high_amyloid_synuclein = high_amyloid_synuclein_female  - high_amyloid_synuclein_male,
   female_no_pathology_vs_male_no_pathology = no_pathology_female - no_pathology_male, 
   
   # sex interaction 
