@@ -10,35 +10,24 @@ output:
 editor_options: 
   chunk_output_type: inline
 ---
-
+This script will examine the variables in the metadata to determine if ther are differences by disease type and/or sex differences for clinical data such as brain weight. 
 # Setup
-```{r setup}
-# Also do Session > Set Working Directory > Choose Directory
+```{r setup, message=FALSE, warning=FALSE, tidy=TRUE}
 knitr::opts_knit$set(root.dir = ".")
 ```
-# Libraries
-```{r}
-#library(gtools)
-library(tidyr)
-library(wesanderson) # colors
-library(gridExtra)
-library(grid)
-library(stringr)
-```
 # User defined variables
-```{r set_variables}
+sourcing file_paths_and_colours will load the libraries and user defined variables for colors of the graphs 
+```{r set_variables, message=FALSE, warning=FALSE, tidy=TRUE}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 ```
-
 # Read data
-```{r read_data}
+```{r read_data, message=FALSE, warning=FALSE, tidy=TRUE}
 # read in metadata
 metadata <-
   read.delim(paste0(pathToRawData, "metadata_expanded.tsv"),
              header = TRUE,
              sep = "\t")
 
-subset(metadata, NPID == "NA20-102")
 # remove technical replicates (i.e lane 1 and lane 2)
 metadata <- metadata[!duplicated(metadata[, c('NPID')]), ]
 # remove samples that have missing A-T-S scores or that don't fit into an A-T-S category 
@@ -73,8 +62,9 @@ metadata <- metadata[!is.na(metadata$sex_inferred),]
 
 # Read in RNAseq and Alignment metrics text files
 ### RNAseq metrics
-```{r}
-# read in RNA_metrics header
+```{r RNA_metrics, message=FALSE, warning=FALSE, tidy=TRUE}
+# read in RNA_metrics header.
+# note that is ONLY the header. 
 RNA_metrics_header <- read.delim("../../starAligned_SCC/RNA_metrics_header.txt")
 RNA_metrics_files <-
   file.path(paste0("../../starAligned_SCC/",
@@ -100,8 +90,15 @@ RNA_metrics_metadata <- merge(metadata, RNA_metrics_df, by = "NPID")
 # remove the last three columns as they don't contain any information
 RNA_metrics_metadata <- RNA_metrics_metadata[1:(length(RNA_metrics_metadata)-3)]
 ```
+clean up 
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
+remove(RNA_metrics_path, 
+       RNA_metrics_df, 
+       RNA_metrics_files, 
+       RNA_metrics_header)
+```
 ### Alignment metrics
-```{r}
+```{r alignment_metrics, message=FALSE, warning=FALSE, tidy=TRUE}
 # read in Alignment_metrics header
 Alignment_metrics_header <- read.delim("../../starAligned_SCC/Alignment_metrics_header.txt")
 Alignment_metrics_files <-
@@ -125,12 +122,20 @@ for (i in 1:length(Alignment_metrics_files)) {
 colnames(Alignment_metrics_df) <- colnames(Alignment_metrics_header)
 Alignment_metrics_df$NPID <- names(Alignment_metrics_files)
 Alignment_metrics_metadata <- merge(RNA_metrics_metadata, Alignment_metrics_df, by = "NPID")
-# remove the last three columns as they don't contain any information
-Alignment_metrics_metadata <- Alignment_metrics_metadata[1:(length(Alignment_metrics_metadata)-3)]
+# remove the last four columns as they don't contain any information
+Alignment_metrics_metadata <- Alignment_metrics_metadata[1:(length(Alignment_metrics_metadata)-4)]
 metadata <- Alignment_metrics_metadata
 ```
-# Add numerical values for categorical variables 
-```{r}
+clean up 
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
+remove(Alignment_metrics_path, 
+       Alignment_metrics_df, 
+       Alignment_metrics_files, 
+       Alignment_metrics_header, 
+       Alignment_metrics_metadata)
+```
+# APOE E4 allele count
+```{r APOE_E4_allele_count, message=FALSE, warning=FALSE, tidy=TRUE}
 metadata$APOE_E4_allele_count <-
   ifelse(
     metadata$APOE == "E2E3",
@@ -151,7 +156,7 @@ metadata$sex_numeric <- ifelse(metadata$sex_inferred == "male", 0, 1)
 metadata$Race_numeric <- ifelse(metadata$Race == "Caucasian", 0, 1)
 ```
 # Remove sample with very large library size 
-```{r}
+```{r library_size, message=FALSE, warning=FALSE, tidy=TRUE}
 plot(metadata$TYPE, metadata$TOTAL_READS)
 hist(metadata$TOTAL_READS, breaks = 100)
 metadata <- subset(metadata, NPID != "NA18-272")
@@ -160,8 +165,9 @@ plot(metadata$TYPE, metadata$TOTAL_READS)
 hist(metadata$TOTAL_READS, breaks = 100)
 summary(metadata$TOTAL_READS)
 ```
+
 # Output updated RNA metadata table
-```{r}
+```{r metadata_output, message=FALSE, warning=FALSE, tidy=TRUE}
 write.table(
   metadata,
   paste0(pathToRawData, "RNA_metadata.tsv"),
@@ -169,10 +175,12 @@ write.table(
   quote = FALSE,
   row.names = FALSE
 )
+# clean up
+remove(APOE, metadata_ATS, df, RNA_metrics_metadata)
 ```
 ## RNA sample count
-```{r bar_plot}
-# create bar plot showing number of samples for each end point criteria
+```{r bar_plot, message=FALSE, warning=FALSE, tidy=TRUE}
+# create bar plot showing number of samples for each group
 bar <- ggplot(metadata, aes(TYPE, after_stat(count), fill = TYPE)) +
   geom_bar() +
   theme_bw() +
@@ -186,13 +194,6 @@ bar <- ggplot(metadata, aes(TYPE, after_stat(count), fill = TYPE)) +
     size = 3.5
   ) +
     theme_bw() + 
-  theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 10),
-        axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        plot.title = element_text(size = 10),
-        legend.text=element_text(size=10),
-        legend.title=element_text(size=10)) +
   scale_fill_manual(values = TypeColors)
 bar
 
@@ -221,7 +222,7 @@ pie <- ggplot(data, aes(x = "", y = perc, fill = TYPE)) +
 pie
 ```
 save plot
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 ggarrange(bar,
           pie,
           ncol = 2,
@@ -229,21 +230,17 @@ ggarrange(bar,
 
 path <- paste0("../../results/clinical/TYPE.RNA.count")
 saveToPDF(paste0(path, ".pdf"), width = 7.25, height = 3.5)
+
+# clean up
+remove(bar, pie, data)
 ```
 
 ## Split by sex 
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 #SexColors <- c("orange", "olivedrab")
 bar_sex <- ggplot(metadata, aes(x = TYPE, fill = sex_inferred)) + 
   geom_bar(aes(y = after_stat(count)), position = "dodge") + 
-  theme_bw() + 
-  theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 10),
-        axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        plot.title = element_text(size = 10),
-        legend.text=element_text(size=10),
-        legend.title=element_text(size=10)) +
+  theme_bw() +
   xlab("Disease group") + 
   ggtitle("Bulk RNAseq sample count by inferred sex") +
   geom_text(stat='count', aes(x = TYPE, label=after_stat(count)), 
@@ -277,7 +274,7 @@ pie_sex <- ggplot(data, aes(x = "", y = perc, fill = sex_inferred)) +
     theme(strip.text = element_blank())
 pie_sex
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 ggarrange(bar_sex,
           pie_sex,
           nrow = 2,
@@ -285,15 +282,11 @@ ggarrange(bar_sex,
 
 path <- paste0("../../results/clinical/TYPE.sex.RNA.count")
 saveToPDF(paste0(path, ".pdf"), width = 6.88, height = 4.33)
+
+# clean up
+remove(bar_sex, pie_sex, data)
 ```
-clean up
-```{r}
-remove(pie, 
-       pie_sex, 
-       bar, 
-       bar_sex,
-       data)
-```
+
 # RNA sample count by A-T-S scores
 Group 1: A-T-S amyloid + synuclein + tau (A >= 1, T >= 1, S >= 1 )
 Group 2: Ahigh-S high amyloid + synuclein (A >= 2, T = 0, S >= 1 )
@@ -302,7 +295,7 @@ Group 4: S "pure" synuclein (A = 0, T = 0, S >= 1)
 Group 5: A-T amyloid + tau (A >= 1, T >= 1, S = 0)
 Group 6: A amyloid (A >= 1, T = 0, S = 0)
 Group 7: Min minimal (i.e normal controls) (A = 0, T = 0, S = 0) 
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 # Split CWOW column into A - T - S scores
 metadata[c('A', 'T', 'S')] <- str_split_fixed(metadata$CWOW.Category, ', ', 3)
 metadata$A <- gsub('A', '', metadata$A)
@@ -340,15 +333,14 @@ metadata$ATS <-
       )
     )
   )
-
 ```
 plot
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 # Drop samples with NA ATS score
 df <- metadata %>% drop_na(ATS)
 df <- subset(df, ATS != "NA")
 
-# create bar plot showing number of samples for each end point criteria
+# create bar plot showing number of samples for each group 
 bar <- ggplot(df, aes(ATS, after_stat(count), fill = ATS)) +
   geom_bar() +
   theme_bw() +
@@ -363,19 +355,14 @@ bar <- ggplot(df, aes(ATS, after_stat(count), fill = ATS)) +
   ) +
   theme_bw() + 
   theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5, hjust=1),
-        axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        plot.title = element_text(size = 10),
-        legend.text=element_text(size=10),
-        legend.title=element_text(size=10)) +
+        axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5, hjust=1)) +
   scale_fill_manual(values = colorbindColors)
 bar
 path <- paste0("../../results/clinical/ATS.RNA.count")
 saveToPDF(paste0(path, ".pdf"), width = 7, height = 5)
 ```
 # A-T-S score names
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 metadata$ATS_names <-
   ifelse(
     metadata$A >= 1 & metadata$T >= 1 & metadata$S >= 1,
@@ -405,29 +392,53 @@ metadata$ATS_names <-
 ```
 
 plot by A-T-S score
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 # Samples with missing A-T-S scores
 subset(metadata, ATS_names == "NA")
 subset(metadata, is.na(metadata$ATS_names))
 # Drop samples with NA ATS score
 df <- metadata %>% drop_na(ATS_names)
 df <- subset(df, ATS_names != "NA")
-df$ATS_names <- factor(df$ATS_names, levels = c("no pathology", "amyloid", "amyloid + tau", "pure synuclein", "low amyloid + synuclein", "high amyloid + synuclein", "amyloid + synuclein + tau"))
-metadata$ATS_names <- factor(metadata$ATS_names, levels = c("no pathology", "amyloid", "amyloid + tau", "pure synuclein", "low amyloid + synuclein", "high amyloid + synuclein", "amyloid + synuclein + tau"))
+df$ATS_names <-
+  factor(
+    df$ATS_names,
+    levels = c(
+      "no pathology",
+      "amyloid",
+      "amyloid + tau",
+      "pure synuclein",
+      "low amyloid + synuclein",
+      "high amyloid + synuclein",
+      "amyloid + synuclein + tau"
+    )
+  )
+metadata$ATS_names <-
+  factor(
+    metadata$ATS_names,
+    levels = c(
+      "no pathology",
+      "amyloid",
+      "amyloid + tau",
+      "pure synuclein",
+      "low amyloid + synuclein",
+      "high amyloid + synuclein",
+      "amyloid + synuclein + tau"
+    )
+  )
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 write.table(
   df,
-  paste0("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt"),
+  paste0("../../rObjects/metadata_A-T-S_scores.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
 )
 ```
 
-```{r}
-# create bar plot showing number of samples for each end point criteria
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
+# create bar plot showing number of samples for each group
 bar <- ggplot(df, aes(TYPE, after_stat(count), fill = ATS_names)) +
   geom_bar() +
   theme_bw() +
@@ -473,7 +484,7 @@ path <- paste0("../../results/clinical/ATS.RNA.count")
 saveToPDF(paste0(path, ".pdf"), width = 7, height = 5)
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 # pie chart
 data <- df %>%
   group_by(ATS) %>%
@@ -499,7 +510,7 @@ pie <- ggplot(data, aes(x = "", y = perc, fill = ATS)) +
 pie
 ```
 save plot
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 ggarrange(bar,
           pie,
           ncol = 2,
@@ -507,10 +518,12 @@ ggarrange(bar,
 
 path <- paste0("../../results/clinical/ATS.RNA.count")
 saveToPDF(paste0(path, ".pdf"), width = 8, height = 6)
+
+# clean up
+remove(bar, data, pie) # do not remove df, used for split by sex 
 ```
 ## A-T-S split by sex 
-```{r}
-#SexColors <- c("orange", "olivedrab")
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 bar_sex <- ggplot(df, aes(x = ATS_names, fill = sex_inferred)) + 
   geom_bar(aes(y = after_stat(count)), position = "dodge") + 
   theme_bw() + 
@@ -554,7 +567,7 @@ pie_sex <- ggplot(data, aes(x = "", y = perc, fill = sex_inferred)) +
     theme(strip.text = element_blank())
 pie_sex
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 ggarrange(bar_sex,
           pie_sex,
           nrow = 2, 
@@ -562,19 +575,66 @@ ggarrange(bar_sex,
 
 path <- paste0("../../results/clinical/ATS.sex.RNA.count")
 saveToPDF(paste0(path, ".pdf"), width = 8, height = 7)
+
+remove(bar_sex, pie_sex, data, df)
 ```
 # Save metadata
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 saveRDS(metadata, paste0("../../rObjects/metadata.rds"))
 ```
 
 # Categorial variables
 ### TYPE
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 metadata_categorical <-
-  data.frame(metadata$LBD.type, metadata$AD.subtype, metadata$CDLB, metadata$TDP.type, metadata$APOE, metadata$MAPT, metadata$GRN, metadata$TMEM106b, metadata$Braak.NFT, metadata$Thal.amyloid, metadata$MF.Tau, metadata$MF.Amyloid, metadata$VaD, metadata$TDP.43, metadata$FHx, metadata$MF.SP, metadata$MF.NFT, metadata$MF.LB, metadata$Cing.LB, metadata$Cing.Synuclein, metadata$Race) 
+  data.frame(
+    metadata$LBD.type,
+    metadata$AD.subtype,
+    metadata$CDLB,
+    metadata$TDP.type,
+    metadata$APOE,
+    metadata$MAPT,
+    metadata$GRN,
+    metadata$TMEM106b,
+    metadata$Braak.NFT,
+    metadata$Thal.amyloid,
+    metadata$MF.Tau,
+    metadata$MF.Amyloid,
+    metadata$VaD,
+    metadata$TDP.43,
+    metadata$FHx,
+    metadata$MF.SP,
+    metadata$MF.NFT,
+    metadata$MF.LB,
+    metadata$Cing.LB,
+    metadata$Cing.Synuclein,
+    metadata$Race
+  )
 # To do it for all names
-column_variables <- c("LBD.type", "AD.subtype", "CDLB", "TDP.type", "APOE", "MAPT", "GRN", "TMEM106b", "Braak.NFT", "Thal.amyloid", "MF.Tau", "MF.Amyloid", "VaD", "TDP.43", "FHx", "MF.SP", "MF.NFT", "MF.LB", "Cing.LB", "Cing.Synuclein", "Race")
+column_variables <-
+  c(
+    "LBD.type",
+    "AD.subtype",
+    "CDLB",
+    "TDP.type",
+    "APOE",
+    "MAPT",
+    "GRN",
+    "TMEM106b",
+    "Braak.NFT",
+    "Thal.amyloid",
+    "MF.Tau",
+    "MF.Amyloid",
+    "VaD",
+    "TDP.43",
+    "FHx",
+    "MF.SP",
+    "MF.NFT",
+    "MF.LB",
+    "Cing.LB",
+    "Cing.Synuclein",
+    "Race"
+  )
 
 bar_plot_fun <- function(i, j) {
   ggplot(metadata, aes(TYPE, after_stat(count), fill = factor(i))) +
@@ -641,8 +701,13 @@ walk2(plotnames,
         width = 6.5
       ))
 ```
+
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
+# clean up
+remove(bar_plots, pie_plots, plotnames, p) # do not remove metadata_categorical
+```
 ### ATS
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 bar_plot_fun <- function(i, j) {
   ggplot(metadata, aes(ATS_names, after_stat(count), fill = factor(i))) +
     geom_bar(colour = "black") +
@@ -708,14 +773,45 @@ walk2(plotnames,
         width = 9.5
       ))
 ```
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
+# clean up
+remove(bar_plots, pie_plots, plotnames, p) # do not remove metadata_categorical
+```
 
 # Continuous variables 
 ### TYPE
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 metadata_continuous <-
-  data.frame(metadata$Brain.wt, metadata$Duration, metadata$Age, metadata$PMI, metadata$Concentration.ng.ul, metadata$Volume.ul, metadata$Total.RNA.ng, metadata$RIN)
-column_variables <- c("Brain.wt","Duration", "Age", "PMI", "Concentration.ng.ul", "Volume.ul", "Total.RNA.ng", "RIN")
-TYPE_comparison <- list(c("CONTROL", "PA"), c("CONTROL", "AD"), c("CONTROL", "LBD"), c("PA", "AD"), c("PA", "LBD"), c("AD", "LBD"))
+  data.frame(
+    metadata$Brain.wt,
+    metadata$Duration,
+    metadata$Age,
+    metadata$PMI,
+    metadata$Concentration.ng.ul,
+    metadata$Volume.ul,
+    metadata$Total.RNA.ng,
+    metadata$RIN
+  )
+column_variables <-
+  c(
+    "Brain.wt",
+    "Duration",
+    "Age",
+    "PMI",
+    "Concentration.ng.ul",
+    "Volume.ul",
+    "Total.RNA.ng",
+    "RIN"
+  )
+TYPE_comparison <-
+  list(
+    c("CONTROL", "PA"),
+    c("CONTROL", "AD"),
+    c("CONTROL", "LBD"),
+    c("PA", "AD"),
+    c("PA", "LBD"),
+    c("AD", "LBD")
+  )
 
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(TYPE, i, fill = TYPE)) +
@@ -739,9 +835,12 @@ plotnames = imap(violin_plots, ~paste0("../../results/clinical/TYPE.", .y, ".pdf
 plotnames <- gsub("metadata.", "", plotnames)
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 5.5))
+
+remove(violin_plots) 
 ```
+
 ## TYPE.sex
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(TYPE, i, fill = TYPE)) +
     geom_violin() +
@@ -765,10 +864,12 @@ plotnames = imap(violin_plots, ~paste0("../../results/clinical/TYPE.Sex.", .y, "
 plotnames <- gsub("metadata.", "", plotnames)
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 7.5))
+remove(violin_plots) 
 ```
 
+
 ### ATS
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 ATS_comparison <-
   list(
     c("no pathology", "amyloid"),
@@ -810,9 +911,11 @@ plotnames = imap(violin_plots, ~paste0("../../results/clinical/ATS.", .y, ".pdf"
 plotnames <- gsub("metadata.", "", plotnames)
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 6, width = 5.5))
+remove(violin_plots) 
 ```
+
 ## ATS.sex
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(ATS_names, i, fill = ATS_names)) +
     geom_violin() +
@@ -837,15 +940,53 @@ plotnames = imap(violin_plots, ~paste0("../../results/clinical/ATS.Sex.", .y, ".
 plotnames <- gsub("metadata.", "", plotnames)
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 6, width = 8.5))
-
+remove(violin_plots) 
 ```
+
 ### APOE
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 metadata$APOE <- as.factor(metadata$APOE)
 metadata_continuous <-
-  data.frame(metadata$Brain.wt, metadata$Duration, metadata$Age, metadata$Cing.LB, metadata$MF.LB, metadata$Braak.NFT, metadata$Thal.amyloid, metadata$MF.SP, metadata$MF.NFT, metadata$MF.Amyloid, metadata$Cing.Synuclein) 
-column_variables <- c("Brain.wt","Duration", "Age", "Cing.LB", "MF.LB", "Braak.NFT", "Thal.amyloid", "MF.SP", "MF.NFT", "MF.Amyloid", "Cing.Synuclein")
-APOE_comparison <- list(c("E2E3", "E2E4"), c("E2E3", "E3E3"), c("E2E3", "E3E4"), c("E2E3", "E4E4"), c("E2E4", "E3E3"), c("E2E4", "E3E4"), c("E2E4", "E4E4"), c("E3E3", "E3E4"), c("E3E3", "E4E4"), c("E3E4", "E4E4"))
+  data.frame(
+    metadata$Brain.wt,
+    metadata$Duration,
+    metadata$Age,
+    metadata$Cing.LB,
+    metadata$MF.LB,
+    metadata$Braak.NFT,
+    metadata$Thal.amyloid,
+    metadata$MF.SP,
+    metadata$MF.NFT,
+    metadata$MF.Amyloid,
+    metadata$Cing.Synuclein
+  )
+column_variables <-
+  c(
+    "Brain.wt",
+    "Duration",
+    "Age",
+    "Cing.LB",
+    "MF.LB",
+    "Braak.NFT",
+    "Thal.amyloid",
+    "MF.SP",
+    "MF.NFT",
+    "MF.Amyloid",
+    "Cing.Synuclein"
+  )
+APOE_comparison <-
+  list(
+    c("E2E3", "E2E4"),
+    c("E2E3", "E3E3"),
+    c("E2E3", "E3E4"),
+    c("E2E3", "E4E4"),
+    c("E2E4", "E3E3"),
+    c("E2E4", "E3E4"),
+    c("E2E4", "E4E4"),
+    c("E3E3", "E3E4"),
+    c("E3E3", "E4E4"),
+    c("E3E4", "E4E4")
+  )
 
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(APOE, i, fill = APOE)) +
@@ -869,13 +1010,28 @@ plotnames = imap(violin_plots, ~paste0("../../results/clinical/TYPE.APOE.", .y, 
 plotnames <- gsub("metadata.", "", plotnames)
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 5.5))
+remove(violin_plots) 
 ```
+
 # Alignment metrics
 ### TYPE
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 metrics_metadata <-
-  data.frame(metadata$PCT_PF_READS, metadata$PCT_CODING_BASES, metadata$PCT_INTERGENIC_BASES, metadata$PCT_INTRONIC_BASES, metadata$TOTAL_READS) 
-column_variables <- c("PCT_PF_READS","PCT_CODING_BASES", "PCT_INTERGENIC_BASES", "PCT_INTRONIC_BASES", "TOTAL_READS")
+  data.frame(
+    metadata$PCT_PF_READS,
+    metadata$PCT_CODING_BASES,
+    metadata$PCT_INTERGENIC_BASES,
+    metadata$PCT_INTRONIC_BASES,
+    metadata$TOTAL_READS
+  )
+column_variables <-
+  c(
+    "PCT_PF_READS",
+    "PCT_CODING_BASES",
+    "PCT_INTERGENIC_BASES",
+    "PCT_INTRONIC_BASES",
+    "TOTAL_READS"
+  )
 
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(TYPE, i, fill = TYPE)) +
@@ -899,9 +1055,12 @@ plotnames = imap(violin_plots, ~paste0("../../results/clinical/TYPE.", .y, ".pdf
 plotnames <- gsub("metadata.", "", plotnames)
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 5.5))
+
+remove(violin_plots) 
 ```
+
 ### ATS
-```{r}
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
 violin_plot_fun <- function(i, j) {
   ggplot(metadata, aes(ATS_names, i, fill = ATS_names)) +
     geom_violin() +
@@ -925,17 +1084,31 @@ plotnames = imap(violin_plots, ~paste0("../../results/clinical/ATS.", .y, ".pdf"
 plotnames <- gsub("metadata.", "", plotnames)
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 5.5, width = 6.5))
+remove(violin_plots) 
 ```
 # Correlation heatmap
 scale() function is used to ensure that variables measured in different scales (e.g. age of death vs RIN) are comparable.
 same results with and without the use of scale
-```{r}
-#metadata <- subset(metadata, TYPE == "LBD")
-#info <-
-#  info[, c("MF.NFT", "MF.Amyloid", "MF.SP", "MF.Tau", "Brain.wt")] %>% scale()
+```{r correlation, message=FALSE, warning=FALSE, tidy=TRUE}
+# scale continous data 
 metadata <-
-  metadata[, c("MF.NFT", "MF.Amyloid", "MF.SP", "MF.Tau", "Brain.wt", "Duration", "Age", "PMI", "RIN", "Braak.NFT", "Thal.amyloid", "Cing.LB", "Cing.Synuclein")] %>% scale()
+  metadata[, c(
+    "MF.NFT",
+    "MF.Amyloid",
+    "MF.SP",
+    "MF.Tau",
+    "Brain.wt",
+    "Duration",
+    "Age",
+    "PMI",
+    "RIN",
+    "Braak.NFT",
+    "Thal.amyloid",
+    "Cing.LB",
+    "Cing.Synuclein"
+  )] %>% scale()
 info <- as.data.frame(metadata)
+
 # correlation
 cor_mat <- rcorr(as.matrix(info))
 corrplot(

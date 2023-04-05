@@ -13,16 +13,13 @@ editor_options:
 
 # Setup
 ```{r setup}
-# Also do Session > Set Working Directory > Choose Directory
 knitr::opts_knit$set(root.dir = ".")
 ```
-
 # User defined variables
 ```{r set_variables}
 pathToRef = c("/research/labs/neurology/fryer/projects/references/human/")
 pathToRawData = c("/research/labs/neurology/fryer/projects/LBD_CWOW/")
 ```
-
 # Read data
 ```{r read_data}
 # read in metadata

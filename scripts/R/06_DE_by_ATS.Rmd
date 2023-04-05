@@ -9,7 +9,6 @@ output:
 params:
   args: myarg
 ---
-Samples have already been sex checked and realigned to the SCC reference. 
 # Setup
 ```{r setup}
 knitr::opts_knit$set(root.dir = ".")
@@ -18,24 +17,23 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_ATS")
-min_expression <- "min_exp1"
+condition <- c("ATS")
 tool <- "star"
-
-dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
+dge.filtered.norm <- readRDS(paste0("../../rObjects/dge.filtered.norm.rds"))
 ```
-# design
-```{r}
+# Design
+```{r design}
 design <-
   model.matrix(~ 0 + 
       ATS_names + 
       sex_inferred + 
       flowcell_and_lane + 
-      scale(Age) +
-      Neuron_All.Zscore +
+      Oligodendrocyte.Zscore +
+      Neuron_Interneuron.Zscore + 
+      Neuron_Projection.Zscore +
+      Mural.Zscore +
       Astrocyte.Zscore +
-      Endothelial.Zscore +
-      RBC.Zscore,
+      PCT_INTRONIC_BASES,
     dge.filtered.norm$samples
   )
 
@@ -56,15 +54,16 @@ colnames(design) <-
     "Batch5",
     "Batch6",
     "Batch7",
-    "Age",
-    "Neuron_All.Zscore",
+    "Oligodendrocyte.Zscore",
+    "Neuron_Interneuron.Zscore",
+    "Neuron_Projection.Zscore",
+    "Mural.Zscore", 
     "Astrocyte.Zscore", 
-    "Endothelial.Zscore", 
-    "RBC.Zscore"
+    "PCT_INTRONIC_BASES"
   )
 ```
-# contrast
-```{r}
+# Contrast
+```{r contrast}
 contrasts <- makeContrasts(
   amyloid_vs_no_pathology =  amyloid - no_pathology,
   amyloid_tau_vs_no_pathology = amyloid_tau - no_pathology,
@@ -87,34 +86,11 @@ contrasts <- makeContrasts(
   amyloid_synuclein_tau_vs_high_amyloid_synuclein = amyloid_synuclein_tau - high_amyloid_synuclein,
 
   levels = colnames(design))
-head(contrasts)
 allComparisons <- colnames(contrasts)
-```
-# DEG tables
-```{r}
-coef <- 1
-for (i in allComparisons) {
-  filepath <- paste0(
-    "../../results/",
-    tool,
-    "/DEGs/", condition, "_BIC_",
-    i,
-    "_gene_DEGs_FDRq1.00.txt"
-  )
-  assign(paste0(i),
-         read.delim(
-           filepath,
-           header = TRUE,
-           sep = "\t",
-           stringsAsFactors = FALSE
-         ))
-  # increment
-  coef <- coef + 1
-}
 ```
 
 # Volcano plots
-```{r}
+```{r volcano, warning=FALSE}
 for (i in allComparisons) {
   group1_vs_group2 <-
     read.delim(
@@ -123,7 +99,7 @@ for (i in allComparisons) {
         tool,
         "/DEGs/",
         condition,
-        "_BIC_",
+        "_",
         i,
         "_gene_DEGs_FDRq1.00.txt"
       )
@@ -174,6 +150,7 @@ for (i in allComparisons) {
                             na.rm = TRUE)))
     negFC <- c(-.25)
     posFC <- c(.25) 
+    i <- gsub("_", " ", i)
     p <-
       ggplot(data = data,
              aes(
@@ -257,7 +234,7 @@ for (i in allComparisons) {
         max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       )
     p
-    
+    i <- gsub(" ", "_", i)
     # save
     path <-
       paste0(
@@ -276,10 +253,128 @@ for (i in allComparisons) {
     dev.off()
     
     print(paste("i =", i))
-    
   }
 } 
 ```
+```{r cleanup}
+# clean up
+remove(up, up10, upFold, group1_vs_group2, downFold, down10, data, df, p)
+```
+# Make excel table
+```{r excel}
+# first read in the files
+for (i in allComparisons) {
+  filepath <- paste0("../../results/",tool,
+    "/DEGs/", condition, "_", i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(paste0(i),
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+}
 
+list_of_datasets <- list(
+"A_vs_NP" = amyloid_vs_no_pathology,
+"AT_vs_NP" = amyloid_tau_vs_no_pathology,     
+"lowAS_vs_NP" = low_amyloid_synuclein_vs_no_pathology,
+"highAS_vs_NP" = high_amyloid_synuclein_vs_no_pathology,         
+"AST_vs_NP" = amyloid_synuclein_tau_vs_no_pathology,
+"AT_vs_A "= amyloid_tau_vs_amyloid,
+"lowAS_vs_A" = low_amyloid_synuclein_vs_amyloid,
+"highAS_vs_A" = high_amyloid_synuclein_vs_amyloid, 
+"AST_vs_A" = amyloid_synuclein_tau_vs_amyloid,
+"lowAS_vs_AT" = low_amyloid_synuclein_vs_amyloid_tau,
+"highAS_vs_AT"= high_amyloid_synuclein_vs_amyloid_tau,
+"AST_vs_AT"= amyloid_synuclein_tau_vs_amyloid_tau,
+"hightAS_vs_lowAS"= high_amyloid_synuclein_vs_low_amyloid_synuclein, 
+"AST_vs_lowAS"= amyloid_synuclein_tau_vs_low_amyloid_synuclein, 
+"AST_vs_highAS"= amyloid_synuclein_tau_vs_high_amyloid_synuclein)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,".DEGs.FDRq1.00.xlsx"))
+```
+clean up
+```{r cleanup_excel}
+remove(
+amyloid_vs_no_pathology,
+amyloid_tau_vs_no_pathology,     
+low_amyloid_synuclein_vs_no_pathology,
+high_amyloid_synuclein_vs_no_pathology,         
+amyloid_synuclein_tau_vs_no_pathology,
+amyloid_tau_vs_amyloid,
+low_amyloid_synuclein_vs_amyloid,
+high_amyloid_synuclein_vs_amyloid, 
+amyloid_synuclein_tau_vs_amyloid,
+low_amyloid_synuclein_vs_amyloid_tau,
+high_amyloid_synuclein_vs_amyloid_tau,
+amyloid_synuclein_tau_vs_amyloid_tau,
+high_amyloid_synuclein_vs_low_amyloid_synuclein, 
+amyloid_synuclein_tau_vs_low_amyloid_synuclein, 
+amyloid_synuclein_tau_vs_high_amyloid_synuclein
+)
+```
+# Excel table of significant DEGs
 ```{r}
+# first read in the files
+for (i in allComparisons) {
+  filepath <- paste0("../../results/",tool,
+    "/DEGs/", condition, "_", i,
+    "_gene_DEGs_FDRq0.05_logFC_0.25.txt"
+  )
+  assign(paste0(i),
+         tryCatch(
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ), error=function(e) NULL))
+}
+
+list_of_datasets <- list(
+"A_vs_NP" = amyloid_vs_no_pathology,
+"AT_vs_NP" = amyloid_tau_vs_no_pathology,     
+"lowAS_vs_NP" = low_amyloid_synuclein_vs_no_pathology,
+"highAS_vs_NP" = high_amyloid_synuclein_vs_no_pathology,         
+"AST_vs_NP" = amyloid_synuclein_tau_vs_no_pathology,
+"AT_vs_A "= amyloid_tau_vs_amyloid,
+"lowAS_vs_A" = low_amyloid_synuclein_vs_amyloid,
+"highAS_vs_A" = high_amyloid_synuclein_vs_amyloid, 
+"AST_vs_A" = amyloid_synuclein_tau_vs_amyloid,
+"lowAS_vs_AT" = low_amyloid_synuclein_vs_amyloid_tau,
+"highAS_vs_AT"= high_amyloid_synuclein_vs_amyloid_tau,
+"AST_vs_AT"= amyloid_synuclein_tau_vs_amyloid_tau,
+"hightAS_vs_lowAS"= high_amyloid_synuclein_vs_low_amyloid_synuclein, 
+"AST_vs_lowAS"= amyloid_synuclein_tau_vs_low_amyloid_synuclein, 
+"AST_vs_highAS"= amyloid_synuclein_tau_vs_high_amyloid_synuclein)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,".DEGs.FDRq0.05_logFC_0.25.xlsx"))
+```
+# GOI histogram
+```{r goi_hist}
+voomCounts <- readRDS(paste0("../../rObjects/", condition, ".voomCountsMatrix.rds"))
+voomCounts <- as.data.frame(voomCounts)
+voomCounts$gene_id  <- rownames(voomCounts)
+voom_genes <- merge(voomCounts, dge.filtered.norm$genes, by = "gene_id")
+goi <- subset(voom_genes, gene_name == "TTR")
+goi <- as.vector(goi[2:620])
+goi_melt <- melt(goi)
+summary(goi_melt$value)
+
+# histogram
+ggplot(goi_melt, aes(x = value)) + 
+  geom_histogram(bins = 100, fill = "gray", color = "black") + 
+  labs(title = "TTR", x=NULL, y=NULL) +
+  xlab("TTR log2(CPM)") + ylab("# of samples") +
+  theme_bw() 
+
+path <- paste0("../../results/", tool, "/goi/TTR.histogram")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 5)
 ```

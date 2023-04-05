@@ -7,11 +7,10 @@ library('BiocParallel')
 library('Hmisc')
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_ATS")
-min_expression <- "min_exp1"
+condition <- c("")
 tool = c("star")
 #-------- read in data 
-dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
+dge.filtered.norm <- readRDS(paste0("../../rObjects/dge.filtered.norm.rds"))
 # some samples are missing RIN values. 
 # Replace NA with median RIN. 
 # This is necessary to be able include RIN as a covariate in voom
@@ -79,7 +78,8 @@ Y = with(
     Neuron_Projection.Zscore,
     Oligodendrocyte.Zscore,
     Oligodendrocyte_Immature.Zscore,
-    RBC.Zscore
+    RBC.Zscore,
+    Choroid_Plexus.Zscore
   )
 )
 
@@ -104,7 +104,8 @@ rownames(Y) <-
     "Neuron_Projection.Zscore",
     "Oligodendrocyte.Zscore",
     "Oligodendrocyte_Immature.Zscore",
-    "RBC.Zscore"
+    "RBC.Zscore",
+    "Choroid_Plexus.Zscore"
   )
 # variables to consider in the model
 # categorical variables must be modeled using (1|)
@@ -128,7 +129,8 @@ variables = c(
   "Neuron_Projection.Zscore",
   "Oligodendrocyte.Zscore",
   "Oligodendrocyte_Immature.Zscore",
-  "RBC.Zscore"
+  "RBC.Zscore",
+  "Choroid_Plexus.Zscore"
 )
 
 # fit forward stepwise regression starting
