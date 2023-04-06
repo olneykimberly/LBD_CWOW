@@ -1,7 +1,7 @@
 ---
 title: "Variance in expression data within and among each sex"
 author: "Kimberly Olney, Ph.D."
-date: "01/06/2023"
+date: "04/06/2023"
 output:
   html_document:
     df_print: paged
@@ -14,21 +14,14 @@ params:
 knitr::opts_knit$set(root.dir = ".")
 ```
 
-```{r libraries, message=FALSE, warning=FALSE}
-library('variancePartition')
-library('edgeR')
-library('BiocParallel')
-library('Hmisc')
-```
-
 # User defined variables
-```{r set_variables}
+```{r set_variables, warning=FALSE}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_ATS")
-min_expression <- "min_exp1"
+condition <- c("TYPE.SEX") #  TYPE
 tool = c("star")
 ```
+
 # Read in DGE object & metadata
 ```{r}
 dge.filtered.norm <-

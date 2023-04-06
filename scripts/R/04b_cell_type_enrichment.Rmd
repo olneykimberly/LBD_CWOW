@@ -243,7 +243,7 @@ BinB_voom <-
     geneColumn = 631, # column with gene name 
     species = "human"
   )
-saveRDS(BinB_voom, file = paste0("../../rObjects/", condition, "BinB.rds"))
+#saveRDS(BinB_voom, file = paste0("../../rObjects/", condition, "BinB.rds"))
 ```
 reformat
 ```{r format_BinB}
@@ -262,6 +262,14 @@ Zscore_Expression_CellType_NoPrimaryOverlap_Mean <-
   )
 # transform the data 
 Zscore_CellType_melt <- melt(Zscore_Expression_CellType_NoPrimaryOverlap_Mean)
+
+
+atest <- read_csv("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender/Detailed_CellTypeAnalysisOutput/ZscoreInput_Expression_CellType_NoPrimaryOverlap.csv")
+atest$Umbrella.Cell.Type
+for(i in c(15:length(ZscoreInput_Expression_CellType_NoPrimaryOverlap[1,]))){
+  atest[,i-14]<-tapply(ZscoreInput_Expression_CellType_NoPrimaryOverlap[,i], ZscoreInput_Expression_CellType_NoPrimaryOverlap$Tag, mean)
+}
+View(ZscoreInput_Expression_CellType_NoPrimaryOverlap)
 ```
 
 ### merge Zscore information with metadata to compare between disease groups

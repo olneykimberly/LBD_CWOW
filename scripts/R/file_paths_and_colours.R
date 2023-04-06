@@ -33,6 +33,7 @@ library(wesanderson)
 library(gridExtra)
 library(grid)
 require(openxlsx)
+library(UpSetR)
 
 
 # To install run:
@@ -41,7 +42,7 @@ require(openxlsx)
 library(xCell)
 library(devtools)
 #library(BrainInABlender) # see https://github.com/hagenaue/BrainInABlender 
-source(here::here("scripts/R/brain_blender_functions_modified.R"))
+source(here::here("scripts/R/brain_blender_functions.R"))
 library(reshape2)
 
 # paths, colors, shapes and more

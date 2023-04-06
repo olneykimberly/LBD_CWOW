@@ -1,7 +1,7 @@
 ---
 title: "Variance in expression data"
 author: "Kimberly Olney, Ph.D."
-date: "01/06/2023"
+date: "04/05/2023"
 output:
   html_document:
     df_print: paged
@@ -15,10 +15,10 @@ knitr::opts_knit$set(root.dir = ".")
 ```
 
 # User defined variables
-```{r set_variables}
+```{r set_variables, warning=FALSE}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("ATS") #  TYPE
+condition <- c("ATS.BIC2") #  TYPE
 tool = c("star")
 ```
 # Read in DGE object & metadata
@@ -173,6 +173,10 @@ Best model: ~ (1 | TYPE) + PCT_CODING_BASES + RIN + (1 | flowcell_and_lane) + PC
 ATS with cell types 
 Final model:
   ~ (1 | ATS_names) + Neuron_Interneuron.Zscore + Neuron_Projection.Zscore + Mural.Zscore + (1 | sex_inferred) + Oligodendrocyte.Zscore + (1 | flowcell_and_lane) + Astrocyte.Zscore + PCT_INTRONIC_BASES
+  
+ATS with cell types including choroid 
+Final model:
+  ~ (1 | ATS_names) + Neuron_Interneuron.Zscore + Neuron_Projection.Zscore + Mural.Zscore + (1 | sex_inferred) + Oligodendrocyte.Zscore + (1 | flowcell_and_lane) + Astrocyte.Zscore + Neuron_All.Zscore + Oligodendrocyte_Immature.Zscore
 # Design matrix
 ```{r design}
 design <-
@@ -185,7 +189,8 @@ design <-
       Neuron_Projection.Zscore +
       Mural.Zscore +
       Astrocyte.Zscore +
-      PCT_INTRONIC_BASES,
+      Neuron_All.Zscore +
+      Oligodendrocyte_Immature.Zscore,
     dge.filtered.norm$samples
   )
 
@@ -211,7 +216,8 @@ colnames(design) <-
     "Neuron_Projection.Zscore",
     "Mural.Zscore", 
     "Astrocyte.Zscore", 
-    "PCT_INTRONIC_BASES"
+    "Neuron_All.Zscore",
+    "Oligodendrocyte_Immature.Zscore"
   )
 ```
 # Voom
@@ -229,7 +235,8 @@ form <- (
       Neuron_Projection.Zscore +
       Mural.Zscore +
       Astrocyte.Zscore +
-      PCT_INTRONIC_BASES
+      Neuron_All.Zscore +
+      Oligodendrocyte_Immature.Zscore
 )
 
 voom_cov <-
@@ -416,7 +423,8 @@ form_varPart <- ~ (1|ATS_names) +
   Neuron_Projection.Zscore +
   Mural.Zscore +
   Astrocyte.Zscore +
-  PCT_INTRONIC_BASES
+  Neuron_All.Zscore +
+  Oligodendrocyte_Immature.Zscore
 
 # fit model and extract variance percents
 varPart <- fitExtractVarPartModel(voom_cov, form_varPart, info,
@@ -424,7 +432,8 @@ varPart <- fitExtractVarPartModel(voom_cov, form_varPart, info,
 ```
 
 ```{r plot_variance}
-plotVarPart(sortCols(varPart), label.angle = 60)
+varPart$gene_id <- NULL
+plotVarPart(sortCols(varPart), label.angle = 80)
 path <-
   paste0(
     "../../results/",
@@ -469,7 +478,8 @@ form <- ~ ATS_names +
   Neuron_Projection.Zscore +
   Mural.Zscore +
   Astrocyte.Zscore +
-  PCT_INTRONIC_BASES
+  Neuron_All.Zscore +
+  Oligodendrocyte_Immature.Zscore
   
 C = canCorPairs( form, info)
 # Plot correlation matrix
@@ -496,7 +506,7 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
          tl.col="black", tl.srt=45, #Text label color and rotation
          diag=FALSE, col.lim = c(0, 1)
          )
-path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA_BIC")
+path <- paste0("../../results/", tool ,"/varpart/", condition, "_CCA")
 saveToPDF(paste0(path, ".pdf"), width = 10, height = 10)
 ```
 # PCA
@@ -557,7 +567,8 @@ form_PCA <- ~ ATS_names +
   Neuron_Projection.Zscore +
   Mural.Zscore +
   Astrocyte.Zscore +
-  PCT_INTRONIC_BASES +
+  Neuron_All.Zscore +
+  Oligodendrocyte_Immature.Zscore +
   PC1 +
   PC2 +
   PC3 +
@@ -601,7 +612,7 @@ saveToPDF(paste0(path, ".pdf"), width = 20, height = 20)
 # Correlation heatmap
 scale() function is used to ensure that variables measured in different scales (e.g. age of death vs RIN) are comparable.
 same results with and without the use of scale
-```{r corr_heatmap}
+```{r corr_heatmap, eval=FALSE}
 cor_mat <- rcorr(as.matrix(C))
 
 corrplot(
@@ -621,27 +632,6 @@ corrplot(
 )
 path <- paste0("../../results/", tool ,"/varpart/", condition, ".CCA_PC1_10_sig")
 saveToPDF(paste0(path, ".pdf"), width = 15, height = 15)
-```
-# GOI gene of interest histogram
-```{r goi_hist}
-voomCounts <- readRDS(paste0("../../rObjects/", condition, ".voomCountsMatrix.rds"))
-voomCounts <- as.data.frame(voomCounts)
-voomCounts$gene_id  <- rownames(voomCounts)
-voom_genes <- merge(voomCounts, dge.filtered.norm$genes, by = "gene_id")
-goi <- subset(voom_genes, gene_name == "TTR")
-goi <- as.vector(goi[2:620])
-goi_melt <- melt(goi)
-summary(goi_melt$value)
-
-# histogram
-ggplot(goi_melt, aes(x = value)) + 
-  geom_histogram(bins = 100, fill = "gray", color = "black") + 
-  labs(title = "TTR", x=NULL, y=NULL) +
-  xlab("TTR log2(CPM)") + ylab("# of samples") +
-  theme_bw() 
-
-path <- paste0("../../results/", tool, "/goi/TTR.voomcounts.histogram")
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 5)
 ```
 
 ```{r}
