@@ -42,7 +42,7 @@ library(UpSetR)
 library(xCell)
 library(devtools)
 #library(BrainInABlender) # see https://github.com/hagenaue/BrainInABlender 
-source(here::here("scripts/R/brain_blender_functions.R"))
+source(here::here("scripts/R/brain_blender_functions_modified.R"))
 library(reshape2)
 
 # paths, colors, shapes and more
@@ -87,11 +87,21 @@ keep <- c("NPID", "A", "T", "S", "ATS", "ATS_names")
 df <- metadata_ATS[, (names(metadata_ATS) %in% keep)]
 
 # Note that BinB cell type information is made in cell_type_enrichment script
+#metadata <-
+#  read.delim(
+ #   "/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_cellType_Zscore.txt"
+ # )
+
+# umbrella cell types rather than primary cell types 
+# metadata_BinB_umbrella_cellType_Zscore.txt
 metadata <-
   read.delim(
-    "/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_cellType_Zscore.txt"
+    "/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_umbrella_cellType_Zscore.txt"
   )
-
+metadata$lib.size.2 <- NULL
+metadata$norm.factors.2 <- NULL
+metadata$lib.size.1 <- NULL
+metadata$norm.factors.1 <- NULL
 # set factor levels
 metadata$TYPE <-
   factor(metadata$TYPE, levels = c("CONTROL", "PA", "AD", "LBD"))
@@ -108,4 +118,3 @@ metadata$ATS_names <-
       "amyloid + synuclein + tau"
     )
   )
-

@@ -220,7 +220,7 @@ saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
 ```
 
 # RIN check and library size
-```{r RIN_check}
+```{r RIN_check, warning=FALSE}
 # check if there is correlation between RIN and library size
 box <- dge.filtered.norm$samples
 
@@ -346,15 +346,18 @@ remove(box,
 
 # GOI gene of interest histogram
 ```{r GOI}
+lcpm <- edgeR::cpm(dge.filtered.norm$counts, log = TRUE)
+cpm <- edgeR::cpm(dge.filtered.norm$counts, log = FALSE)
+
 # using CPM data
 cpm <- as.data.frame(cpm)
 cpm$gene_id  <- rownames(cpm)
 cpm_genes <- merge(cpm, dge.filtered.norm$genes, by = "gene_id")
 goi <- subset(cpm_genes, gene_name == "TTR")
-goi <- as.vector(goi[2:620]) # get only sample counts data. Columns 2-620 (i.e. 619 samples)
+goi <- as.vector(goi[1:620]) # get only sample counts data. Columns 2-620 (i.e. 619 samples)
 goi_melt <- melt(goi) # transform 
 summary(goi_melt$value) 
-colnames(goi_melt)[1] <- "NPID"
+colnames(goi_melt)[2] <- "NPID"
 goi_melt_sample_info <-
   merge(goi_melt, dge.filtered.norm$samples, by = "NPID")
 df <-
@@ -375,10 +378,10 @@ lcpm <- as.data.frame(lcpm)
 lcpm$gene_id  <- rownames(lcpm)
 lcpm_genes <- merge(lcpm, dge.filtered.norm$genes, by = "gene_id")
 goi <- subset(lcpm_genes, gene_name == "TTR")
-goi <- as.vector(goi[2:620])
+goi <- as.vector(goi[1:620])
 goi_melt <- melt(goi)
 summary(goi_melt$value)
-colnames(goi_melt)[1] <- "NPID"
+colnames(goi_melt)[2] <- "NPID"
 goi_melt_sample_info <-
   merge(goi_melt, dge.filtered.norm$samples, by = "NPID")
 df <-

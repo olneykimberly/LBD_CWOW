@@ -16,38 +16,84 @@ knitr::opts_knit$set(root.dir = ".")
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding")
-min_expression <- "min_exp1"
-
-myContrasts <- c("LBDvsControl = LBD - CONTROL",
-  "LBDvsAD = LBD - AD",
-  "LBDvsPA = LBD - PA",
-  "ADvsControl = AD - CONTROL", 
-  "PAvsControl = PA - CONTROL",
-  "ADvsPA = AD - PA")
+condition <- c("")
 tool = c("star")
-typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
 # read in voom counts matrix & dge object 
 ```{r}
-dge.filtered.norm <-
-  readRDS(
-    paste0(
-      "../../rObjects/",
-      condition,
-      "_",
-      min_expression,
-      ".dge.filtered.norm.rds"
-    )
-  )
-info <- as.data.frame(dge.filtered.norm$samples)
-genes <- dge.filtered.norm$genes
-log2cpm.norm <- edgeR::cpm(dge.filtered.norm, log = TRUE)
-
-# read in voom counts matrix
-voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/protein_coding_min_exp1_BIC.voomCountsMatrix.rds")
+dge.filtered.norm <- readRDS(paste0("../../rObjects/dge.filtered.norm.rds"))
+voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/ATS.voomCountsMatrix.rds")
 ```
+
+```{r}
+# get the gene id that corresponds to the gene name 
+genes <- dge.filtered.norm$genes # gene information 
+goi <- subset(genes, gene_name == "TTR") # gene of interest 
+# subset counts 
+goi_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% goi)
+goi_melt <- reshape2::melt(goi_counts) # reshape data 
+names(goi_melt)[names(goi_melt) == "Var2"] <- "NPID" # rename columns to merge with metadata 
+names(goi_melt)[names(goi_melt) == "Var1"] <- "gene_id"
+df <- merge(goi_melt, metadata, by = "NPID")
+```
+
+```{r}
+column_variables <- c("ENSG00000118271.12") # gene_id to plot expression data for
+df$VaD <- as.factor(df$VaD) # make sure that the variable to compare between is a factor 
+my_comparisons <- list(c("0", "1")) # define comparisons for pairwise stats
+colors <- brewer.pal(n = 2, name = "RdBu") # colors red to blue 
+```
+# function violin jitter of gene expression 
+```{r}
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_id == j)
+  ggplot(df, aes(TYPE, value, fill = TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    theme_bw() +
+ #   theme(axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5, hjust=1)) +
+    ggtitle("TTR expression") +
+    xlab("TYPE") +
+    ylab(j) +
+    stat_compare_means() +
+    scale_fill_manual(values=colors) +
+    theme(legend.position = "none")
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/TTR.TYPE.pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 6.5))
+```
+# GOI gene of interest histogram
+```{r goi_hist}
+voomCounts <- readRDS(paste0("../../rObjects/", condition, ".voomCountsMatrix.rds"))
+voomCounts <- as.data.frame(voomCounts)
+voomCounts$gene_id  <- rownames(voomCounts)
+voom_genes <- merge(voomCounts, dge.filtered.norm$genes, by = "gene_id")
+goi <- subset(voom_genes, gene_name == "TTR")
+goi <- as.vector(goi[2:620])
+goi_melt <- melt(goi)
+summary(goi_melt$value)
+
+# histogram
+ggplot(goi_melt, aes(x = value)) + 
+  geom_histogram(bins = 100, fill = "gray", color = "black") + 
+  labs(title = "TTR", x=NULL, y=NULL) +
+  xlab("TTR log2(CPM)") + ylab("# of samples") +
+  theme_bw() 
+
+path <- paste0("../../results/", tool, "/goi/TTR.voomcounts.histogram")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 5)
+```
+
+#-----------------
+
 
 # read in genotype information
 ```{r}

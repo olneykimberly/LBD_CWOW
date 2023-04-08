@@ -1,0 +1,29 @@
+---
+title: "WGNCA"
+author: "Kimberly Olney, Ph.D."
+date: "03/31/2023"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+params:
+  args: myarg
+---
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+# Libraries
+```{r}
+BiocManager::install("WGCNA")
+library(WGNCA)
+```
+
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+source(here::here("scripts/R", "gtf_path.R"))
+condition <- c("")
+min_expression <- "min_exp1"
+tool <- "star"
+```

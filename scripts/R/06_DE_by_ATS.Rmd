@@ -29,11 +29,13 @@ design <-
       sex_inferred + 
       flowcell_and_lane + 
       Oligodendrocyte.Zscore +
-      Neuron_Interneuron.Zscore + 
-      Neuron_Projection.Zscore +
+      Neuron.Zscore + 
+      #Neuron_Interneuron.Zscore + 
+      #Neuron_Projection.Zscore +
       Mural.Zscore +
-      Astrocyte.Zscore +
-      PCT_INTRONIC_BASES,
+      Astrocyte.Zscore, 
+      #Neuron_All.Zscore +
+      #Oligodendrocyte_Immature.Zscore,
     dge.filtered.norm$samples
   )
 
@@ -55,11 +57,13 @@ colnames(design) <-
     "Batch6",
     "Batch7",
     "Oligodendrocyte.Zscore",
-    "Neuron_Interneuron.Zscore",
-    "Neuron_Projection.Zscore",
+    "Neuron.Zscore", 
+    #"Neuron_Interneuron.Zscore",
+    #"Neuron_Projection.Zscore",
     "Mural.Zscore", 
-    "Astrocyte.Zscore", 
-    "PCT_INTRONIC_BASES"
+    "Astrocyte.Zscore" 
+    #"Neuron_All.Zscore",
+    #"Oligodendrocyte_Immature.Zscore"
   )
 ```
 # Contrast
@@ -351,25 +355,4 @@ write.xlsx(list_of_datasets, file = paste0(
     "../../results/",
     tool,
     "/DEGs/", condition,".DEGs.FDRq0.05_logFC_0.25.xlsx"))
-```
-# GOI histogram
-```{r goi_hist}
-voomCounts <- readRDS(paste0("../../rObjects/", condition, ".voomCountsMatrix.rds"))
-voomCounts <- as.data.frame(voomCounts)
-voomCounts$gene_id  <- rownames(voomCounts)
-voom_genes <- merge(voomCounts, dge.filtered.norm$genes, by = "gene_id")
-goi <- subset(voom_genes, gene_name == "TTR")
-goi <- as.vector(goi[2:620])
-goi_melt <- melt(goi)
-summary(goi_melt$value)
-
-# histogram
-ggplot(goi_melt, aes(x = value)) + 
-  geom_histogram(bins = 100, fill = "gray", color = "black") + 
-  labs(title = "TTR", x=NULL, y=NULL) +
-  xlab("TTR log2(CPM)") + ylab("# of samples") +
-  theme_bw() 
-
-path <- paste0("../../results/", tool, "/goi/TTR.histogram")
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 5)
 ```

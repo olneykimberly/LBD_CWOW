@@ -18,7 +18,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables, warning=FALSE}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("ATS.BIC2") #  TYPE
+condition <- c("ATS") #  TYPE
 tool = c("star")
 ```
 # Read in DGE object & metadata
@@ -77,6 +77,7 @@ path <- paste0("../../results/", tool, "/voom/", condition, ".raw.voom")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 voomCounts <- voom_with_weights$E
 ```
+
 ```{r BIC, eval = FALSE}
 baseFormula <- ~ (1 | ATS_names)
 # Combine responses on *rows*
@@ -97,12 +98,14 @@ Y = with(
     Endothelial.Zscore,
     Microglia.Zscore,
     Mural.Zscore,
-    Neuron_All.Zscore,
-    Neuron_Interneuron.Zscore, 
-    Neuron_Projection.Zscore,
+    Neuron.Zscore,
+    #Neuron_All.Zscore,
+    #Neuron_Interneuron.Zscore, 
+    #Neuron_Projection.Zscore,
     Oligodendrocyte.Zscore,
-    Oligodendrocyte_Immature.Zscore,
-    RBC.Zscore
+    #Oligodendrocyte_Immature.Zscore,
+    RBC.Zscore,
+    Choroid_Plexus.Zscore
   )
 )
 
@@ -122,12 +125,14 @@ rownames(Y) <-
     "Endothelial.Zscore",
     "Microglia.Zscore",
     "Mural.Zscore",
-    "Neuron_All.Zscore",
-    "Neuron_Interneuron.Zscore", 
-    "Neuron_Projection.Zscore",
+    "Neuron.Zscore",
+    #"Neuron_All.Zscore",
+    #"Neuron_Interneuron.Zscore", 
+    #"Neuron_Projection.Zscore",
     "Oligodendrocyte.Zscore",
-    "Oligodendrocyte_Immature.Zscore",
-    "RBC.Zscore"
+    #"Oligodendrocyte_Immature.Zscore",
+    "RBC.Zscore",
+    "Choroid_Plexus.Zscore"
   )
 # variables to consider in the model
 # categorical variables must be modeled using (1|)
@@ -185,12 +190,13 @@ design <-
       sex_inferred + 
       flowcell_and_lane + 
       Oligodendrocyte.Zscore +
-      Neuron_Interneuron.Zscore + 
-      Neuron_Projection.Zscore +
+      Neuron.Zscore +  
+     # Neuron_Interneuron.Zscore + 
+     # Neuron_Projection.Zscore +
       Mural.Zscore +
-      Astrocyte.Zscore +
-      Neuron_All.Zscore +
-      Oligodendrocyte_Immature.Zscore,
+      Astrocyte.Zscore, 
+     # Neuron_All.Zscore +
+    #  Oligodendrocyte_Immature.Zscore,
     dge.filtered.norm$samples
   )
 
@@ -212,12 +218,13 @@ colnames(design) <-
     "Batch6",
     "Batch7",
     "Oligodendrocyte.Zscore",
-    "Neuron_Interneuron.Zscore",
-    "Neuron_Projection.Zscore",
+    "Neuron.Zscore",
+    #"Neuron_Interneuron.Zscore",
+    #"Neuron_Projection.Zscore",
     "Mural.Zscore", 
-    "Astrocyte.Zscore", 
-    "Neuron_All.Zscore",
-    "Oligodendrocyte_Immature.Zscore"
+    "Astrocyte.Zscore" 
+    #"Neuron_All.Zscore",
+    #"Oligodendrocyte_Immature.Zscore"
   )
 ```
 # Voom
@@ -231,12 +238,13 @@ form <- (
       sex_inferred + 
       flowcell_and_lane + 
       Oligodendrocyte.Zscore +
-      Neuron_Interneuron.Zscore + 
-      Neuron_Projection.Zscore +
+      Neuron.Zscore +
+      #Neuron_Interneuron.Zscore + 
+      #Neuron_Projection.Zscore +
       Mural.Zscore +
-      Astrocyte.Zscore +
-      Neuron_All.Zscore +
-      Oligodendrocyte_Immature.Zscore
+      Astrocyte.Zscore 
+      #Neuron_All.Zscore +
+      #Oligodendrocyte_Immature.Zscore
 )
 
 voom_cov <-
@@ -306,7 +314,7 @@ path <-
          "/voom/",
          condition,
          ".voom.eBayesFinalModel")
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 4)
+saveToPDF(paste0(path, ".pdf"), width = 9, height = 5)
 # Rather than worry about the normalization too much, better to explore the data. E.g. try a BCV plot to look for dispersion outliers, or try robust=TRUE with eBayes() to downweight dispersion outliers. 
 
 #disp <- estimateDisp(dge.filtered.norm, design, robust=TRUE)
@@ -419,12 +427,13 @@ form_varPart <- ~ (1|ATS_names) +
   (1|sex_inferred) + 
   (1|flowcell_and_lane) +
   Oligodendrocyte.Zscore +
-  Neuron_Interneuron.Zscore + 
-  Neuron_Projection.Zscore +
+  Neuron.Zscore +
+  #Neuron_Interneuron.Zscore + 
+  #Neuron_Projection.Zscore +
   Mural.Zscore +
-  Astrocyte.Zscore +
-  Neuron_All.Zscore +
-  Oligodendrocyte_Immature.Zscore
+  Astrocyte.Zscore 
+  #Neuron_All.Zscore +
+  #Oligodendrocyte_Immature.Zscore
 
 # fit model and extract variance percents
 varPart <- fitExtractVarPartModel(voom_cov, form_varPart, info,
@@ -474,12 +483,13 @@ form <- ~ ATS_names +
   sex_inferred + 
   flowcell_and_lane +
   Oligodendrocyte.Zscore +
-  Neuron_Interneuron.Zscore + 
-  Neuron_Projection.Zscore +
+  Neuron.Zscore + 
+ # Neuron_Interneuron.Zscore + 
+  #Neuron_Projection.Zscore +
   Mural.Zscore +
-  Astrocyte.Zscore +
-  Neuron_All.Zscore +
-  Oligodendrocyte_Immature.Zscore
+  Astrocyte.Zscore 
+ # Neuron_All.Zscore +
+ # Oligodendrocyte_Immature.Zscore
   
 C = canCorPairs( form, info)
 # Plot correlation matrix
@@ -563,12 +573,13 @@ form_PCA <- ~ ATS_names +
   sex_inferred + 
   flowcell_and_lane +
   Oligodendrocyte.Zscore +
-  Neuron_Interneuron.Zscore + 
-  Neuron_Projection.Zscore +
+  Neuron.Zscore +
+  #Neuron_Interneuron.Zscore + 
+  #Neuron_Projection.Zscore +
   Mural.Zscore +
   Astrocyte.Zscore +
-  Neuron_All.Zscore +
-  Oligodendrocyte_Immature.Zscore +
+  #Neuron_All.Zscore +
+  #Oligodendrocyte_Immature.Zscore +
   PC1 +
   PC2 +
   PC3 +

@@ -46,8 +46,8 @@ info <- info[,!names(info) %in%
                  "Choroid_Plexus.Zscore"
                )]
 biomart_gene_lengths <- read.delim("gene_id_gene_length_QC.txt")
-# see biomart_gene_length_and_GC_content.R for more information on how the text file was created
-# gene lenght is used to compute RPKM values for xCell 
+# see misc_scripts/biomart_gene_length_and_GC_content.R for more information on how the text file was created
+# gene length is used to compute RPKM values for xCell 
 ```
 # Voom transform 
 The voom method estimates the mean-variance relationship of the log-counts.
@@ -69,6 +69,7 @@ saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 voomCounts <- voom$E
 ```
 # Design simple
+There are no pure synuclein samples 
 ```{r design, warning=FALSE}
 design <-
   model.matrix(~ 0 + 
@@ -100,11 +101,13 @@ gene_info <-
 # compute RPKM values
 rpkm_protein_coding <-
   rpkm(dge.filtered.norm, gene.length = gene_info$length)
-
-# There is a gene that is duplicated. Remove or else run into errors.
+dim(rpkm_protein_coding)
+# There is a gene that is duplicated. Remove on of the duplicated genes 
+# or else run into errors.
 rownames(rpkm_protein_coding) <- gene_info$gene_name
 RPKM_no_dups <-
   rpkm_protein_coding[!duplicated(rownames(rpkm_protein_coding)),]
+dim(RPKM_no_dups)
 
 # output RPKM table
 write.table(
@@ -145,6 +148,8 @@ ggplot(xCell_dt, aes(x = colname, y = rowname, fill = value)) +
   geom_tile()
 ```
 re-plot the xCell enrichment scores by clustering samples using the euclidean method
+euclidean method of finding the greatest common divisor of two numbers by dividing the larger by the smaller, the smaller by the remainder, the first remainder by the second remainder, and so on until exact division is obtained whence the greatest common divisor is the exact divisor.
+Euclidean distance is defined as the distance between two points. In other words, the Euclidean distance between two points in the Euclidean space is defined as the length of the line segment between two points.
 ```{r replot_xCell}
 # Obtain euclidean distance 
 hc.cols <- hclust(dist(t(df)))
@@ -166,11 +171,22 @@ saveToPDF(paste0(path, ".pdf"), width = 12, height = 12)
 ```
 correlation of xCell enrichment scores among pathology types
 ```{r corr_xCell}
+# TYPE
 dge_xCell <- xCell_scores
 cormat <- round(cor(dge_xCell),2)
 melted_cormat <- reshape2::melt(cormat)
 ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
-  geom_tile()
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red")
+
+# ATS
+colnames(xCell_scores) <- dge.filtered.norm$samples$ATS_names
+dge_xCell <- xCell_scores
+cormat <- round(cor(dge_xCell),2)
+melted_cormat <- reshape2::melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red")
 ```
 save xCell cell type enrichment information
 ```{r save_xCell}
@@ -204,7 +220,6 @@ remove(
   voom,
   design,
   RPKM_no_dups,
-  genes,
   genes.gtf
 )
 ```
@@ -218,23 +233,17 @@ You must also have single character string indicating the species from which the
 - AveragePrimary_CellTypeIndex - averages each of the publication-specific cell type indices to create an average cell type index for each primary cell type \
 - A z-score measures how many standard deviations a data point is from the mean in a distribution \
 ```{r BinB, warning=FALSE}
-# save as a dataframe (required for Sir_UnMixALot function below)
+# save voom counts as a dataframe (required for Sir_UnMixALot function below)
 voomCounts <- as.data.frame(voomCounts)
 # add gene_id column to voomCounts
 voomCounts$gene_id <- rownames(voomCounts)
-
-# re-arrange data by disease type
-ByType <- dge.filtered.norm$samples %>% arrange(TYPE)
-ByType_colors <- setcolorder(voomCounts, ByType$NPID)
-ByType_colors$gene_id <- rownames(ByType_colors)
-
 # remove gene id version information
-ByType_colors$gene_id <- gsub("\\..*", "", ByType_colors$gene_id)
+voomCounts$gene_id <- gsub("\\..*", "", voomCounts$gene_id)
 # merge voom counts with gene_info
 voomCounts_gene_name <-
-  merge(ByType_colors, gene_info, by = "gene_id", all.x = T)
+  merge(voomCounts, gene_info, by = "gene_id")
 # change directory or else the results will output to the current working directory which is the scripts folder.
-setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender")
+setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender")
 # run brain in a blender
 BinB_voom <-
   Sir_UnMixALot(
@@ -243,48 +252,66 @@ BinB_voom <-
     geneColumn = 631, # column with gene name 
     species = "human"
   )
-#saveRDS(BinB_voom, file = paste0("../../rObjects/", condition, "BinB.rds"))
+
+# reset working directory
+setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/scripts/R")
+saveRDS(BinB_voom, file = paste0("../../rObjects/", condition, "BinB.umbrella_cell_types.rds"))
 ```
-reformat
-```{r format_BinB}
-zscores <- as.data.frame(t(BinB_voom[[2]]))
-colnames(zscores) <- paste0(colnames(zscores),".Zscore")
-zscores$group <- dge.filtered.norm$samples$ATS_names
-dge.filtered.norm$samples <- cbind(dge.filtered.norm$samples, zscores)
+reformat - note that this is for primary cell types, not umbrella cell type 
+```{r format_BinB, eval=FALSE}
+zscores_primary <- as.data.frame(t(BinB_voom[[2]]))
+colnames(zscores_primary) <- paste0(colnames(zscores_primary),".Zscore")
+zscores_primary$group <- dge.filtered.norm$samples$ATS_names
+dge.filtered.norm$samples <- cbind(dge.filtered.norm$samples, zscores_primary)
 ```
-### read BinB outputs
+## read BinB outputs
+Umbrella and primary cell type files includes the average cell type indices for each primary or umbrella cell type for each sample.
+the average of the publication- specific cell type indices.
+### umbrella cell type
+```{r read_BinB}
+zscores <- read_csv("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/Detailed_CellTypeAnalysisOutput/ZscoreInput_Expression_CellType_NoPrimaryOverlap.csv")
+# get the umbrella cell types  
+Umbrella.Cell.Type <- levels(factor(zscores$Umbrella.Cell.Type))
+# split by umbrella cell types
+CellType_splits_umbrella <- split(zscores, zscores$Umbrella.Cell.Type) # Split data frame in list
+for (i in 1:length(CellType_splits_umbrella)) {      # Run for-loop
+ # CellType_splits_umbrella[[i]] <- na.omit(CellType_splits_umbrella[[i]]) # remove rows with NA
+  # assign cellType variable, remove columns that are no longer needed 
+  CellType_splits_umbrella[[i]]  <- CellType_splits_umbrella[[i]] [ -c(1,3:15) ]
+  CellType_splits_umbrella[[i]] [,1] <- NULL
+  CellType_splits_umbrella[[i]] <- colMeans(CellType_splits_umbrella[[i]])
+  assign(paste0(Umbrella.Cell.Type[i], ".Umbrella"), CellType_splits_umbrella[[i]]) 
+}
+# combine the umbrella cell type information into one table
+umbrella_zscores <- rbind(Astrocyte.Umbrella, Endothelial.Umbrella, Microglia.Umbrella, Mural.Umbrella, Neuron.Umbrella, Oligodendrocyte.Umbrella, RBC.Umbrella, Choroid_Plexus.Umbrella)
+# transform table
+Zscore_CellType_melt <- melt(umbrella_zscores)
+```
+### primary cell type 
 This file includes the average cell type indices for each primary cell type for each sample.
 the average of the publication- specific cell type indices.
-```{r read_BinB}
+```{r, eval=FALSE}
 Zscore_Expression_CellType_NoPrimaryOverlap_Mean <-
   read_csv(
-    "/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender/Zscore_Expression_CellType_NoPrimaryOverlap_Mean.csv"
+    "/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/Zscore_Expression_CellType_NoPrimaryOverlap_Mean.csv"
   )
 # transform the data 
 Zscore_CellType_melt <- melt(Zscore_Expression_CellType_NoPrimaryOverlap_Mean)
-
-
-atest <- read_csv("/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/cell_type_enrichment/BrainInABlender/Detailed_CellTypeAnalysisOutput/ZscoreInput_Expression_CellType_NoPrimaryOverlap.csv")
-atest$Umbrella.Cell.Type
-for(i in c(15:length(ZscoreInput_Expression_CellType_NoPrimaryOverlap[1,]))){
-  atest[,i-14]<-tapply(ZscoreInput_Expression_CellType_NoPrimaryOverlap[,i], ZscoreInput_Expression_CellType_NoPrimaryOverlap$Tag, mean)
-}
-View(ZscoreInput_Expression_CellType_NoPrimaryOverlap)
 ```
 
 ### merge Zscore information with metadata to compare between disease groups
 ```{r zscore_byType}
 # get cell types
-Zscore_CellType_melt$...1 <- as.factor(Zscore_CellType_melt$...1)
+Zscore_CellType_melt$Var1 <- as.factor(Zscore_CellType_melt$Var1)
 # save levels to loop through to make a dataframe for each
-CellTypes <- levels(Zscore_CellType_melt$...1)
+CellTypes <- levels(Zscore_CellType_melt$Var1)
 
 for (i in CellTypes) {
   CellType_df <-
-    Zscore_CellType_melt[Zscore_CellType_melt$...1 == i,]
+    Zscore_CellType_melt[Zscore_CellType_melt$Var1 == i,]
   CellType_df <- CellType_df %>%
-    rename("CellType" = "...1",
-           "NPID" = "variable",
+    rename("CellType" = "Var1",
+           "NPID" = "Var2",
            "Zscore" = "value")
   colnames(CellType_df)[3] = paste0(i, ".Zscore")
   CellType_df$CellType <- NULL
@@ -294,7 +321,7 @@ for (i in CellTypes) {
     paste0(
       "../../results/",
       tool,
-      "/cell_type_enrichment/BrainInABlender/",
+      "/cell_type_enrichment/umbrella_cell_type_BrainInABlender/",
       condition,
       i,
       ".txt"
@@ -314,7 +341,7 @@ for (i in CellTypes) {
     paste0(
       "../../results/",
       tool,
-      "/cell_type_enrichment/BrainInABlender/",
+      "/cell_type_enrichment/umbrella_cell_type_BrainInABlender/",
       condition,
       i,
       ".txt"
@@ -330,22 +357,25 @@ for (i in CellTypes) {
 # put all cell type data frames into list
 df_list <-
   list(
-    Astrocyte,
-    Endothelial,
-    Microglia,
-    Mural,
-    Neuron_All,
-    Neuron_Interneuron,
-    Neuron_Projection,
-    Oligodendrocyte,
-    Oligodendrocyte_Immature,
-    RBC,
-    Choroid_Plexus
+    Astrocyte.Umbrella,
+    Endothelial.Umbrella,
+    Microglia.Umbrella,
+    Mural.Umbrella,
+    Neuron.Umbrella,
+    #Neuron_All,
+    #Neuron_Interneuron,
+    #Neuron_Projection,
+    Oligodendrocyte.Umbrella,
+    #Oligodendrocyte_Immature,
+    RBC.Umbrella,
+    Choroid_Plexus.Umbrella
   )
 # merge all data frames in list
 all_CellTypes <- df_list %>% reduce(full_join, by = 'NPID')
 # merge with metadata data info
 cellType <- merge(info, all_CellTypes, by = "NPID")
+cellType <- cellType %>% 
+  rename_with(~ gsub(".Umbrella.Zscore", ".Zscore", .x, fixed = TRUE))
 ```
 ### plot cell type zscore between disease groups
 ```{r BinB_violins}
@@ -355,11 +385,12 @@ metadata_continuous <-
     cellType$Endothelial.Zscore,
     cellType$Microglia.Zscore,
     cellType$Mural.Zscore,
-    cellType$Neuron_All.Zscore,
-    cellType$Neuron_Interneuron.Zscore,
-    cellType$Neuron_Projection.Zscore,
+    cellType$Neuron.Zscore,
+   #cellType$Neuron_All.Zscore,
+   #cellType$Neuron_Interneuron.Zscore,
+   #cellType$Neuron_Projection.Zscore,
     cellType$Oligodendrocyte.Zscore,
-    cellType$Oligodendrocyte_Immature.Zscore,
+   #cellType$Oligodendrocyte_Immature.Zscore,
     cellType$RBC.Zscore,
     cellType$Choroid_Plexus.Zscore
   )
@@ -370,11 +401,12 @@ column_variables <-
     "Endothelial.Zscore",
     "Microglia.Zscore",
     "Mural.Zscore",
-    "Neuron_All.Zscore",
-    "Neuron_Interneuron.Zscore",
-    "Neuron_Projection.Zscore",
+    "Neuron.Zscore",
+    #"Neuron_All.Zscore",
+    #"Neuron_Interneuron.Zscore",
+    #"Neuron_Projection.Zscore",
     "Oligodendrocyte.Zscore",
-    "Oligodendrocyte_Immature.Zscore",
+    #"Oligodendrocyte_Immature.Zscore",
     "RBC.Zscore",
     "Choroid_Plexus.Zscore"
   )
@@ -405,7 +437,7 @@ violin_plots <-
   Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/TYPE.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/TYPE.", .y, ".pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
@@ -438,7 +470,7 @@ violin_plots <-
   Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/TYPE.EachSex.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/TYPE.EachSex.", .y, ".pdf")) %>%
   flatten()
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 5.5))
@@ -461,7 +493,7 @@ violin_plots <-
   Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/TYPE.FacetSex.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/TYPE.FacetSex.", .y, ".pdf")) %>%
   flatten()
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 4, width = 8.5))
@@ -509,7 +541,7 @@ violin_plots <-
   Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/ATS.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/ATS.", .y, ".pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
@@ -535,7 +567,7 @@ violin_plots <-
   Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/BrainInABlender/ATS.FacetSex.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/ATS.FacetSex.", .y, ".pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
@@ -543,16 +575,16 @@ walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y,
 ```
 
 ### formal test of difference among groups 
-## Pairwise wilcoxon test
+#### Pairwise wilcoxon test
 Calculate pairwise comparisons between group levels with corrections for multiple testing.
 ```{r wilcox}
 # Pairwise wilcoxon test for cell type zscores and group
-df <- Matrix(0, 11, 6)
-rownames(df) <- colnames(all_CellTypes)[2:12]
+df <- Matrix(0, 7, 6)
+rownames(df) <- colnames(all_CellTypes)[2:8]
 colnames(df) <- c("CONTROL_vs_PA","CONTROL_vs_AD","CONTROL_vs_LBD",
                   "PA_vs_AD","PA_vs_LBD","AD_vs_LBD")
 all_CellTypes$TYPE <- cellType$TYPE
-for (i in colnames(all_CellTypes)[2:12]) {
+for (i in colnames(all_CellTypes)[2:8]) {
   pwt <- pairwise.wilcox.test(all_CellTypes[[i]], 
                               all_CellTypes$TYPE,
                               p.adjust.method = "BH")
@@ -571,7 +603,7 @@ write.table(pwt,
   paste0(
     "../../results/",
     tool,
-    "/cell_type_enrichment/BrainInABlender/",
+    "/cell_type_enrichment/umbrella_cell_type_BrainInABlender/",
     condition,
     "TYPE.pairwise_Wilcox_zscore_BH.tsv"
   ),
@@ -581,7 +613,7 @@ write.table(pwt,
 )
 ```
 
-## kruskal.test
+#### Kruskal.test
 The Kruskal-Wallis test is a nonparametric (distribution free) test, and is used 
 when the assumptions of one-way ANOVA are not met. Both the Kruskal-Wallis test 
 and one-way ANOVA assess for significant differences on a continuous dependent 
@@ -591,7 +623,7 @@ variable by a categorical independent variable (with two or more groups).
 df <- data.frame(matrix(ncol = 1, nrow = 0))
 colnames(df) <- c("kruskal.test.p.val")
 
-for (i in colnames(all_CellTypes)[2:12]) {
+for (i in colnames(all_CellTypes)[2:8]) {
   kt.pval <- kruskal.test(all_CellTypes[[i]] ~ TYPE, data = cellType)[[3]]
   print(kt.pval)
   df[i, "kruskal.test.p.val"] <- kt.pval
@@ -600,7 +632,7 @@ write.table(df,
   paste0(
     "../../results/",
     tool,
-    "/cell_type_enrichment/BrainInABlender/",
+    "/cell_type_enrichment/umbrella_cell_type_BrainInABlender/",
     condition,
     "TYPE.cellType.kruskal.test.p.val.tsv"
   ),
@@ -613,7 +645,7 @@ write.table(df,
 df <- data.frame(matrix(ncol = 1, nrow = 0))
 colnames(df) <- c("kruskal.test.p.val")
 
-for (i in colnames(all_CellTypes)[2:12]) {
+for (i in colnames(all_CellTypes)[2:8]) {
   kt.pval <- kruskal.test(all_CellTypes[[i]] ~ ATS_names, data = cellType)[[3]]
   print(kt.pval)
   df[i, "kruskal.test.p.val"] <- kt.pval
@@ -623,7 +655,7 @@ write.table(df,
   paste0(
     "../../results/",
     tool,
-    "/cell_type_enrichment/BrainInABlender/",
+    "/cell_type_enrichment/umbrella_cell_type_BrainInABlender/",
     condition,
     "ATS.cellType.kruskal.test.p.val.tsv"
   ),
@@ -638,7 +670,7 @@ write.table(df,
 BinB_ave_celltype <- as.data.frame(BinB_voom$AveragePrimary_CellTypeIndex)
 # heatmap of results 
 heatmap(as.matrix(BinB_ave_celltype))
-path <- paste0("../../results/", tool ,"/cell_type_enrichment/BrainInABlender/heatmap_AveragePrimary_CellTypeIndex")
+path <- paste0("../../results/", tool ,"/cell_type_enrichment/umbrella_cell_type_BrainInABlender/heatmap_AveragePrimary_CellTypeIndex")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 8)
 ```
 
@@ -646,10 +678,13 @@ saveToPDF(paste0(path, ".pdf"), width = 5, height = 8)
 ```{r save_BinB}
 write.table(
   cellType,
-  paste0("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_cellType_Zscore.txt"),
+  paste0("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_BinB_umbrella_cellType_Zscore.txt"),
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
 )
 ```
+# NOTE!! 
+Now go back to script 04a to create a new dge object that includes these cell type enrichment values. 
+Will need to edit the file_paths_and_colours to include the updated metadata that has the cell type enrichment values. 
 
