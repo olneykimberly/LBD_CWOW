@@ -28,7 +28,7 @@ voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rOb
 ```{r}
 # get the gene id that corresponds to the gene name 
 genes <- dge.filtered.norm$genes # gene information 
-goi <- subset(genes, gene_name == "TTR") # gene of interest 
+goi <- subset(genes, gene_name == "ENO2") # gene of interest 
 # subset counts 
 goi_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% goi)
 goi_melt <- reshape2::melt(goi_counts) # reshape data 
@@ -36,39 +36,76 @@ names(goi_melt)[names(goi_melt) == "Var2"] <- "NPID" # rename columns to merge w
 names(goi_melt)[names(goi_melt) == "Var1"] <- "gene_id"
 df <- merge(goi_melt, metadata, by = "NPID")
 ```
-
+# Brain weight and ENO2 expression
 ```{r}
-column_variables <- c("ENSG00000118271.12") # gene_id to plot expression data for
+ggplot(df, aes(Brain.wt, value, col = TYPE)) +
+    geom_point() +
+    theme_bw() +
+    ggtitle("ENO2 and Brain weight expression") +
+    xlab("Brain weight (kg)") +
+    ylab("lcpm ENO2") +
+    scale_fill_manual(values=TypeColors) 
+
+cor(df$Brain.wt, df$value, method = c("spearman"))
+cor.test(df$Brain.wt, df$value, method=c("spearman"))
+
+# is the data normally distributed 
+ggqqplot(df$Brain.wt, ylab = "Brain weight")
+ggqqplot(df$value, ylab = "ENO2 expression")
+res <- cor.test(df$Brain.wt, df$value, 
+                method = "pearson")
+res
+ggscatter(df, x = "Brain.wt", y = "value", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "spearman",
+          ylab = "lcpm ENO2", xlab = "Brain weight") 
+
+path <- paste0("../../results/clinical/ENO2_brainweight")
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 6)
+
+
+ggscatter(df, x = "Brain.wt", y = "value", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "spearman",
+          ylab = "lcpm ENO2", xlab = "Brain weight") + 
+  facet_grid(. ~ sex_inferred)
+path <- paste0("../../results/clinical/ENO2_brainweight_bySex")
+saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
+```
+# Gene_id for gene of interest 
+```{r}
+column_variables <- c("ENSG00000111674.9") # gene_id to plot expression data for
 df$VaD <- as.factor(df$VaD) # make sure that the variable to compare between is a factor 
 my_comparisons <- list(c("0", "1")) # define comparisons for pairwise stats
-colors <- brewer.pal(n = 2, name = "RdBu") # colors red to blue 
+#colors <- brewer.pal(n = 5, name = "Set2") # colors red to blue 
+colors <- TypeColors
 ```
-# function violin jitter of gene expression 
+# Function violin jitter of gene expression 
 ```{r}
 violin_plot_fun <- function(j) {
   df <- subset(df, gene_id == j)
   ggplot(df, aes(TYPE, value, fill = TYPE)) +
     geom_violin() +
     geom_boxplot(width = 0.1, outlier.shape=NA) + 
-    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
     theme_bw() +
- #   theme(axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5, hjust=1)) +
-    ggtitle("TTR expression") +
+    ggtitle("ENO2 expression") +
     xlab("TYPE") +
     ylab(j) +
     stat_compare_means() +
     scale_fill_manual(values=colors) +
-    theme(legend.position = "none")
+    theme(legend.position = "none") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 }
 violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/TTR.TYPE.pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.TYPE.pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
-                                    height = 5.5, width = 6.5))
+                                    height = 5.5, width = 8))
 ```
 # GOI gene of interest histogram
 ```{r goi_hist}
@@ -91,6 +128,61 @@ ggplot(goi_melt, aes(x = value)) +
 path <- paste0("../../results/", tool, "/goi/TTR.voomcounts.histogram")
 saveToPDF(paste0(path, ".pdf"), width = 8, height = 5)
 ```
+
+# By TYPE, GOI gene of interest histogram 
+```{r type_goi_hist}
+lcpm <- edgeR::cpm(dge.filtered.norm$counts, log = TRUE)
+cpm <- edgeR::cpm(dge.filtered.norm$counts, log = FALSE)
+
+# using CPM data
+cpm <- as.data.frame(cpm)
+cpm$gene_id  <- rownames(cpm)
+cpm_genes <- merge(cpm, dge.filtered.norm$genes, by = "gene_id")
+goi <- subset(cpm_genes, gene_name == "TTR")
+goi <- as.vector(goi[1:620]) # get only sample counts data. Columns 2-620 (i.e. 619 samples)
+goi_melt <- melt(goi) # transform 
+summary(goi_melt$value) 
+colnames(goi_melt)[2] <- "NPID"
+goi_melt_sample_info <-
+  merge(goi_melt, dge.filtered.norm$samples, by = "NPID")
+df <-
+  with(goi_melt_sample_info, goi_melt_sample_info[order(TYPE, NPID), ])
+df$NPID <- factor(df$NPID, levels = df$NPID)
+# column plot
+ggplot(df, aes(x = NPID, y = value, fill = TYPE)) +
+  geom_col() +
+  labs(title = "TTR", x = NULL, y = NULL) +
+  xlab("TYPE") + ylab("CPM") +
+  theme_bw() +
+  scale_fill_manual(values = TypeColors)
+path <- paste0("../../results/", tool, "/goi/TTR.CPM.bar")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 5)
+
+# using log2CPM data
+lcpm <- as.data.frame(lcpm)
+lcpm$gene_id  <- rownames(lcpm)
+lcpm_genes <- merge(lcpm, dge.filtered.norm$genes, by = "gene_id")
+goi <- subset(lcpm_genes, gene_name == "TTR")
+goi <- as.vector(goi[1:620])
+goi_melt <- melt(goi)
+summary(goi_melt$value)
+colnames(goi_melt)[2] <- "NPID"
+goi_melt_sample_info <-
+  merge(goi_melt, dge.filtered.norm$samples, by = "NPID")
+df <-
+  with(goi_melt_sample_info, goi_melt_sample_info[order(TYPE, NPID), ])
+df$NPID <- factor(df$NPID, levels = df$NPID)
+ggplot(df, aes(x = NPID, y = value, fill = TYPE)) +
+  geom_col() +
+  labs(title = "TTR", x = NULL, y = NULL) +
+  xlab("TYPE") + ylab("log2(CPM)") +
+  theme_bw() +
+  scale_fill_manual(values = TypeColors)
+path <- paste0("../../results/", tool, "/goi/TTR.log2CPM.bar")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 5)
+```
+
+
 
 #-----------------
 

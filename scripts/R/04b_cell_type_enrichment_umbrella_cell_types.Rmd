@@ -30,6 +30,9 @@ dge.filtered.norm <-
     )
   )
 info <- as.data.frame(dge.filtered.norm$samples)
+```
+# Clean up if needed 
+```{r clean_info}
 # drop columns with cell type information if it already exists 
 info <- info[,!names(info) %in%
                c(
@@ -45,6 +48,9 @@ info <- info[,!names(info) %in%
                  "RBC.Zscore",
                  "Choroid_Plexus.Zscore"
                )]
+```
+# Gene length information 
+```{r biomart}
 biomart_gene_lengths <- read.delim("gene_id_gene_length_QC.txt")
 # see misc_scripts/biomart_gene_length_and_GC_content.R for more information on how the text file was created
 # gene length is used to compute RPKM values for xCell 
@@ -54,7 +60,7 @@ The voom method estimates the mean-variance relationship of the log-counts.
 Generates a precision weight for each observation and enters these into the limma empirical Bayes analysis pipeline.
 voomWithDreamWeights() is the same as voom(), except that it allows random effects in the formula. limma::voomWithQualityWeights() includes observational and sample specific quality weights whereas voomWithDreamWeights only includes observational quality weights. 
 ```{r voom}
-formula <- (~ 0 + ATS_names)
+formula <- (~ 0 + TYPE)
 voom <-
   variancePartition::voomWithDreamWeights(
     counts = dge.filtered.norm$counts,
@@ -73,16 +79,13 @@ There are no pure synuclein samples
 ```{r design, warning=FALSE}
 design <-
   model.matrix(~ 0 + 
-      dge.filtered.norm$samples$ATS_names)
+      dge.filtered.norm$samples$TYPE)
 
 colnames(voom$design) <-
-  c("no_pathology",
-    "amyloid",
-    "amyloid_tau",
-    "pure_synuclein",
-    "low_amyloid_synuclein",
-    "high_amyloid_synuclein",
-    "amyloid_synuclein_tau")
+  c("CONTROL",
+    "PA",
+    "AD",
+    "LBD")
 ```
 # RPKM values
 ```{r RPKM}
@@ -105,6 +108,9 @@ dim(rpkm_protein_coding)
 # There is a gene that is duplicated. Remove on of the duplicated genes 
 # or else run into errors.
 rownames(rpkm_protein_coding) <- gene_info$gene_name
+
+duplicated_gene <- gene_info$gene_name[duplicated(gene_info$gene_name)]
+
 RPKM_no_dups <-
   rpkm_protein_coding[!duplicated(rownames(rpkm_protein_coding)),]
 dim(RPKM_no_dups)
@@ -252,7 +258,6 @@ BinB_voom <-
     geneColumn = 631, # column with gene name 
     species = "human"
   )
-
 # reset working directory
 setwd("/research/labs/neurology/fryer/m239830/LBD_CWOW/scripts/R")
 saveRDS(BinB_voom, file = paste0("../../rObjects/", condition, "BinB.umbrella_cell_types.rds"))
@@ -302,17 +307,22 @@ Zscore_CellType_melt <- melt(Zscore_Expression_CellType_NoPrimaryOverlap_Mean)
 ### merge Zscore information with metadata to compare between disease groups
 ```{r zscore_byType}
 # get cell types
-Zscore_CellType_melt$Var1 <- as.factor(Zscore_CellType_melt$Var1)
+Zscore_CellType_melt$CellType <- as.factor(Zscore_CellType_melt$Var1)
+Zscore_CellType_melt$Var1 <- NULL # remove extra column
+# reorder data
+Zscore_CellType_melt <- Zscore_CellType_melt[, c(3, 1, 2)]
 # save levels to loop through to make a dataframe for each
-CellTypes <- levels(Zscore_CellType_melt$Var1)
+CellTypes <- levels(Zscore_CellType_melt$CellType)
+
+colnames(Zscore_CellType_melt)
+
+Zscore_CellType_melt <- setnames(Zscore_CellType_melt, 
+         old =c('CellType','Var2','value'), 
+         new = c('CellType','NPID','Zscore'))
 
 for (i in CellTypes) {
   CellType_df <-
-    Zscore_CellType_melt[Zscore_CellType_melt$Var1 == i,]
-  CellType_df <- CellType_df %>%
-    rename("CellType" = "Var1",
-           "NPID" = "Var2",
-           "Zscore" = "value")
+    Zscore_CellType_melt[Zscore_CellType_melt$CellType == i,]
   colnames(CellType_df)[3] = paste0(i, ".Zscore")
   CellType_df$CellType <- NULL
   CellType_df$NPID <- gsub(".", "-", CellType_df$NPID, fixed = TRUE)
@@ -362,11 +372,7 @@ df_list <-
     Microglia.Umbrella,
     Mural.Umbrella,
     Neuron.Umbrella,
-    #Neuron_All,
-    #Neuron_Interneuron,
-    #Neuron_Projection,
     Oligodendrocyte.Umbrella,
-    #Oligodendrocyte_Immature,
     RBC.Umbrella,
     Choroid_Plexus.Umbrella
   )
@@ -374,6 +380,7 @@ df_list <-
 all_CellTypes <- df_list %>% reduce(full_join, by = 'NPID')
 # merge with metadata data info
 cellType <- merge(info, all_CellTypes, by = "NPID")
+cellType$Neuron.Zscore <- NULL
 cellType <- cellType %>% 
   rename_with(~ gsub(".Umbrella.Zscore", ".Zscore", .x, fixed = TRUE))
 ```
@@ -386,15 +393,12 @@ metadata_continuous <-
     cellType$Microglia.Zscore,
     cellType$Mural.Zscore,
     cellType$Neuron.Zscore,
-   #cellType$Neuron_All.Zscore,
-   #cellType$Neuron_Interneuron.Zscore,
-   #cellType$Neuron_Projection.Zscore,
     cellType$Oligodendrocyte.Zscore,
-   #cellType$Oligodendrocyte_Immature.Zscore,
     cellType$RBC.Zscore,
     cellType$Choroid_Plexus.Zscore
   )
 
+metadata_continuous
 column_variables <-
   c(
     "Astrocyte.Zscore",
@@ -402,11 +406,7 @@ column_variables <-
     "Microglia.Zscore",
     "Mural.Zscore",
     "Neuron.Zscore",
-    #"Neuron_All.Zscore",
-    #"Neuron_Interneuron.Zscore",
-    #"Neuron_Projection.Zscore",
     "Oligodendrocyte.Zscore",
-    #"Oligodendrocyte_Immature.Zscore",
     "RBC.Zscore",
     "Choroid_Plexus.Zscore"
   )
@@ -422,22 +422,23 @@ my_comparisons <-
 
 violin_plot_fun <- function(i, j) {
   ggplot(cellType, aes(TYPE, i, fill = TYPE)) +
-    geom_violin() +
-    geom_boxplot(width = 0.1, outlier.shape = NA) + 
-    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    geom_violin(alpha = 0.5) +
+    geom_boxplot(width = 0.1, outlier.shape = NA, color = "black") +
+    geom_jitter(shape = 16, position = position_jitter(0.2), alpha = 0.2) +
     theme_bw() + 
     ggtitle(j) +
     xlab("Disease group") +
     ylab(j) +
-    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    stat_compare_means() +
+    #stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
     scale_fill_manual(values=TypeColors) +
-    theme(legend.position = "none")
+    theme(legend.position = "none") 
 }
 violin_plots <-
   Map(violin_plot_fun, i = metadata_continuous, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/TYPE.", .y, ".pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/star/cell_type_enrichment/umbrella_cell_type_BrainInABlender/TYPE.", .y, ".Kruskal-Wallis.pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
@@ -477,14 +478,15 @@ walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y,
 
 violin_plot_fun <- function(i, j) {
   ggplot(cellType, aes(TYPE, i, fill = TYPE)) +
-    geom_violin() +
-    geom_boxplot(width = 0.1, outlier.shape = NA) + 
-    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    geom_violin(alpha = 0.5) +
+    geom_boxplot(width = 0.1, outlier.shape = NA, color = "black") +
+    geom_jitter(shape = 16, position = position_jitter(0.2), alpha = 0.2) +
     theme_bw() + 
     ggtitle(j) +
     xlab("Disease group") +
     ylab(j) +
-    stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
+    stat_compare_means() +
+    #stat_compare_means(comparisons = my_comparisons, method="wilcox.test") +
     scale_fill_manual(values=TypeColors) +
     theme(legend.position = "none") +
     facet_grid(. ~ sex_inferred)
@@ -575,16 +577,16 @@ walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y,
 ```
 
 ### formal test of difference among groups 
-#### Pairwise wilcoxon test
+#### TYPE Pairwise wilcoxon test
 Calculate pairwise comparisons between group levels with corrections for multiple testing.
 ```{r wilcox}
 # Pairwise wilcoxon test for cell type zscores and group
-df <- Matrix(0, 7, 6)
-rownames(df) <- colnames(all_CellTypes)[2:8]
+df <- Matrix(0, 8, 6)
+rownames(df) <- colnames(all_CellTypes)[2:9]
 colnames(df) <- c("CONTROL_vs_PA","CONTROL_vs_AD","CONTROL_vs_LBD",
                   "PA_vs_AD","PA_vs_LBD","AD_vs_LBD")
 all_CellTypes$TYPE <- cellType$TYPE
-for (i in colnames(all_CellTypes)[2:8]) {
+for (i in colnames(all_CellTypes)[2:9]) {
   pwt <- pairwise.wilcox.test(all_CellTypes[[i]], 
                               all_CellTypes$TYPE,
                               p.adjust.method = "BH")
@@ -599,6 +601,7 @@ for (i in colnames(all_CellTypes)[2:8]) {
 pwt <- df
 remove(df)
 pwt <- as.data.frame(as.matrix(pwt))
+rownames(pwt) <- colnames(all_CellTypes)[2:9]
 write.table(pwt, 
   paste0(
     "../../results/",
@@ -609,10 +612,45 @@ write.table(pwt,
   ),
   sep = "\t",
   quote = FALSE,
-  row.names = FALSE
+  row.names = TRUE
 )
 ```
-
+#### ATS Pairwise wilcoxon test
+```{r wilcox_ATS}
+# Pairwise wilcoxon test for cell type zscores and group
+df <- Matrix(0, 8, 5)
+rownames(df) <- colnames(all_CellTypes)[2:9]
+colnames(df) <- c("NP_vs_A","NP_vs_AT","NP_vs_lowAS",
+                  "NP_vs_highAS","NP_vs_ATS")
+all_CellTypes$ATS_names <- cellType$ATS_names
+for (i in colnames(all_CellTypes)[2:9]) {
+  pwt <- pairwise.wilcox.test(all_CellTypes[[i]], 
+                              all_CellTypes$ATS_names,
+                              p.adjust.method = "BH")
+  pwt <- pwt$p.value
+  df[i,"NP_vs_A"] <- pwt["amyloid","no pathology"]
+  df[i,"NP_vs_AT"] <- pwt["amyloid + tau","no pathology"]
+  df[i,"NP_vs_lowAS"] <- pwt["low amyloid + synuclein","no pathology"]
+  df[i,"NP_vs_highAS"] <- pwt["high amyloid + synuclein","no pathology"]
+  df[i,"NP_vs_ATS"] <- pwt["amyloid + synuclein + tau","no pathology"]
+}
+pwt <- df
+remove(df)
+pwt <- as.data.frame(as.matrix(pwt))
+rownames(pwt) <- colnames(all_CellTypes)[2:9]
+write.table(pwt, 
+  paste0(
+    "../../results/",
+    tool,
+    "/cell_type_enrichment/umbrella_cell_type_BrainInABlender/",
+    condition,
+    "ATS.pairwise_Wilcox_zscore_BH.tsv"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = TRUE
+)
+```
 #### Kruskal.test
 The Kruskal-Wallis test is a nonparametric (distribution free) test, and is used 
 when the assumptions of one-way ANOVA are not met. Both the Kruskal-Wallis test 
@@ -623,7 +661,7 @@ variable by a categorical independent variable (with two or more groups).
 df <- data.frame(matrix(ncol = 1, nrow = 0))
 colnames(df) <- c("kruskal.test.p.val")
 
-for (i in colnames(all_CellTypes)[2:8]) {
+for (i in colnames(all_CellTypes)[2:9]) {
   kt.pval <- kruskal.test(all_CellTypes[[i]] ~ TYPE, data = cellType)[[3]]
   print(kt.pval)
   df[i, "kruskal.test.p.val"] <- kt.pval
@@ -645,7 +683,7 @@ write.table(df,
 df <- data.frame(matrix(ncol = 1, nrow = 0))
 colnames(df) <- c("kruskal.test.p.val")
 
-for (i in colnames(all_CellTypes)[2:8]) {
+for (i in colnames(all_CellTypes)[2:9]) {
   kt.pval <- kruskal.test(all_CellTypes[[i]] ~ ATS_names, data = cellType)[[3]]
   print(kt.pval)
   df[i, "kruskal.test.p.val"] <- kt.pval

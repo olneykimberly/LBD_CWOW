@@ -19,6 +19,7 @@ knitr::opts_knit$set(root.dir = ".")
 sourcing file_paths_and_colours will load the libraries and user defined variables for colors of the graphs 
 ```{r set_variables, message=FALSE, warning=FALSE, tidy=TRUE}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
+remove(metadata, metadata_ATS, df)
 ```
 # Read data
 ```{r read_data, message=FALSE, warning=FALSE, tidy=TRUE}
@@ -487,14 +488,14 @@ saveToPDF(paste0(path, ".pdf"), width = 7, height = 5)
 ```{r message=FALSE, warning=FALSE, tidy=TRUE}
 # pie chart
 data <- df %>%
-  group_by(ATS) %>%
+  group_by(ATS_names) %>%
   dplyr::count() %>%
   ungroup() %>%
   mutate(perc = `n` / sum(`n`)) %>%
   arrange(perc) %>%
   mutate(labels = scales::percent(perc))
 
-pie <- ggplot(data, aes(x = "", y = perc, fill = ATS)) +
+pie <- ggplot(data, aes(x = "", y = perc, fill = ATS_names)) +
   geom_col(color = "black") +
   geom_label(
     aes(label = labels),
@@ -516,8 +517,8 @@ ggarrange(bar,
           ncol = 2,
           widths = c(2.5, 1))
 
-path <- paste0("../../results/clinical/ATS.RNA.count")
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 6)
+path <- paste0("../../results/clinical/ATS.RNA.count.pie")
+saveToPDF(paste0(path, ".pdf"), width = 9, height = 6)
 
 # clean up
 remove(bar, data, pie) # do not remove df, used for split by sex 

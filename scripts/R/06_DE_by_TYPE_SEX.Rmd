@@ -1,5 +1,5 @@
 ---
-title: "Differential expression in CWOW samples with effect of sex"
+title: "Differential expression in CWOW samples"
 author: "Kimberly Olney, Ph.D."
 date: "09/30/2022"
 output:
@@ -18,12 +18,9 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("protein_coding_ATS")
-min_expression <- "min_exp1"
+condition <- c("TYPE.SEX")
 tool <- "star"
-
-dge.filtered.norm <- readRDS(paste0("../../rObjects/", condition, "_", min_expression, ".dge.filtered.norm.rds"))
-metadata <- dge.filtered.norm$samples
+dge.filtered.norm <- readRDS(paste0("../../rObjects/dge.filtered.norm.rds"))
 
 # add a new column with TYPE + sex inferred
 dge.filtered.norm$samples$TYPE_sex_inferred <-
@@ -44,28 +41,24 @@ dge.filtered.norm$samples$TYPE_sex_inferred <-
       "LBD_female"
     )
   )
-
 ```
-# Design matrix
+# design
 ```{r}
-# make a new condition for saving outputs
-condition <- c("protein_coding_TYPE_SEX") #  protein_coding, okay to leave ATS names 
-
 design <-
-  model.matrix(~ 0 +
-      TYPE_sex_inferred +
+  model.matrix(~ 0 + 
+      TYPE_sex_inferred + 
       flowcell_and_lane + 
-      scale(Age) +
-      Neuron_All.Zscore +
-   #   Oligodendrocyte_Immature.Zscore +
-      Astrocyte.Zscore +
-      Endothelial.Zscore +
-      RBC.Zscore,
+      PCT_CODING_BASES +
+      PCT_INTERGENIC_BASES + 
+      PCT_INTRONIC_BASES +
+      RIN +
+      Age,
     dge.filtered.norm$samples
   )
 
 colnames(design) <-
-  c("CONTROL_male", 
+  c(
+    "CONTROL_male", 
     "CONTROL_female", 
     "AD_male", 
     "AD_female", 
@@ -73,7 +66,6 @@ colnames(design) <-
     "PA_female", 
     "LBD_male",
     "LBD_female",
- #   "RIN",
     "Batch1",
     "Batch2",
     "Batch3",
@@ -81,17 +73,15 @@ colnames(design) <-
     "Batch5",
     "Batch6",
     "Batch7",
-    "Age",
-    "Neuron_All.Zscore",
- #   "Oligodendrocyte_Immature.Zscore",
-    "Astrocyte.Zscore", 
-    "Endothelial.Zscore", 
-    "RBC.Zscore"
+    "PCT_CODING_BASES", 
+    "PCT_INTERGENIC_BASES", 
+    "PCT_INTRONIC_BASES",
+    "RIN",
+    "Age" 
   )
 ```
-# contrast
+# Contrast
 ```{r}
-colnames(design)
 contrasts <- makeContrasts(
   LBDvsControl_no_sex_correction = (LBD_male + LBD_female)/2 - (CONTROL_male + CONTROL_female)/2,
   LBDvsAD_no_sex_correction  = (LBD_male + LBD_female)/2 - (AD_male + AD_female)/2,
@@ -122,12 +112,12 @@ contrasts <- makeContrasts(
   LBDvsPA_sex_interaction = ((LBD_female - PA_female ) - (LBD_male - PA_male)),
   ADvsPA_sex_interaction = ((AD_female - PA_female) - (AD_male - PA_male)),
   levels = colnames(design))
-
+contrasts
 allComparisons <- colnames(contrasts)
 ```
 
 # Volcano plots
-```{r}
+```{r volcano, warning=FALSE}
 for (i in allComparisons) {
   group1_vs_group2 <-
     read.delim(
@@ -136,7 +126,7 @@ for (i in allComparisons) {
         tool,
         "/DEGs/",
         condition,
-        "_BIC_",
+        "_",
         i,
         "_gene_DEGs_FDRq1.00.txt"
       )
@@ -187,6 +177,7 @@ for (i in allComparisons) {
                             na.rm = TRUE)))
     negFC <- c(-.25)
     posFC <- c(.25) 
+    i <- gsub("_", " ", i)
     p <-
       ggplot(data = data,
              aes(
@@ -202,12 +193,7 @@ for (i in allComparisons) {
         title = "",
         x = expression(log[2](FC)),
         y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
-      ) +
-      theme(axis.title.x = element_text(size = 10),
-        axis.text.x = element_text(size = 10),
-        axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        plot.title = element_text(size = 10)) +
+      )  +
       geom_hline(yintercept = hadjpval,
                  #  horizontal line
                  colour = "#000000",
@@ -220,7 +206,7 @@ for (i in allComparisons) {
                  #  horizontal line
                  colour = "#000000",
                  linetype = "dashed") +
-      ggtitle(paste0(condition, " ", i, "\n", "adj.P.Val < 0.05 & absolute log2FC > 0.25")) +
+      ggtitle(paste0(i)) +
       geom_text_repel(
         data = up10,
         aes(
@@ -270,7 +256,7 @@ for (i in allComparisons) {
         max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
       )
     p
-    
+    i <- gsub(" ", "_", i)
     # save
     path <-
       paste0(
@@ -289,10 +275,198 @@ for (i in allComparisons) {
     dev.off()
     
     print(paste("i =", i))
-    
   }
 } 
 ```
 
-```{r}
+```{r cleanup}
+# clean up
+remove(up, up10, upFold, group1_vs_group2, downFold, down10, data, p)
 ```
+# Comparisons list 
+```{r comparison_lists, eval=FALSE}
+# within each sex 
+WithinEachSexComparisons <- c("female_XX_PAvsControl", "female_XX_ADvsControl", "female_XX_LBDvsControl", "female_XX_ADvsPA", "female_XX_LBDvsPA", "female_XX_LBDvsAD", "male_XY_PAvsControl", "male_XY_ADvsControl", "male_XY_LBDvsControl", "male_XY_ADvsPA", "male_XY_LBDvsPA", "male_XY_LBDvsAD")
+
+# FvsM within each TYPE
+FvsM_Comparisons <- c("female_Control_vs_male_Control", "female_PA_vs_male_PA", "female_AD_vs_male_AD", "female_LBD_vs_male_LBD")
+
+# sex interaction
+SexInteraction <- c("PAvsControl_sex_interaction","ADvsControl_sex_interaction","LBDvsControl_sex_interaction","ADvsPA_sex_interaction","ADvsPA_sex_interaction","LBDvsAD_sex_interaction")
+```
+
+# Make excel table
+```{r excel}
+# first read in the files
+for (i in allComparisons) {
+  filepath <- paste0("../../results/",tool,
+    "/DEGs/", condition, "_", i,
+    "_gene_DEGs_FDRq1.00.txt"
+  )
+  assign(paste0(i),
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ))
+}
+```
+make list for each comparisons groups 
+each new list will be separate excel table 
+```{r}
+list_of_datasets <- list(
+"female_XX_PAvsControl" = female_XX_PAvsControl,
+"female_XX_ADvsControl" = female_XX_ADvsControl,
+"female_XX_LBDvsControl" = female_XX_LBDvsControl,
+"female_XX_ADvsPA" = female_XX_ADvsPA,
+"female_XX_LBDvsPA" =  female_XX_LBDvsPA, 
+"female_XX_LBDvsAD" = female_XX_LBDvsAD,
+"male_XY_PAvsControl" = male_XY_PAvsControl,
+"male_XY_ADvsControl" = male_XY_ADvsControl,
+"male_XY_LBDvsControl" = male_XY_LBDvsControl,
+"male_XY_ADvsPA" = male_XY_ADvsPA,
+"male_XY_LBDvsPA" =  male_XY_LBDvsPA, 
+"male_XY_LBDvsAD" = male_XY_LBDvsAD)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_WithinEachSexComparisons.DEGs.FDRq1.00.xlsx"))
+remove(list_of_datasets)
+
+
+list_of_datasets <- list(
+"FvsM_Control" = female_Control_vs_male_Control,
+"FvsM_PA" = female_PA_vs_male_PA,
+"FvsM_AD" = female_AD_vs_male_AD,
+"FvsM_LBD" = female_LBD_vs_male_LBD)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_FvsM_Comparisons.DEGs.FDRq1.00.xlsx"))
+remove(list_of_datasets)
+
+
+list_of_datasets <- list(
+"FvsM_Control" = female_Control_vs_male_Control,
+"FvsM_PA" = female_PA_vs_male_PA,
+"FvsM_AD" = female_AD_vs_male_AD,
+"FvsM_LBD" = female_LBD_vs_male_LBD)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_FvsM_Comparisons.DEGs.FDRq1.00.xlsx"))
+remove(list_of_datasets)
+
+
+list_of_datasets <- list(
+"PAvsControl_sex_interaction" = PAvsControl_sex_interaction,
+"ADvsControl_sex_interaction" = ADvsControl_sex_interaction,
+"LBDvsControl_sex_interaction" = LBDvsControl_sex_interaction,
+"ADvsPA_sex_interaction" = ADvsPA_sex_interaction,
+"LBDvsPA_sex_interaction" = LBDvsPA_sex_interaction,
+"LBDvsAD_sex_interaction" = LBDvsAD_sex_interaction)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_SexInteraction.DEGs.FDRq1.00.xlsx"))
+remove(list_of_datasets)
+```
+clean up
+```{r cleanup_excel}
+remove(
+female_XX_PAvsControl,
+female_XX_ADvsControl,
+female_XX_LBDvsControl,
+female_XX_ADvsPA,
+female_XX_LBDvsPA,
+female_XX_LBDvsAD,
+male_XY_PAvsControl,
+male_XY_ADvsControl,
+male_XY_LBDvsControl,
+male_XY_ADvsPA,
+male_XY_LBDvsPA,
+male_XY_LBDvsAD,
+female_Control_vs_male_Control,
+female_PA_vs_male_PA,
+female_AD_vs_male_AD,
+female_LBD_vs_male_LBD,
+PAvsControl_sex_interaction,
+ADvsControl_sex_interaction,
+LBDvsControl_sex_interaction,
+ADvsPA_sex_interaction,
+LBDvsPA_sex_interaction,
+LBDvsAD_sex_interaction)
+```
+# Excel table of significant DEGs
+```{r}
+# first read in the files
+for (i in allComparisons) {
+  filepath <- paste0("../../results/",tool,
+    "/DEGs/", condition, "_", i,
+    "_gene_DEGs_FDRq0.05_logFC_0.25.txt"
+  )
+  assign(paste0(i),
+         tryCatch(
+         read.delim(
+           filepath,
+           header = TRUE,
+           sep = "\t",
+           stringsAsFactors = FALSE
+         ), error=function(e) NULL))
+}
+list_of_datasets <- list(
+"female_XX_PAvsControl" = female_XX_PAvsControl,
+"female_XX_ADvsControl" = female_XX_ADvsControl,
+"female_XX_LBDvsControl" = female_XX_LBDvsControl,
+"female_XX_ADvsPA" = female_XX_ADvsPA,
+"female_XX_LBDvsPA" =  female_XX_LBDvsPA, 
+"female_XX_LBDvsAD" = female_XX_LBDvsAD,
+"male_XY_PAvsControl" = male_XY_PAvsControl,
+"male_XY_ADvsControl" = male_XY_ADvsControl,
+"male_XY_LBDvsControl" = male_XY_LBDvsControl,
+"male_XY_ADvsPA" = male_XY_ADvsPA,
+"male_XY_LBDvsPA" =  male_XY_LBDvsPA, 
+"male_XY_LBDvsAD" = male_XY_LBDvsAD)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_WithinEachSexComparisons.DEGs.FDRq0.05_logFC_0.25.xlsx"))
+remove(list_of_datasets)
+
+list_of_datasets <- list(
+"FvsM_Control" = female_Control_vs_male_Control,
+"FvsM_PA" = female_PA_vs_male_PA,
+"FvsM_AD" = female_AD_vs_male_AD,
+"FvsM_LBD" = female_LBD_vs_male_LBD)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_FvsM_Comparisons.DEGs.FDRq0.05_logFC_0.25.xlsx"))
+remove(list_of_datasets)
+
+list_of_datasets <- list(
+"FvsM_Control" = female_Control_vs_male_Control,
+"FvsM_PA" = female_PA_vs_male_PA,
+"FvsM_AD" = female_AD_vs_male_AD,
+"FvsM_LBD" = female_LBD_vs_male_LBD)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_FvsM_Comparisons.DEGs.FDRq0.05_logFC_0.25.xlsx"))
+remove(list_of_datasets)
+
+list_of_datasets <- list(
+"PAvsControl_sex_interaction" = PAvsControl_sex_interaction,
+"ADvsControl_sex_interaction" = ADvsControl_sex_interaction,
+"LBDvsControl_sex_interaction" = LBDvsControl_sex_interaction,
+"ADvsPA_sex_interaction" = ADvsPA_sex_interaction,
+"LBDvsPA_sex_interaction" = LBDvsPA_sex_interaction,
+"LBDvsAD_sex_interaction" = LBDvsAD_sex_interaction)
+write.xlsx(list_of_datasets, file = paste0(
+    "../../results/",
+    tool,
+    "/DEGs/", condition,"_SexInteraction.DEGs.FDRq0.05_logFC_0.25.xlsx"))
+remove(list_of_datasets)
+```
+

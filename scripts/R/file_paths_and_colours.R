@@ -8,10 +8,10 @@ library(ggrepel)
 library(ggplot2)
 library(gplots)
 library(grDevices)
-require(philentropy)
+require(philentropy) #install.packages("philentropy")
 library(rtracklayer)
 library(stringr)
-require(variancePartition)
+require(variancePartition) # BiocManager::install("variancePartition")
 library(reshape)
 library(Glimma)
 library(plyr)
@@ -24,25 +24,34 @@ library(vroom)
 library(matrixStats)
 library("data.table")
 library(DESeq2)
-library(DEGreport)
-library(dittoSeq)
+library(dittoSeq) #BiocManager::install("dittoSeq")
 library(Hmisc)
-library(mvIC)
 library(tidyr)
-library(wesanderson)
 library(gridExtra)
 library(grid)
 require(openxlsx)
 library(UpSetR)
-
+library(mvIC) 
+library(RColorBrewer)
+# Install information
+#library(vctrs, lib.loc = "/usr/local/biotools/rpackages/R-4.2.2-2023-02-01")
+#install.packages("remotes")
+#remotes::install_github("GabrielHoffman/mvIC")
+#library("llapack")
+#remotes::install_github("GabrielHoffman/mvIC")
+#BiocManager::install("ShrinkCovMat")
+#devtools::install_github("gzt/CholWishart", lib = "/usr/local/biotools/rpackages/R-4.2.2-2023-02-01")
+#install.packages('CholWishart')
+#library(wesanderson)
+#library(DEGreport)
 
 # To install run:
-# devtools::install_github('dviraran/xCell')
+#devtools::install_github('dviraran/xCell')
 # devtools::install_github("hagenaue/BrainInABlender")
 library(xCell)
 library(devtools)
 #library(BrainInABlender) # see https://github.com/hagenaue/BrainInABlender 
-source(here::here("scripts/R/brain_blender_functions_modified.R"))
+source(here::here("/research/labs/neurology/fryer/m239830/tools/BrainInABlender/R/Sir_UnMixALot.R"))
 library(reshape2)
 
 # paths, colors, shapes and more
@@ -51,15 +60,15 @@ AD <- "AD"
 PA <- "PA"
 CONTROL <- "CONTROL"
 control_color <- "#4682B4" # gray
-AD_color <- "#B4AF46" # yellow gold
-PA_color <- "#B4464B" # brown gold
+AD_color <- "#B4464B" # yellow gold
+PA_color <- "#B4AF46" # brown gold
 LBD_color <- "gray35" # green
 control_shape <- c(15) # square
 AD_shape <- c(16) # circle
 PA_shape <- c(17) # triangle
 LBD_shape <- c(18) # diamond
 
-TypeColors <- c("#4682B4", "#B4464B", "#B4AF46", "gray35")
+TypeColors <- c("#4682B4", "#B4AF46","#B4464B", "gray35")
 SexColors <- c("#490092", "#D55E00")
 colorbindColors <- dittoColors()
 correlationColors <-
@@ -76,15 +85,15 @@ saveToPDF <- function(...) {
 
 # read in metadata
 # the expanded metadata contains inferred sex, RIN, and WGS sample IDs
-metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
+# metadata <- read.delim(paste0(pathToRawData, "RNA_metadata.tsv"))
 # read in metadata with A-T-S score information
-metadata_ATS <-
+metadata <-
   read.delim(
     "/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt"
   )
 # keep NPID and ATS information to merge with BinB metadata
-keep <- c("NPID", "A", "T", "S", "ATS", "ATS_names")
-df <- metadata_ATS[, (names(metadata_ATS) %in% keep)]
+#keep <- c("NPID", "A", "T", "S", "ATS", "ATS_names")
+#df <- metadata_ATS[, (names(metadata_ATS) %in% keep)]
 
 # Note that BinB cell type information is made in cell_type_enrichment script
 #metadata <-
@@ -102,6 +111,8 @@ metadata$lib.size.2 <- NULL
 metadata$norm.factors.2 <- NULL
 metadata$lib.size.1 <- NULL
 metadata$norm.factors.1 <- NULL
+#metadata$lib.size <- NULL
+#metadata$norm.factors <- NULL
 # set factor levels
 metadata$TYPE <-
   factor(metadata$TYPE, levels = c("CONTROL", "PA", "AD", "LBD"))
