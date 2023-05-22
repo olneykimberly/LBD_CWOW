@@ -1,4 +1,11 @@
 # load libraries
+library(gprofiler2)
+library(airway)
+library(enrichplot)
+library(DOSE) 
+library(plyr)
+library(scales)
+library(forcats)
 library(rmarkdown)
 library(BiocParallel)
 library(dplyr)

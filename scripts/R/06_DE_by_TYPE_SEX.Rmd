@@ -42,17 +42,11 @@ dge.filtered.norm$samples$TYPE_sex_inferred <-
     )
   )
 ```
-# design
+# Design
 ```{r}
 design <-
   model.matrix(~ 0 + 
-      TYPE_sex_inferred + 
-      flowcell_and_lane + 
-      PCT_CODING_BASES +
-      PCT_INTERGENIC_BASES + 
-      PCT_INTRONIC_BASES +
-      RIN +
-      Age,
+      TYPE_sex_inferred,
     dge.filtered.norm$samples
   )
 
@@ -65,19 +59,7 @@ colnames(design) <-
     "PA_male",
     "PA_female", 
     "LBD_male",
-    "LBD_female",
-    "Batch1",
-    "Batch2",
-    "Batch3",
-    "Batch4",
-    "Batch5",
-    "Batch6",
-    "Batch7",
-    "PCT_CODING_BASES", 
-    "PCT_INTERGENIC_BASES", 
-    "PCT_INTRONIC_BASES",
-    "RIN",
-    "Age" 
+    "LBD_female"
   )
 ```
 # Contrast
@@ -468,5 +450,7 @@ write.xlsx(list_of_datasets, file = paste0(
     tool,
     "/DEGs/", condition,"_SexInteraction.DEGs.FDRq0.05_logFC_0.25.xlsx"))
 remove(list_of_datasets)
+```
+```{r}
 ```
 

@@ -417,7 +417,7 @@ write.table(sumTable,
 # Add gene information to DEGs
 reformat genes table to only include relevant information
 ```{r}
-genes_relevant <- select(genes, 1:4,10:12)
+genes_relevant <- dplyr::select(genes, 1:4,10:12)
 ```
 Check 
 ```{r DGE_check, eval=FALSE}
@@ -433,6 +433,16 @@ test <- topTable(
     )
 #head(test, 20)
 #subset(test, gene_name == "SNCB") 
+```
+# cool map
+```{r}
+LBDvsControl <- topTable(veBayesFit, coef = 'LBDvsAD', p.value = 0.05, adjust.method = 'fdr',
+                  number = Inf, genelist = genes_relevant)
+LBDvsControl$gene_id
+up <- LBDvsControl$gene_id[LBDvsControl$logFC > .25][1:15]
+down <- LBDvsControl$gene_id[LBDvsControl$logFC < -.25][1:15]
+select <- c(up, down)
+coolmap(voom_cov[select,])
 ```
 # Save objects
 ```{r save_voom}
