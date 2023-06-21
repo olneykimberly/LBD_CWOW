@@ -369,7 +369,11 @@ myDreamContrasts <- c(
   #  want to know whether the effect of sex is the same in both disease type and control. 
   sex_interaction_ADvsControl = "(TYPE_sex_inferredAD_female - TYPE_sex_inferredAD_male) - (TYPE_sex_inferredCONTROL_male - TYPE_sex_inferredCONTROL_female)",
   sex_interaction_PAvsControl = "(TYPE_sex_inferredPA_female - TYPE_sex_inferredPA_male) - (TYPE_sex_inferredCONTROL_male - TYPE_sex_inferredCONTROL_female)",
-  sex_interaction_LBDvsControl = "(TYPE_sex_inferredLBD_female - TYPE_sex_inferredLBD_male) - (TYPE_sex_inferredCONTROL_male - TYPE_sex_inferredCONTROL_female)"
+  sex_interaction_LBDvsControl = "(TYPE_sex_inferredLBD_female - TYPE_sex_inferredLBD_male) - (TYPE_sex_inferredCONTROL_male - TYPE_sex_inferredCONTROL_female)", 
+  
+  disease_interaction_ADvsControl = "(TYPE_sex_inferredAD_female - TYPE_sex_inferredCONTROL_female) - (TYPE_sex_inferredAD_male  - TYPE_sex_inferredCONTROL_male)",
+  disease_interaction_PAvsControl = "(TYPE_sex_inferredPA_female - TYPE_sex_inferredCONTROL_female) - (TYPE_sex_inferredPA_male - TYPE_sex_inferredCONTROL_male)",
+  disease_interaction_LBDvsControl = "(TYPE_sex_inferredLBD_female - TYPE_sex_inferredCONTROL_female) - (TYPE_sex_inferredLBD_male - TYPE_sex_inferredCONTROL_male)", 
 )
 
 myDreamContrasts <- rev(myDreamContrasts)

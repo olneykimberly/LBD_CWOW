@@ -43,9 +43,8 @@ makePaddedDataFrame <- function(l, ...) {
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-condition <- c("protein_coding")
+condition <- c("TYPE.SEX")
 tool <- "star"
-min_expression <- "min_exp1"
 # save contrast names
 allComparisons <- c("LBDvsControl", 
                     "LBDvsAD", 
@@ -60,11 +59,12 @@ Read table with all genes (FDRq = 1).
 ```{r read_DEG_table}
 # sex as a factor
 coef <- 1
+condition <- c("TYPE")
 for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
     tool,
-    "/DEGs/", condition, "_BIC_", 
+    "/DEGs/", condition, "_", 
     i,
     "_gene_DEGs_FDRq1.00.txt"
   )
@@ -82,11 +82,12 @@ for (i in allComparisons) {
 # XX females only 
 coef <- 1
 sex_condition <- c("female_XX")
+condition <- c("TYPE.SEX")
 for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
     tool,
-    "/DEGs/", condition, "_BIC_",  sex_condition, "_",
+    "/DEGs/", condition, "_",  sex_condition, "_",
     i,
     "_gene_DEGs_FDRq1.00.txt"
   )
@@ -108,7 +109,7 @@ for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
     tool,
-    "/DEGs/",condition, "_BIC_", sex_condition, "_",
+    "/DEGs/",condition, "_", sex_condition, "_",
     i,
     "_gene_DEGs_FDRq1.00.txt"
   )
@@ -130,7 +131,7 @@ for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
     tool,
-    "/DEGs/",condition, "_BIC_",
+    "/DEGs/",condition, "_",
     i,  "_", sex_condition, 
     "_gene_DEGs_FDRq1.00.txt"
   )
@@ -153,7 +154,7 @@ for (i in allComparisons_sexDiff) {
   filepath <- paste0(
     "../../results/",
     tool,
-    "/DEGs/",condition, "_BIC_",
+    "/DEGs/",condition, "_",
     i, 
     "_gene_DEGs_FDRq1.00.txt"
   )
@@ -880,17 +881,17 @@ LBD_corr_plot_adjPval_1 <- ggplot(data = LBD_FandM,
    annotate(
     "rect",
     xmin = 0,
-    xmax = 2.5,
-    ymin = 2.5,
+    xmax = 2,
+    ymin = 2,
     ymax = 0,
     fill = "lightpink3",
     alpha = .5
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2.25,
+    xmax = -2,
     ymin = 0,
-    ymax = -2.25,
+    ymax = -2,
     fill = "cadetblue3",
     alpha = .5) +
   geom_abline(color = "gray40") +
@@ -904,7 +905,7 @@ LBD_corr_plot_adjPval_1 <- ggplot(data = LBD_FandM,
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
     ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -918,10 +919,10 @@ LBD_corr_plot_adjPval_1 <- ggplot(data = LBD_FandM,
   title = "All genes",
   x = expression(paste("XX female ", log[2](LBD/control))),
   y = expression(paste("XY male ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-2, 2.25, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2.5, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0))
+  scale_y_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0))
 LBD_corr_plot_adjPval_1 
 
 LBD_corr_plot_adjPval_1
@@ -978,17 +979,17 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
    annotate(
     "rect",
     xmin = 0,
-    xmax = 2.5,
-    ymin = 2.5,
+    xmax = 2,
+    ymin = 2,
     ymax = 0,
     fill = "lightpink3",
     alpha = .1
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2.25,
+    xmax = -2,
     ymin = 0,
-    ymax = -2.25,
+    ymax = -2,
     fill = "cadetblue3",
     alpha = .1) +
   geom_abline(color = "gray80", linetype = 2) +
@@ -1005,7 +1006,7 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 18)
     ) +
   geom_text_repel(
     data = sig_f_sub, 
@@ -1017,7 +1018,7 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
     color = "#490092",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 18)
     ) +
     geom_text_repel(
     data = sig_m_sub, 
@@ -1043,10 +1044,10 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
 adj.P.val <= 0.05 & absolute log2FC > 0.25",
   x = expression(paste("XX female ", log[2](LBD/control))),
   y = expression(paste("XY male ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-2, 2.25, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2.5, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0))
+  scale_y_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0))
 LBD_corr_plot_adjPval_05 
 
 path <-
@@ -1102,17 +1103,17 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
    annotate(
     "rect",
     xmin = 0,
-    xmax = 2.5,
-    ymin = 2.5,
+    xmax = 2,
+    ymin = 2,
     ymax = 0,
     fill = "lightpink3",
     alpha = .1
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2.25,
+    xmax = -2,
     ymin = 0,
-    ymax = -2.25,
+    ymax = -2,
     fill = "cadetblue3",
     alpha = .1) +
   geom_abline(color = "gray80", linetype = 2) +
@@ -1143,10 +1144,10 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
 adj.P.val <= 0.05 & absolute log2FC > 0.25",
   x = expression(paste("XX female ", log[2](LBD/control))),
   y = expression(paste("XY male ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-2, 2.25, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2.25, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0))
+  scale_y_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0))
 LBD_corr_plot_adjPval_05 
 
 path <-
@@ -1158,7 +1159,7 @@ path <-
   )
 saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
-Significant in only XX females
+Significant in only XY males
 ```{r}
 LBD_FandM <- subset(LBD_FandM, (female_adj.P.Val <= 0.05 & female_logFC > 0.25) | 
                       (female_adj.P.Val <= 0.05 & female_logFC < -0.25) |
@@ -1184,17 +1185,17 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
    annotate(
     "rect",
     xmin = 0,
-    xmax = 2.5,
-    ymin = 2.5,
+    xmax = 2,
+    ymin = 2,
     ymax = 0,
     fill = "lightpink3",
     alpha = .1
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2.25,
+    xmax = -2,
     ymin = 0,
-    ymax = -2.25,
+    ymax = -2,
     fill = "cadetblue3",
     alpha = .1) +
   geom_abline(color = "gray80", linetype = 2) +
@@ -1219,14 +1220,14 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
   theme(axis.title.y = element_text(size = 10),
         axis.text.y = element_text(size = 10)) +
   labs(
-  title = "DEGs unique to XY females
+  title = "DEGs unique to XY males
 adj.P.val <= 0.05 & absolute log2FC > 0.25",
   x = expression(paste("XX female ", log[2](LBD/control))),
   y = expression(paste("XY male ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-2, 2.25, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2.5, by = .5), 
-                     limits = c(-2.25, 2.5), expand = c(0,0))
+  scale_y_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-2, 2, by = .5), 
+                     limits = c(-2, 2), expand = c(0,0))
 LBD_corr_plot_adjPval_05 
 
 path <-

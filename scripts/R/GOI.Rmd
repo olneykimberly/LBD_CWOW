@@ -28,13 +28,14 @@ voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rOb
 ```{r}
 # get the gene id that corresponds to the gene name 
 genes <- dge.filtered.norm$genes # gene information 
-goi <- subset(genes, gene_name == "ENO2") # gene of interest 
+goi <- subset(genes, gene_name == "HPGD") # gene of interest 
 # subset counts 
 goi_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% goi)
 goi_melt <- reshape2::melt(goi_counts) # reshape data 
 names(goi_melt)[names(goi_melt) == "Var2"] <- "NPID" # rename columns to merge with metadata 
 names(goi_melt)[names(goi_melt) == "Var1"] <- "gene_id"
 df <- merge(goi_melt, metadata, by = "NPID")
+subset(df, NPID == "NA21-004")
 ```
 # Brain weight and ENO2 expression
 ```{r}
@@ -74,7 +75,7 @@ saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
 ```
 # Gene_id for gene of interest 
 ```{r}
-column_variables <- c("ENSG00000111674.9") # gene_id to plot expression data for
+column_variables <- c("ENSG00000164120.14") # gene_id to plot expression data for
 df$VaD <- as.factor(df$VaD) # make sure that the variable to compare between is a factor 
 my_comparisons <- list(c("0", "1")) # define comparisons for pairwise stats
 #colors <- brewer.pal(n = 5, name = "Set2") # colors red to blue 
@@ -89,7 +90,7 @@ violin_plot_fun <- function(j) {
     geom_boxplot(width = 0.1, outlier.shape=NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
     theme_bw() +
-    ggtitle("ENO2 expression") +
+    ggtitle("HPGD expression") +
     xlab("TYPE") +
     ylab(j) +
     stat_compare_means() +
@@ -101,7 +102,7 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.TYPE.pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/HPGD.TYPE.pdf")) %>%
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 

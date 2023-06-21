@@ -1,0 +1,357 @@
+---
+title: "LBD CWOW Brain Single Nucleus Find Markers"
+author: "Kimberly Olney"
+date: "06/08/2023"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Set working directory
+```{r working_directory}
+knitr::opts_knit$set(root.dir = ".")
+```
+# Libraris, paths, colors
+```{r}
+source(here::here("snRNA/scripts/R", "file_paths_and_colours.R"))
+tissue <- "Brain"
+treatment <- "pilot"
+```
+
+```{r}
+dataObject.annotated <- readRDS(paste0("../../rObjects/",tolower(tissue),"_annotated_harmony.rds"))
+```
+# Find markers - Differential expression 
+Differential expressed genes across conditions
+Identify differential expressed genes across conditions
+Now that we’ve aligned the beads and debris cells, we can start to do comparative analyses and look at the differences induced by the wet lab protocol. One way to look broadly at these changes is to plot the average expression of both the beads and debris cells and look for genes that are visual outliers on a scatter plot. 
+```{r DE, warning=FALSE, message=FALSE}
+celltype <- unique(dataObject.annotated$annotated_clusters)
+df <- data.frame()
+
+for (i in celltype) {
+  print(i) # inspect 
+  # subset object and set idents
+  cluster <- subset(dataObject.annotated, annotated_clusters == i)
+  Idents(cluster) <- "sample"
+  # differential expression
+  markers <- FindMarkers(object = cluster,
+                         ident.1 = "beads",
+                         ident.2 = "debris",
+                         test.use = "MAST",
+                         verbose = TRUE,
+                         assay = "RNA")
+  # if no markers found go to next iteration
+  if(nrow(markers) == 0) {
+    print(paste0("no markers for ", i))
+    next
+  }
+  # add markers to master df for each comparison
+  markers$cluster <- i
+  markers$gene <- rownames(markers)
+  # combine
+  df <- rbind(df, markers)
+  # cleanup
+  remove(cluster)
+}
+# reformat table
+colnames(df)[c(3,4)] <- c("percent_beads","percent_debris")
+rownames(df) <- 1:nrow(df)
+df$percent_difference <- abs(df[,3] - df[,4])
+df <- df[,c(6,7,1,5,2,3,4,8)]
+  
+# write table
+path <- "../../results/seurat/DEGs/beads_vs_debris_DEGs.tsv"
+write.table(df, path, quote = FALSE, row.names = FALSE, sep = "\t")
+```
+
+## Volcano
+```{r volcano_plot, message=FALSE, eval=FALSE}
+all_clusters <- unique(dataObject.annotated$annotated_clusters)
+comparison <- c("beads_vs_debris")
+for (i in comparison) {
+  group1_vs_group2 <-
+    read.delim(paste0("../../results/seurat/DEGs/", i,
+                      "_DEGs.tsv"))
+  print(i)
+  color_values <- vector()
+  max <- nrow(group1_vs_group2)
+  for (row in 1:max) {
+    if (group1_vs_group2$p_val_adj[row] < 0.05) {
+      if (group1_vs_group2$avg_log2FC [row] > 0.25) {
+        color_values <- c(color_values, 1)
+      }
+      else if (group1_vs_group2$avg_log2FC[row] < -.25) {
+        color_values <- c(color_values, 2)
+      }
+      else {
+        color_values <- c(color_values, 3)
+      }
+    }
+    else{
+      color_values <- c(color_values, 3)
+    }
+  }
+  group1_vs_group2$color_adjpval_0.05 <- factor(color_values)
+  # loop through clusters
+  for (j in all_clusters) {
+    data <- subset(group1_vs_group2, cluster == j)
+    num <- subset(data, (p_val_adj < 0.05 & avg_log2FC < -.25)  | (p_val_adj < 0.05 & avg_log2FC > .25 ))
+    num <- nrow(num)
+    if (num != 0) {
+      up <- data[data$color_adjpval_0.05 == 1,]
+      up10 <- up[1:10,]
+      upFold <- subset(up, avg_log2FC > 1)
+      upFold <- upFold[!(upFold$gene %in% up10$gene),]
+      down <- data[data$color_adjpval_0.05 == 2,]
+      down10 <- down[1:10,]
+      downFold <- subset(down, avg_log2FC < -1)
+      downFold <- downFold[!(downFold$gene %in% down10$gene),]
+    if (!1 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("blue", "gray")
+    } else if (!2 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("red", "gray")
+    } else if (!1 %in% unique(data$color_adjpval_0.05) &&
+               !2 %in% unique(data$color_adjpval_0.05)) {
+      my_colors <- c("gray")
+    } else {
+      my_colors <- c("red", "blue", "gray")
+    }
+    hadjpval <- (-log10(max(data$p_val[data$p_val_adj < 0.05],
+                            na.rm = TRUE)))
+    negFC <- c(-.25)
+    posFC <- c(.25) 
+    print(j)
+    }
+  i <- gsub("_vs_", " vs ", i)
+  p <-
+      ggplot(data = data,
+             aes(
+               x = avg_log2FC,
+               y = -log10(p_val),
+               color = color_adjpval_0.05
+             )) +
+      geom_point(alpha = 0.8, size = 1) +
+      theme_bw() +
+      theme(legend.position = "none") +
+      scale_color_manual(values = my_colors) +
+      labs(
+        title = "",
+        x = expression(log[2](FC)),
+        y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
+      )  +
+      geom_hline(yintercept = hadjpval,
+                 #  horizontal line
+                 colour = "#000000",
+                 linetype = "dashed") +
+      geom_vline(xintercept = negFC,
+                 #  horizontal line
+                 colour = "#000000",
+                 linetype = "dashed") +
+      geom_vline(xintercept = posFC,
+                 #  horizontal line
+                 colour = "#000000",
+                 linetype = "dashed") +
+      ggtitle(paste0(i, "
+", j)) +
+      geom_text_repel(
+        data = up10,
+        aes(
+          x = avg_log2FC,
+          y = -log10(p_val),
+          label = gene
+        ),
+        color = "maroon",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+      ) +
+      geom_text_repel(
+        data = upFold,
+        aes(
+          x = avg_log2FC,
+          y = -log10(p_val),
+          label = gene
+        ),
+        color = "maroon",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+      ) +
+      geom_text_repel(
+        data = down10,
+        aes(
+          x = avg_log2FC,
+          y = -log10(p_val),
+          label = gene
+        ),
+        color = "navyblue",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+      ) +
+      geom_text_repel(
+        data = downFold,
+        aes(
+          x = avg_log2FC,
+          y = -log10(p_val),
+          label = gene
+        ),
+        color = "navyblue",
+        fontface = "italic",
+        size = 3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+      )
+    p
+    i <- gsub(" vs ", "_vs_", i)
+    j <- gsub(" / ", "&", j)
+    # save
+    path <- paste0("../../results/seurat/volcano/", i, "_", j,
+        "")
+    pdf(paste0(path, ".pdf"),
+        height = 5,
+        width = 5)
+    print(p)
+    dev.off()
+    print(paste("i =", i))
+  } 
+}
+```
+## Scatter plot
+```{r}
+theme_set(theme_cowplot())
+endothelial.cells <- subset(dataObject.annotated, idents = "Endothelial")
+Idents(endothelial.cells) <- "sample"
+avg.endothelial.cells <- as.data.frame(log1p(AverageExpression(endothelial.cells, verbose = FALSE)$RNA))
+avg.endothelial.cells$gene <- rownames(avg.endothelial.cells)
+
+genes.to.label = c("HERC4", "EYS")
+p1 <- ggplot(avg.endothelial.cells, aes(beads, debris)) + geom_point() + ggtitle("Endothelial") +
+  geom_abline(color = "gray40")
+p1 <- LabelPoints(plot = p1, points = genes.to.label, repel = TRUE)
+p1
+
+subset(avg.endothelial.cells, gene == "EYS")
+```
+
+```{r cleanup}
+# clean up
+remove(up, up10, upFold, group1_vs_group2, downFold, down10, data, p)
+```
+
+# Upset of DEGs
+### Function to create tables
+```{r}
+fromList <- function (input) {
+  # Same as original fromList()...
+  elements <- unique(unlist(input))
+  data <- unlist(lapply(input, function(x) {
+      x <- as.vector(match(elements, x))
+      }))
+  data[is.na(data)] <- as.integer(0)
+  data[data != 0] <- as.integer(1)
+  data <- data.frame(matrix(data, ncol = length(input), byrow = F))
+  data <- data[which(rowSums(data) != 0), ]
+  names(data) <- names(input)
+  # ... Except now it conserves your original value names!
+  row.names(data) <- elements
+  return(data)
+}
+
+makePaddedDataFrame <- function(l, ...) {
+  maxlen <- max(sapply(l, length))
+  data.frame(lapply(l, na.pad, len = maxlen), ...)
+}
+```
+### Plot
+```{r}
+data <- read.delim(paste0("../../results/seurat/DEGs/beads_vs_debris_DEGs.tsv"))
+up <- subset(data, avg_log2FC > 0.25 & p_val_adj <= 0.05 & percent_difference > 0.2)
+down <- subset(data, avg_log2FC < -0.25 & p_val_adj <= 0.05 & percent_difference > 0.2)
+path <- "../../results/seurat/goi/beads_vs_debris_DEGs_up_logFC0.25_FDRq0.05_perdiff_0.2.tsv"
+write.table(up, path, quote = FALSE, row.names = FALSE, sep = "\t")
+path <- "../../results/seurat/goi/beads_vs_debris_DEGs_down_logFC0.25_FDRq0.05_perdiff_0.2.tsv"
+write.table(down, path, quote = FALSE, row.names = FALSE, sep = "\t")
+
+
+list_input <- list("up" = LBDvsControl_down$gene_name,
+                   "down" = LBDvsControl_up$gene_name,
+                   "AD down-regulated" = ADvsControl_down$gene_name,
+                   "AD up-regulated" = ADvsControl_up$gene_name,
+                   "PA down-regulated" = PAvsControl_down$gene_name,
+                   "PA up-regulated" = PAvsControl_up$gene_name)
+data <- fromList(list_input)
+
+upset_gene <- upset(data, set_sizes = FALSE,
+      c('LBD down-regulated',
+        'AD down-regulated',
+        'PA down-regulated',
+        'LBD up-regulated',
+        'AD up-regulated',
+        'PA up-regulated'),
+      themes=upset_modify_themes(
+        list('intersections_matrix'=theme(text=element_text(size=10),
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+          'overall_sizes' = theme(axis.text.x = element_text(size =10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")))),
+  queries=list(
+    upset_query(set='LBD down-regulated', fill='blue'),
+    upset_query(set='AD down-regulated', fill='blue'),
+    upset_query(set='PA down-regulated', fill='blue'),
+    upset_query(set='LBD up-regulated', fill='red'),
+    upset_query(set='AD up-regulated', fill='red'),
+    upset_query(set='PA up-regulated', fill='red')
+  ),
+  intersections = list(c('LBD down-regulated','AD down-regulated', 'PA down-regulated'), 
+                       c('LBD down-regulated', 'AD down-regulated'), 
+                       c('LBD down-regulated', 'PA down-regulated'), 
+                       c('AD down-regulated', 'PA down-regulated'), 
+                       'LBD down-regulated',
+                       'AD down-regulated', 
+                       'PA down-regulated',
+                       c('LBD up-regulated','AD up-regulated', 'PA up-regulated'), 
+                       c('LBD up-regulated', 'AD up-regulated'), 
+                       c('LBD up-regulated', 'PA up-regulated'), 
+                       c('AD up-regulated', 'PA up-regulated'), 
+                       'LBD up-regulated',
+                       'AD up-regulated', 
+                       'PA up-regulated',
+                       c('AD up-regulated', 'PA down-regulated'), 
+                       c('AD down-regulated', 'PA up-regulated')
+  ),
+  base_annotations=list(
+    'Intersection size'=(
+        intersection_size(
+        size=2,
+        text = list(size = 3),
+        text_mapping = aes(),
+        bar_number_threshold=3,  # show all numbers on top of bars
+        width=0.3,   # reduce width of the bars
+        mapping=aes(fill='bars_color')
+      )
+      + scale_fill_manual(values=c('grey'), guide='none')
+      + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
+      + theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          axis.line=element_line(colour='black')))),
+  matrix=intersection_matrix(
+      geom=geom_point(
+        shape='circle filled',
+        size=2,
+        stroke=0.45)) +
+        theme(axis.text.y = element_text(size = 10),
+              axis.title.y = element_text(size = 10), 
+              plot.margin = margin(0, 0, 0, 0, "cm")),
+    sort_sets=FALSE,
+  sort_intersections=FALSE)
+upset_gene
+
+```
+

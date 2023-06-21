@@ -1,0 +1,1315 @@
+---
+title: "LBD CWOW Brain Single Nucleus Find Markers"
+author: "Kimberly Olney"
+date: "06/08/2023"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Set working directory
+```{r working_directory}
+knitr::opts_knit$set(root.dir = ".")
+```
+# Libraris, paths, colors
+```{r}
+source(here::here("snRNA/scripts/R", "file_paths_and_colours.R"))
+tissue <- "Brain"
+treatment <- "pilot"
+```
+# Read in object
+```{r read_object, echo=FALSE, eval=TRUE}
+# read object
+dataObject.unannotated <- readRDS("../../rObjects/brain_unannotated.rds")
+```
+## Define resolution and groups
+```{r}
+# set levels and idents
+Idents(dataObject.unannotated) <- "seurat_clusters"
+# normalize if SCTtransform was used
+DefaultAssay(dataObject.unannotated) <- "RNA"
+# natural-log
+#dataObject.unannotated <- NormalizeData(dataObject.unannotated, verbose = FALSE)
+```
+
+# Clustering QC before annotation
+## Unannotated UMAP
+```{r color_blind_umap}
+dittoDimPlot(object = dataObject.unannotated,
+             var = "seurat_clusters",
+             reduction.use = "umap",
+             do.label = TRUE,
+             labels.highlight = TRUE)
+```
+
+## Mitochondrial contamination
+```{r mt_genes, warning=FALSE, message=FALSE}
+# umap percent.mt
+FeaturePlot(dataObject.unannotated, 
+            reduction = "umap", 
+            features = "CEMIP",
+            min.cutoff = 'q10',
+            label = TRUE)
+
+# umap percent.mt split by sample
+FeaturePlot(dataObject.unannotated, 
+            reduction = "umap", 
+            features = "percent.mt",
+            split.by = "sample",
+            min.cutoff = 'q10',
+            label = TRUE)
+```
+
+## Ridge plot
+```{r ridge_plot, message=FALSE, warning=FALSE}
+dittoRidgePlot(object = dataObject.unannotated,
+               var = "CLDN5",
+               group.by = "seurat_clusters",
+               split.by = "treatment")
+```
+
+
+## Cells per cluster
+```{r cells_per_cluster}
+dataObject.unannotated$sample <- factor(dataObject.unannotated$sample, levels = c("beads", "debris"))
+
+n_cells <- FetchData(dataObject.unannotated, 
+  vars = c("ident", "sample")) %>%
+  dplyr::count(ident,sample) %>%
+  tidyr::spread(ident, n)
+n_cells
+```
+
+## Cluster tree
+```{r cluster_tree, warning=FALSE, message=FALSE}
+dataObject.unannotated <- BuildClusterTree(object = dataObject.unannotated,
+                                     dims = 1:20,
+                                     reorder = FALSE,
+                                     reorder.numeric = FALSE)
+
+tree <- dataObject.unannotated@tools$BuildClusterTree
+tree$tip.label <- paste0("Cluster ", tree$tip.label)
+
+tree_1 <- ggtree::ggtree(tree, aes(x, y)) +
+  scale_y_reverse() +
+  ggtree::geom_tree() +
+  ggtree::theme_tree() +
+  ggtree::geom_tiplab(offset = 1) +
+#  ggtree::geom_tippoint(color = colors[1:length(tree$tip.label)], 
+  #                      shape = 16, size = 5) +
+  coord_cartesian(clip = 'off') +
+  theme(plot.margin = unit(c(0,2.5,0,0), 'cm'))
+tree_1
+```
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+# save
+path <- paste0("../../results/seurat/tree/",treatment,"_",tolower(tissue),
+               "_tree_cluster_numbers")
+tree_1
+saveToPDF(paste0(path, ".pdf"), width = 4, height = 4)
+remove(tree)
+```
+
+# Marker exploration
+FindMarkers will find markers between two different identity groups - you have to specify both identity groups. This is useful for comparing the differences between two specific groups.
+
+FindAllMarkers will find markers differentially expressed in each identity group by comparing it to all of the others - you don't have to manually define anything. Note that markers may bleed over between closely-related groups - they are not forced to be specific to only one group. This is what most people use (and likely what you want).
+
+FindConservedMarkers will find markers that are conserved between two groups - this can be useful if you want to find markers that are conserved between a treated and untreated condition for a specific cell type or group of cells. It means they are differentially expressed compared to other groups, but have similar expression between the two groups you're actually comparing.
+https://www.biostars.org/p/409790/
+### Find all markers 
+```{r read_all_markers}
+# read object
+all.markers <- readRDS("../../rObjects/unannotated_all_markers.rds")
+
+# more stringent filtering
+all.markers <- all.markers[all.markers$p_val_adj < 0.05,]
+markers.strict <- all.markers[
+  all.markers$delta_pct > summary(all.markers$delta_pct)[5],]
+
+# compare 
+table(all.markers$cluster)
+table(markers.strict$cluster)
+
+# subset
+cluster0 <- markers.strict[markers.strict$cluster == 0,]
+cluster1 <- markers.strict[markers.strict$cluster == 1,]
+cluster2 <- markers.strict[markers.strict$cluster == 2,]
+cluster3 <- markers.strict[markers.strict$cluster == 3,]
+cluster4 <- markers.strict[markers.strict$cluster == 4,]
+cluster5 <- markers.strict[markers.strict$cluster == 5,]
+cluster6 <- markers.strict[markers.strict$cluster == 6,]
+cluster7 <- markers.strict[markers.strict$cluster == 7,]
+cluster8 <- markers.strict[markers.strict$cluster == 8,]
+cluster9 <- markers.strict[markers.strict$cluster == 9,]
+cluster10 <- markers.strict[markers.strict$cluster == 10,]
+cluster11 <- markers.strict[markers.strict$cluster == 11,]
+cluster12 <- markers.strict[markers.strict$cluster == 12,]
+cluster13 <- markers.strict[markers.strict$cluster == 13,]
+cluster14 <- markers.strict[markers.strict$cluster == 14,]
+cluster15 <- markers.strict[markers.strict$cluster == 15,]
+cluster16 <- markers.strict[markers.strict$cluster == 16,]
+cluster17 <- markers.strict[markers.strict$cluster == 17,]
+cluster18 <- markers.strict[markers.strict$cluster == 18,]
+cluster19 <- markers.strict[markers.strict$cluster == 19,]
+cluster20 <- markers.strict[markers.strict$cluster == 20,]
+cluster21 <- markers.strict[markers.strict$cluster == 21,]
+```
+## Conserved markers 
+Identify conserved cell type markers
+To identify canonical cell type marker genes that are conserved across conditions, we provide the FindConservedMarkers() function. This function performs differential gene expression testing for each dataset/group and combines the p-values using meta-analysis methods from the MetaDE R package. For example, we can calculated the genes that are conserved markers irrespective of stimulation condition in cluster 6 (NK cells).
+```{r conserved_markers}
+conserved.markers <- readRDS("../../rObjects/brain_conserved_markers.rds")
+conserved.markers.strict <- readRDS("../../rObjects/brain_conserved_markers_strict.rds")
+
+# compare 
+table(conserved.markers$cluster)
+table(conserved.markers.strict$cluster)
+
+
+conserved.cluster0 <- conserved.markers.strict[conserved.markers.strict$cluster == 0,]
+conserved.cluster1 <- conserved.markers.strict[conserved.markers.strict$cluster == 1,]
+conserved.cluster2 <- conserved.markers.strict[conserved.markers.strict$cluster == 2,]
+conserved.cluster3 <- conserved.markers.strict[conserved.markers.strict$cluster == 3,]
+conserved.cluster4 <- conserved.markers.strict[conserved.markers.strict$cluster == 4,]
+conserved.cluster5 <- conserved.markers.strict[conserved.markers.strict$cluster == 5,]
+conserved.cluster6 <- conserved.markers.strict[conserved.markers.strict$cluster == 6,]
+conserved.cluster7 <- conserved.markers.strict[conserved.markers.strict$cluster == 7,]
+conserved.cluster8 <- conserved.markers.strict[conserved.markers.strict$cluster == 8,]
+conserved.cluster9 <- conserved.markers.strict[conserved.markers.strict$cluster == 9,]
+conserved.cluster10 <- conserved.markers.strict[conserved.markers.strict$cluster == 10,]
+conserved.cluster11 <- conserved.markers.strict[conserved.markers.strict$cluster == 11,]
+conserved.cluster12 <- conserved.markers.strict[conserved.markers.strict$cluster == 12,]
+conserved.cluster13 <- conserved.markers.strict[conserved.markers.strict$cluster == 13,]
+conserved.cluster14 <- conserved.markers.strict[conserved.markers.strict$cluster == 14,]
+conserved.cluster15 <- conserved.markers.strict[conserved.markers.strict$cluster == 15,]
+conserved.cluster16 <- conserved.markers.strict[conserved.markers.strict$cluster == 16,]
+conserved.cluster17 <- conserved.markers.strict[conserved.markers.strict$cluster == 17,]
+conserved.cluster18 <- conserved.markers.strict[conserved.markers.strict$cluster == 18,]
+conserved.cluster19 <- conserved.markers.strict[conserved.markers.strict$cluster == 19,]
+conserved.cluster20 <- conserved.markers.strict[conserved.markers.strict$cluster == 20,]
+conserved.cluster21 <- conserved.markers.strict[conserved.markers.strict$cluster == 21,]
+```
+
+## PCs
+```{r print_pcs}
+# Printing out the most variable genes driving PCs
+print(x = dataObject.unannotated[["pca"]], 
+      dims = 1:20, 
+      nfeatures = 10)
+```
+
+## Top variable genes
+```{r top_variable}
+# print top variable genes
+top100 <- dataObject.unannotated@assays$SCT@var.features[1:100]
+top100
+```
+## Canonical cell-type markers
+Markers obtained from dropviz
+```{r}
+# Astrocytes
+# Aqp4, Id4, Cldn10
+VlnPlot(dataObject.unannotated,
+        features = c("AQP4", "GJA1", "F3"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE, 
+        split.by = "seurat_clusters")
+
+# Endothelial - from dropviz
+# Ly6a, Cldn5, Slco1a4, Adgrf5
+VlnPlot(dataObject.unannotated,
+        features = c("CLDN5", "ADGRF5", "FLT1"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# Fibroblast-Like_Dcn
+# Dcn, Igf2, Prg4, Slc6a13
+VlnPlot(dataObject.unannotated,
+        features = c("DCN", "OGN", "SLC6A13", "COL1A2", "PDGFRB", "VTN", "FLT1"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+
+# Oligodendrocyte_Tfr
+# Ermn, Opalin, Gm21984, Mog, Gjb1, Olig1, Mbp
+VlnPlot(dataObject.unannotated,
+        features = c("MOG", "OLIG1", "MBP"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# Polydendrocyte
+# GPR17, VCAN, Pdgfra, C1ql1
+VlnPlot(dataObject.unannotated,
+        features = c("VCAN", "GPR17", "C1QL1", "TNR", "OLIG1", "GPR17", "MAG", "MBP", "MOG", "CLDN11"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# Smooth muscle 
+VlnPlot(dataObject.unannotated,
+        features = c("ACTA2", "RGS5"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE)
+
+# Microglia and Marchophage 
+# Ctss, C1qc, C1qb, Tyrobp
+VlnPlot(dataObject.unannotated,
+        features = c("CTSS", "C1QC", "C1QB", "TYROBP","P2RY12", "AIF1", "C1QA", "C1QB", "C1QC", "CX3CR1", "HEXB", "ITGAM1", "P2RY12", "PTPRC", "TMEM119"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+#--------
+# Neurons
+#--------
+# Interneuron_CGE_Cplx3
+# Vip, Crh, Tac2
+VlnPlot(dataObject.unannotated,
+        features = c("VIP", "CRH", "KIT", "SST"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# Interneuron_MGE_Sst-Pvalb
+# SST, Pvalb, Syt2, Crhbp
+VlnPlot(dataObject.unannotated,
+        features = c("SST", "PVALB", "SYT2", "CRHBP"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# GAD
+VlnPlot(dataObject.unannotated,
+        features = c("GAD1", "GAD2"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+```
+## Cell type	Markers
+https://www.abcam.com/neuroscience/neural-markers-guide 
+Neuroepithelial cells	Nestin, SOX2, Notch1, HES1, HES3, E-cadherin, occludin.
+Radial glia	Vimentin, nestin, PAX6, HES1, HES5, GFAP, GLAST, BLBP, TN-C, N-cadherin, SOX2.
+Intermediate progenitors	TBR2, MASH1/Ascl1.
+Immature neurons	Doublecortin, beta III tubulin, NeuroD1, TBR1, stathmin 1.
+Oligodendrocyte precursor cells	PDGF receptor alpha, NG2.
+Mature oligodendrocytes	Olig 1, olig 2, olig 3, MBP, OSP, MOG, SOX10.
+Schwann cells	MPZ, NCAM, GAP43, S100, P75NTR.
+Astrocytes	GFAP, EAAT1/GLAST, EAAT2/GLT-1, glutamine synthetase, S100 beta, ALDH1L1.
+Microglia	TMEM119, CD11b, CD45, Iba1, CX3CR1, F4/80, CD68, CD40.
+Mature neurons	NeuN, MAP2, 160 kDa neurofilament medium, 200kDa neurofilament heavy, synaptophysin, PSD95.
+Glutamatergic neurons	VGLUT1, VGLUT2, NMDAR1, NMDAR2B, glutaminase, glutamine synthetase.
+GABAergic neurons	GABA transporter 1, GABAB receptors 1 and 2, GAD65, GAD67.
+Dopaminergic neurons	Tyrosine hydroxylase, dopamine transporter, FOXA2, GIRK2, Nurr1, LMX1B
+```{r}
+# Mature neurons
+VlnPlot(dataObject.unannotated,
+        features = c("MAP2", "ALDH1L1"),
+        cols = colors,
+        #stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# Schwann cells	MPZ, NCAM, GAP43, S100, P75NTR.
+VlnPlot(dataObject.unannotated,
+        features = c("MPZ","GAP43"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# Mature oligodendrocytes	Olig 1, olig 2, olig 3, MBP, OSP, MOG, SOX10.
+VlnPlot(dataObject.unannotated,
+        features = c("OLIG1", "OLIG2", "MBP", "MOG", "SOX10"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "sample")
+
+# Microglia	TMEM119, CD11b, CD45, Iba1, CX3CR1, F4/80, CD68, CD40.
+VlnPlot(dataObject.unannotated,
+        features = c("TMEM119", "CD11b", "CD45", "CX3CR1", "CD68", "CD40"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+
+# Neuroepithelial cells	Nestin, SOX2, Notch1, HES1, HES3, E-cadherin, occludin.
+VlnPlot(dataObject.unannotated,
+        features = c("SOX2", "HES1"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+# Radial glia	Vimentin, nestin, PAX6, HES1, HES5, GFAP, GLAST, BLBP, TN-C, N-cadherin, SOX2.
+VlnPlot(dataObject.unannotated,
+        features = c("PAX6", "HES1", "HES5", "SOX2"),
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+```
+
+# Cluster Annotation
+## Cluster 0 - oligodendrocyte / polydendrocyte
+OPALIN - oligodendrocyte
+MAG  - polydendrocyte
+CLDN11 - polydendrocyte / oligodendrocyte
+ANLN - oligodendrocyte
+APOD - fibroblast-like / oligodendrocyte
+```{r cluster0,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,2)]
+
+# UMAP with only cluster 0
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "0"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#E69F00")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster0$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster0$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster0$gene[1:10]
+conserved.cluster0$gene[1:10]
+```
+## Cluster 1 - oligodendrocyte
+CTNNA3 - mural 
+CARNS1 - oligodendrocyte
+CERCAM - polydendrocyte / oligodendrocyte 
+MOBP - oligodendrocyte
+```{r cluster1,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,3)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "1"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#56B4E9")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster1$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster1$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster1$gene[1:10]
+conserved.cluster1$gene[1:10]
+```
+## Cluster 2 - oligodendrocyte
+COL18A1 - fibroblast-like 
+S100B - oligodendrocyte
+PCSK6 - purkinjeneuron 
+ABCA2 - oligodendrocyte
+ANLN - oligodendrocyte
+```{r cluster2,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,4)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "2"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#009E73")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster2$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster2$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster2$gene[1:10]
+conserved.cluster2$gene[1:10]
+```
+## Cluster 3 - oligodendrocyte / polydendrocyte
+CLDND1 - oligodendrocyte
+MAG - polydendrocyte
+MOBP - oligodendrocyte
+CNP - polydendrocyte
+ENPP2 - oligodendrocyte / choroid plexus 
+```{r cluster3,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,4)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "3"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#F0E442")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster3$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster3$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster3$gene[1:10]
+conserved.cluster3$gene[1:10]
+```
+## Cluster 4 - astrocyte
+SLC1A2 - astrocyte 
+GJA1 - astrocyte
+AQP4 - astrocyte
+SLC1A3 - astrocyte
+GFAP - astrocyte
+AGT - astrocyte
+```{r cluster4,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,5)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "4"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#0072B2")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster4$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster4$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster4$gene[1:10]
+conserved.cluster4$gene[1:10]
+```
+## Cluster 5 - neuron
+KCNIP4 - purkinjenueron 
+NRG1 - neuron 
+MEG3 - neuron 
+ACTN1 - mural 
+ADAMTS6 - polydendrocyte /neuron 
+ADGRL2 - neuron 
+ARPP21 - neuron 
+```{r cluster5,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,6)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "5"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#D55E00")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster5$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+cluster5$gene[1:10]
+
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster5$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster5$gene[1:10]
+conserved.cluster5$gene[1:10]
+```
+## Cluster 6 - polydendrocyte
+VCAN - polydendrocyte
+TNR - polydendrocyte
+PTPRZ1 - polydendrocyte
+LHFPL3 - polydendrocyte
+BCAN - astrocyte / polydendrocyte
+PDGFRA - polydendrocyte
+ABHD2 - endothelial 
+ADGRG1 - astrocyte 
+ASCL1 - neurogensis / polydendrocyte
+```{r cluster6,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,7)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "6"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#CC79A7")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster6$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster6$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster6$gene[1:10]
+conserved.cluster6$gene[1:10]
+```
+## Cluster 7 -  neuron
+NEFM - neuron 
+NEFL - neuron 
+ENC1 - neuron 
+TMEM130 - interneuron 
+```{r cluster7,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,8)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "7"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#666666")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster7$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster7$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster7$gene[1:10]
+conserved.cluster7$gene[1:10]
+```
+## Cluster 8 - neuron 
+ENC1 - neuron 
+OLFM1 - neuron
+CHN1 - neuron 
+CAMK2A - neuron
+ACTN1 - mural
+ACTR3B - neuron 
+ADAM11 - interneuron
+ADAM23 - purkinjeneuron 
+ADCY1 - neuron  
+```{r cluster8,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,9)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "8"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#AD7700")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster8$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster8$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster8$gene[1:10]
+conserved.cluster8$gene[1:10]
+```
+## Cluster 9 - astrocyte
+AQP1 - choroid plexus / microglia macrophage 
+GFAP - astrocyte 
+FAM189A2 - astrocyte
+DPP10 - purkinjeneuron 
+GLIS3 - ependyma 
+DTNA - astrocyte
+GPC5 - astrocyte
+```{r cluster9,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,10)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "9"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#1C91D4")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster9$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster9$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster9$gene[1:10]
+conserved.cluster9$gene[1:10]
+```
+## Cluster 10 - interneuron 
+ERBB4 - interneuron 
+GAD1 - interneuron
+GAD2 - interneuron
+KCNC2 - interneuron
+ANK1 - interneuron
+ARX - interneuron
+```{r cluster10,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,11)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "10"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#007756")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster10$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster10$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster10$gene[1:10]
+conserved.cluster10$gene[1:10]
+```
+## Cluster 11 - neuron / interneuron
+CXCL14 - interneuron / astrocyte 
+CALB2 - interneuron
+CNR1 - interneuron
+RELN - neuron / interneuron
+RGS12 - neuron / endothelial 
+GALNTL6 - interneuron
+ADARB2 - interneuron
+SYNPR - neuron / interneuron
+```{r cluster11,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,12)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "11"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#D5C711")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster11$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster11$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster11$gene[1:10]
+conserved.cluster11$gene[1:10]
+```
+## Cluster 12 - neuron / interneuron 
+HS3ST4 - neuron 
+ROBO2 - interneuron
+ASIC2 - interneuron
+PCDH11X - internueron 
+DIRAS2 - neuron 
+FRMPD4 - internueron
+MDGA2 - neuron 
+```{r cluster12,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,13)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "12"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#005685")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster12$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster12$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster12$gene[1:10]
+conserved.cluster12$gene[1:10]
+```
+## Cluster 13 - neuron
+ENC1 - neuron 
+OLFM1 - neuron
+CHN1 - neuron
+NPTX1 - neuron / purkinjenueron 
+HOPX - bergmann glia  / astrocyte 
+CAMK2A - neuron 
+CBLN2 - neuron   
+```{r cluster13,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,14)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "13"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#A04700")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster13$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster13$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster13$gene[1:10]
+conserved.cluster13$gene[1:10]
+```
+## Cluster 14 - neuron / interneuron
+NRG1 - interneurons 
+RALYL - interneurons
+RORB - astrocyte 
+CPNE4 - neuron 
+NRGN - neuron 
+TUBB2A - interneuron 
+```{r cluster14,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,15)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "14"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#B14380")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster14$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster14$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster14$gene[1:10]
+conserved.cluster14$gene[1:10]
+```
+## Cluster 15 - neuron 
+NEFL - neuron
+SLC17A7 - neuron 
+NRGN - neuron 
+VSNL1 - neuron
+THY1 - purkinjeneuron 
+TUBA1B - nuerogensis
+SNAP25 - granular neuron 
+```{r cluster15,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,16)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "15"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#4D4D4D")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster15$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster15$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster15$gene[1:10]
+conserved.cluster15$gene[1:10]
+```
+## Cluster 16 - neuron / interneuron
+GRIK1 - purkinjeneuron 
+CNTNAP2 - interneuron
+GRIK2 - interneuron
+RBFOX1 - neuron 
+XKR4 - interneuron
+SST - internueron 
+ROBO2 - internueron
+GRIP1 - interneuon 
+PCDH11X - neuron 
+```{r cluster16,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,17)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "16"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#FFBE2D")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster16$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster16$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster16$gene[1:10]
+conserved.cluster16$gene[1:10]
+```
+## Cluster 17 - neuron / interneuron
+KCNIP4 - purkinjeneuron 
+LRRTM4 - neuron / polydendocyte 
+CSMD1 - neuron 
+RALYL - interneuron 
+FAM155A - interneuron 
+NRXN1 - neuron 
+FAM155A - interneuron 
+```{r cluster17,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,18)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "17"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#80C7EF")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster17$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster17$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster17$gene[1:10]
+conserved.cluster17$gene[1:10]
+```
+## Cluster 18 - interneurons
+KIT - interneurons     
+SLC6A1 - interneurons
+GAD2 - interneurons
+GRIP1 - interneurons
+PTPRT - neuron 
+```{r cluster18,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,19)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "18"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#80C7EF")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster18$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster18$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster18$gene[1:10]
+conserved.cluster18$gene[1:10]
+```
+## Cluster 19 - microglia marcophage
+STAB1 - microglia marcophage 
+PLXDC2 - microglia marcophage 
+C1QB - microglia marcophage
+CD74 - microglia marcophage
+SLC11A1  - microglia marcophage
+```{r cluster19,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,20)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "19"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#80C7EF")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster19$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster19$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster19$gene[1:10]
+conserved.cluster19$gene[1:10]
+```
+## Cluster 20 - endothelial
+CLDN5 - endothelial 
+IFI27 - choroid plexus / endothelial
+TGM2 - endothelial
+ADAMTS9 - astrocyte
+FLT1 - endothelial
+```{r cluster20,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,21)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "20"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#80C7EF")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster20$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster20$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster20$gene[1:10]
+conserved.cluster20$gene[1:10]
+```
+## Cluster 21 - oligodendrocyte / polydendrocyte
+CTNNA3 - mural 
+PDE4B - oligodendrocyte
+ST18 - granular neuron polydendrocyte / oligodendrocyte
+PLCL1 - oligodendrocyte
+DPYD - polydendrocyte
+```{r cluster21,warning=FALSE,message=FALSE}
+# Number of cells per condition
+n_cells[,c(1,22)]
+DimPlot(object = subset(dataObject.unannotated, seurat_clusters == "21"),
+        reduction = "umap", 
+        label = TRUE,
+        label.box = TRUE,
+        label.size = 3,
+        repel = TRUE,
+        cols = "#80C7EF")
+
+VlnPlot(dataObject.unannotated,
+        features = cluster21$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+VlnPlot(dataObject.unannotated,
+        features = conserved.cluster21$gene[1:10],
+        cols = colors,
+        stack = TRUE,
+        flip = TRUE,
+        split.by = "seurat_clusters")
+
+cluster21$gene[1:10]
+conserved.cluster21$gene[1:10]
+```
+## Assign identities
+- pooling neurons and NSCs
+```{r assign_individual_identities}
+# Rename all identities
+dataObject.annotated <- RenameIdents(object = dataObject.unannotated, 
+                               "0" = "Oligodendrocytes / Polydendrocyte",
+                               "1" = "Oligodendrocytes",
+                               "2" = "Oligodendrocytes",
+                               "3" = "Oligodendrocytes / Polydendrocyte",
+                               "4" = "Astrocytes",
+                               "5" = "Neurons",
+                               "6" = "Polydendrocyte",
+                               "7" = "Neurons",
+                               "8" = "Neurons",
+                               "9" = "Astrocytes",
+                               "10" = "Interneurons",
+                               "11" = "Neurons / Interneurons",
+                               "12" = "Neurons / Interneurons",
+                               "13" = "Neurons", 
+                               "14" = "Neurons / Interneurons", 
+                               "15" = "Neurons", 
+                               "16" = "Neurons / Interneurons",
+                               "17" = "Neurons / Interneurons", 
+                               "18" = "Interneurons", 
+                               "19" = "Microglia", 
+                               "20" = "Endothelial", 
+                               "21" = "Oligodendrocytes / Polydendrocyte")
+dataObject.annotated$annotated_clusters <- factor(Idents(dataObject.annotated),
+                                             levels = c("Astrocytes",
+                                                        "Endothelial",
+                                                        "Microglia", 
+                                                        "Oligodendrocytes",
+                                                        "Polydendrocyte", 
+                                                        "Oligodendrocytes / Polydendrocyte",
+                                                        "Interneurons",
+                                                        "Neurons",
+                                                        "Neurons / Interneurons"))
+Idents(dataObject.annotated) <- "annotated_clusters"
+```
+# UMAP - annotated
+```{r}
+u1 <- DimPlot(dataObject.annotated,
+              group.by = "annotated_clusters",
+              cols = colors,
+              raster = FALSE,
+              label = FALSE) +
+  ggtitle("LBD pilot brain")
+u1
+
+u2 <- DimPlot(dataObject.annotated,
+              group.by = "annotated_clusters",
+              cols = colors,
+              dims = c(2,3),
+              raster = FALSE,
+              label = FALSE) +
+  ggtitle("LBD pilot brain")
+u2
+```
+
+```{r save_umap,echo=FALSE}
+u1
+# save umap0.2
+path <- paste0("../../results/seurat/UMAP/annotated/",treatment,"_",tolower(tissue),
+               "_UMAP_dim1&2")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 4)
+
+u2
+path <- paste0("../../results/seurat/UMAP/annotated/",treatment,"_",tolower(tissue),
+               "_UMAP_dim2&3")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 4)
+```
+```{r}
+# umap percent.mt split by sample
+FeaturePlot(dataObject.unannotated, 
+            reduction = "umap", 
+            features = "APOE",
+            split.by = "sample",
+            min.cutoff = 'q10',
+            label = TRUE)
+```
+# Cell count
+### Table
+```{r}
+n_cells <- FetchData(dataObject.annotated, 
+                     vars = c("ident", "treatment")) %>%
+  dplyr::count(ident,treatment) %>%
+  tidyr::spread(ident, n)
+n_cells
+
+n_cells <- FetchData(dataObject.annotated, 
+                     vars = c("ident", "sample")) %>%
+  dplyr::count(ident,sample) %>%
+  tidyr::spread(ident, n)
+n_cells
+```
+### Relative abundance
+```{r}
+# sample
+b2 <- dataObject.annotated@meta.data %>%
+  group_by(annotated_clusters, sample) %>%
+  dplyr::count() %>%
+  group_by(annotated_clusters) %>%
+  dplyr::mutate(percent = 100*n/sum(n)) %>%
+  ungroup() %>%
+  ggplot(aes(x=annotated_clusters,y=percent, fill=sample)) +
+  geom_col() +
+  scale_fill_manual(values = sample_colors) +
+  ggtitle("Percentage of sample per cluster") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_hline(yintercept = 50, color = "black")
+b2
+```
+
+```{r}
+# save
+path <- paste0("../../results/seurat/nCells/",treatment,"_",tolower(tissue),
+               "_percent_sample_annotated_cluster")
+b2
+saveToPDF(paste0(path, ".pdf"), width = 6, height = 5.5)
+
+```
+### Dot plot markers
+```{r}
+markers.to.plot <- c("SLC1A2", "GJA1", "CLDN5", "TGM2", "STAB1", "CD74", "VCAN", "TNR", "S100B", "ABCA2", "NRG1", "MEG3", "ERBB4", "GAD1")
+dot <- DotPlot(dataObject.annotated, features = markers.to.plot, cols = sample_colors, dot.scale = 8, split.by = "sample") +
+    RotatedAxis()
+```
+
+```{r}
+# save
+path <- paste0("../../results/seurat/dot/",treatment,"_",tolower(tissue),
+               "_cluster_marker")
+dot
+saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
+```
+### Save RDS 
+```{r save_annotations}
+saveRDS(dataObject.annotated, paste0("../../rObjects/",tolower(tissue),"_annotated_harmony.rds"))
+```
+
+# Shiny App
+## Cleanup object
+```{r,eval=FALSE}
+dataObject.annotated
+dataObject.annotated@assays$RNA@var.features <- 
+  dataObject.annotated@assays$SCT@var.features
+metadata <- dataObject.annotated@meta.data
+metadata <- metadata[,c(27,26,2:25)]
+dataObject.annotated@meta.data <- metadata
+dataObject.annotated@assays$SCT@meta.features <- metadata
+dataObject.annotated@assays$RNA@meta.features <- metadata
+```
+
+## Output directory
+```{r shiny}
+DefaultAssay(dataObject.annotated) <- "RNA"
+Idents(dataObject.annotated) <- dataObject.annotated$annotated_clusters
+sc.config <- createConfig(dataObject.annotated)
+makeShinyApp(dataObject.annotated, sc.config, gene.mapping = TRUE,
+             shiny.title = "LBD brain pilot single nucleus") 
+```
+

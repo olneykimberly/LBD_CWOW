@@ -1,0 +1,41 @@
+{
+    "Commment_Input_Output_Directories": "This section specifies the input and output directories for scripts",
+    "rawReads" : "/research/labs/neurology/fryer/projects/LBD_CWOW/snRNA/",
+    "results" : "../../results",
+    "rObjects" : "../../rObjects/",
+    "fastq_path" : "/research/labs/neurology/fryer/projects/LBD_CWOW/snRNA/",
+
+    "Comment_Reference" : "This section specifies the location of the human reference genome",
+    "genes.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation.filtered.gtf",
+    "star_ref" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY_STAR_filtered_GTF",
+
+    "Comment_Sample_Info": "The following section lists the samples that are to be analyzed",
+    "sample_names": ['LBD_pilot_beads', 'LBD_pilot_debris'],
+    "read": ['R1', 'R2'],
+
+    "LBD_pilot_beads":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/snRNA/",
+        "fq1": "LBD_pilot_beads_S1_L001_R1_001",
+        "fq2": "LBD_pilot_beads_S1_L001_R2_001",
+        "shortName1": "LBD_pilot_beads_R1",
+        "shortName2": "LBD_pilot_beads_R2",
+        "ID": "LBD_pilot_beads",
+        "SM": "LBD_pilot_beads",
+        "PU": "HWM33DSX5.1",
+        "LB": "LBD_pilot_beads",
+        "PL": "Illumina"
+        },
+
+    "LBD_pilot_debris":{
+        "fq_path": "/research/labs/neurology/fryer/projects/LBD_CWOW/snRNA/",
+        "fq1": "LBD_pilot_debris_S2_L001_R1_001",
+        "fq2": "LBD_pilot_debris_S2_L001_R2_001",
+        "shortName1": "LBD_pilot_debris_R1",
+        "shortName2": "LBD_pilot_debris_R2",
+        "ID": "LBD_pilot_debris",
+        "SM": "LBD_pilot_debris",
+        "PU": "HWM33DSX5.1",
+        "LB": "LBD_pilot_debris",
+        "PL": "Illumina"
+        }
+}

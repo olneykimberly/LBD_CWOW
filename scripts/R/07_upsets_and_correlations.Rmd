@@ -43,7 +43,7 @@ makePaddedDataFrame <- function(l, ...) {
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-condition <- c("protein_coding_cellType_zscores")
+condition <- c("TYPE")
 tool <- "star"
 min_expression <- "min_exp1"
 # save contrast names
@@ -62,7 +62,7 @@ for (i in allComparisons) {
   filepath <- paste0(
     "../../results/",
     tool,
-    "/DEGs/", condition, "_BIC_", 
+    "/DEGs/", condition, "_", 
     i,
     "_gene_DEGs_FDRq1.00.txt"
   )
@@ -301,23 +301,25 @@ ADandLBD_goi <- subset(ADandLBD,
                           (AD_logFC > .5 & LBD_logFC > 0.5) | # up in both
                           (AD_logFC > .5 & LBD_logFC < 0) | # up in AD, down in LBD
                           (AD_logFC < -.5 & LBD_logFC > 0)) # up in LBD, down in AD
+ROS1_goi <- subset(ADandLBD, gene_name == "ROS1")
+more_goi <- subset(ADandLBD, AD_logFC > .2 & LBD_logFC < -0.2) 
 
 ADandLBD_corr_plot <- ggplot(data = ADandLBD, 
   aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
   annotate(
     "rect",
     xmin = 0,
-    xmax = 2.75,
-    ymin = 2.75,
+    xmax = 1.75,
+    ymin = 1.75,
     ymax = 0,
     fill = "lightpink3",
     alpha = .5
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2.25,
+    xmax = -1.75,
     ymin = 0,
-    ymax = -2.25,
+    ymax = -1.75,
     fill = "cadetblue3",
     alpha = .5) +
   geom_abline(color = "gray40") +
@@ -331,7 +333,33 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+  ) +
+  geom_text_repel(
+    data = ROS1_goi, 
+    aes(
+      x = AD_logFC, 
+      y = LBD_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+  ) +
+  geom_text_repel(
+    data = more_goi, 
+    aes(
+      x = AD_logFC, 
+      y = LBD_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    nudge_x = .15,
+    nudge_y = -.15,
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -345,10 +373,10 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     title = "LBD and AD",
     x = expression(paste("  ", log[2](AD/control))),
     y = expression(paste("  ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
-                     limits = c(-2.25, 2.75), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2.75, by = .5), 
-                     limits = c(-2.25, 2.75), expand = c(0,0))
+  scale_y_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+                     limits = c(-1.75, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+                     limits = c(-1.75, 1.75), expand = c(0,0))
 ADandLBD_corr_plot
 
 path <-
@@ -409,23 +437,25 @@ ADandLBD_goi <- subset(ADandLBD,
                           (AD_logFC > .5 & LBD_logFC > 0.5) | # up in both
                           (AD_logFC > .5 & LBD_logFC < 0) | # up in AD, down in LBD
                           (AD_logFC < -.5 & LBD_logFC > 0)) # up in LBD, down in AD
+ROS1_goi <- subset(ADandLBD, gene_name == "ROS1")
+more_goi <- subset(ADandLBD, AD_logFC > .15 & LBD_logFC < -0.2) 
 
 ADandLBD_corr_plot <- ggplot(data = ADandLBD, 
   aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
   annotate(
     "rect",
     xmin = 0,
-    xmax = 2.75,
-    ymin = 2.75,
+    xmax = 1.75,
+    ymin = 1.75,
     ymax = 0,
     fill = "lightpink3",
     alpha = .5
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2.25,
+    xmax = -1.75,
     ymin = 0,
-    ymax = -2.25,
+    ymax = -1.75,
     fill = "cadetblue3",
     alpha = .5) +
   geom_abline(color = "gray40") +
@@ -439,7 +469,31 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+  ) +
+  geom_text_repel(
+    data = ROS1_goi, 
+    aes(
+      x = AD_logFC, 
+      y = LBD_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+  ) +
+  geom_text_repel(
+    data = more_goi, 
+    aes(
+      x = AD_logFC, 
+      y = LBD_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -453,10 +507,10 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     title = "DEGs shared and unique between LBD and AD",
     x = expression(paste("  ", log[2](AD/control))),
     y = expression(paste("  ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
-                     limits = c(-2.25, 2.75), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2.75, by = .5), 
-                     limits = c(-2.25, 2.75), expand = c(0,0))
+  scale_y_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+                     limits = c(-1.75, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+                     limits = c(-1.75, 1.75), expand = c(0,0))
 ADandLBD_corr_plot
 
 path <-
