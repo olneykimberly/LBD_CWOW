@@ -14,8 +14,7 @@ source $HOME/.bash_profile
 source $HOME/.bashrc # pipseeker alias is in bashrc 
 
 # change directory
-cd /research/labs/neurology/fryer/m239830/LBD_COW/snRNA/scripts/snakemake/
-
+cd /research/labs/neurology/fryer/m239830/LBD_CWOW/snRNA/scripts/snakemake
 module load python
 conda activate LBD
 

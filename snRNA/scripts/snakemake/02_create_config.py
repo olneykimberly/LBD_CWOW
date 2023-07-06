@@ -31,8 +31,8 @@ header = '''{{
     "fastq_path" : "/research/labs/neurology/fryer/projects/LBD_CWOW/snRNA/",
 
     "Comment_Reference" : "This section specifies the location of the human reference genome",
-    "genes.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation.filtered.gtf",
-    "star_ref" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY_STAR_filtered_GTF",
+    "genes.gtf" : "/research/labs/neurology/fryer/projects/references/human/gencode.v38.annotation.gtf",
+    "star_ref" : "/research/labs/neurology/fryer/projects/references/human/GRCh38_YPARsmasked_XY_STAR",
 
     "Comment_Sample_Info": "The following section lists the samples that are to be analyzed",
     "sample_names": {0},

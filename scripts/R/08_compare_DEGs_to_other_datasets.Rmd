@@ -12,10 +12,9 @@ knitr::opts_knit$set(root.dir = ".")
 # User defined variables
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
-condition <- c("All_samples")
+condition <- c("TYPE")
 library(plotly)
 tool <- "star"
-min_expression <- "min_exp50"
 # save contrast names
 allComparisons <- c("LBDvsControl", 
                     "LBDvsAD", 
@@ -54,141 +53,66 @@ for (i in allComparisons) {
 #test <- vroom("/research/labs/neurology/fryer/m239830/LBD_CWOW/other_datasets/Marques-Coelho_2021/sup_table_1.txt")
 #colnames(test)[4] ="gene_name"
 
-ROSMAP_AD <- read.delim("/research/labs/neurology/fryer/m239830/LBD_CWOW/other_datasets/synapse/ROSMAP/ROSMAP_Differential_Expression_(diagnosis)_PCC.tsv", sep = "\t", header = TRUE)
+ROSMAP_AD <- read.delim("/research/labs/neurology/fryer/m239830/synapse_RNAseq_harmonization/ROSMAP_Differential_Expression_diagnosis_PCC.tsv", sep = "\t", header = TRUE)
 
 ROSMAP_AD$gene_name <- ROSMAP_AD$hgnc_symbol
 ```
-
+# CWOW vs ROSMAP - AD 
 ```{r}
 data <-
   merge(ADvsControl,
         ROSMAP_AD,
         by = "gene_name",
         all = T)
-data <- data[c(1,2,6,9,10,13,17,20,23)] #data[c(1,2,6,9,10,13,22,23,26)]
-colnames(data) = c("gene_name", "chr", "gene_id", "LBD_logFC", "LBD_AveExpr", "LBD_adj.P.Val", "AD_logFC", "AD_AveExpr", "AD_adj.P.Val")
+data <- data[c(1,2,6,8,11,14,18,21,24)] #data[c(1,2,6,9,10,13,22,23,26)]
+colnames(data) = c("gene_name", "chr", "gene_id", "AD_CWOW_logFC", "AD_CWOW_AveExpr", "AD_CWOW_adj.P.Val", "AD_ROSMAP_logFC", "AD_ROSMAP_AveExpr", "AD_ROSMAP_adj.P.Val")
 
-data[is.na(data)] <- 0
-CWOW <- subset(data, LBD_adj.P.Val <= 0.05)
-ROSMAP <- subset(data, AD_adj.P.Val <= 0.05)
+#data[is.na(data)] <- 0
+data <- na.omit(data)
+CWOW <- subset(data, AD_CWOW_adj.P.Val <= 0.05)
+ROSMAP <- subset(data, AD_ROSMAP_adj.P.Val <= 0.05) 
 
-data <- subset(data, AD_adj.P.Val <= 0.05 | LBD_adj.P.Val <= 0.05)
+data <- subset(data, AD_CWOW_adj.P.Val <= 0.05 & AD_ROSMAP_adj.P.Val <= 0.05)
+data <- subset(data, AD_CWOW_logFC <= -0.25 | AD_CWOW_logFC >= 0.25)
+data <- subset(data, AD_ROSMAP_logFC <= -0.25 | AD_ROSMAP_logFC >= 0.25)
+
 data_goi <- subset(data, 
-                        (AD_logFC < -0.5 & LBD_logFC < -0.5) | 
-                          (AD_logFC > .5 & LBD_logFC > 0.5) | 
-                          (AD_logFC > .5 & LBD_logFC <= 0) |
-                          (AD_logFC <= 0 & LBD_logFC > 0.5))
+                        (AD_ROSMAP_logFC < -0.5 & AD_CWOW_logFC < -0.75) | 
+                          (AD_ROSMAP_logFC > .5 & AD_CWOW_logFC > 0.5) | 
+                          (AD_ROSMAP_logFC > .25 & AD_CWOW_logFC <= 0) |
+                          (AD_ROSMAP_logFC <= 0 & AD_CWOW_logFC > 0.25))
 
 #data$difference <- data$logFC - data$gene.log2FC
 ggplot(data = data, 
-  aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
+  aes(x = AD_ROSMAP_logFC, y = AD_CWOW_logFC, text = paste(gene_name))) +
   annotate(
     "rect",
     xmin = 0,
-    xmax = 2.75,
-    ymin = 2.75,
+    xmax = 1.75,
+    ymin = 1.75,
     ymax = 0,
     fill = "lightpink3",
     alpha = .5
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2,
+    xmax = -1.5,
     ymin = 0,
-    ymax = -2,
-    fill = "cadetblue3",
-    alpha = .5) +
-  geom_abline(color = "gray40") +
-  geom_point(size = 1) + 
-  theme_bw() +
-  theme(plot.title = element_text(size = 10)) +
-  theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 10),
-        axis.text.x = element_text(size = 10)) +
-  theme(axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10)) +
-  labs(
-    title = "DEGs shared and unique between our data and ROSMAP PCC",
-    x = expression(paste("Our data ", log[2](AD/control))),
-    y = expression(paste("Marques-Coelho 2021 ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-1.75, 2.725, by = .5), 
-                     limits = c(-2, 2.75), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2.75, by = .5), 
-                     limits = c(-2, 2.75), expand = c(0,0))
-
-
-# Scatter plot with correlation coefficient
-sp <- ggscatter(data, x = "AD_logFC", y = "LBD_logFC",
-                add = "reg.line",  # Add regressin line
-                add.params = list(color = "blue", fill = "lightgray"), 
-                conf.int = TRUE)
-# Add correlation coefficient
-sp + stat_cor(method = "pearson", label.x = -1.25, label.y = -10)
-```
-```{r}
-data <-
-  merge(LBDvsControl,
-        ADvsControl,
-        by = "gene_name",
-        all = T)
-#data <- data[c(1,2,6,9,10,13,22,23,26)]
-data <- data[c(1,2,6,8,11,14,22,25,28)]
-
-colnames(data) = c("gene_name", "chr", "gene_id", "LBD_logFC", "LBD_AveExpr", "LBD_adj.P.Val", "AD_logFC", "AD_AveExpr", "AD_adj.P.Val")
-
-#data[is.na(data)] <- 0
-#data <- na.omit(data$AD_logFC)
-
-data <- data[!is.na(data$AD_logFC), ]  
-data <- data[!is.na(data$LBD_logFC), ]  
-significant_AD <- subset(data, data$LBD_adj.P.Val <= 0.05 | data$AD_adj.P.Val <= 0.05 )
-significant_in_both_AD <- subset(data, data$LBD_adj.P.Val <= 0.05 & data$AD_adj.P.Val <= 0.05 )
-data <- significant_in_both_AD
-#data <- subset(data, AD_adj.P.Val <= 0.05 | LBD_adj.P.Val <= 0.05)
-data_goi <- subset(data, 
-                        (AD_logFC < -0.5 & LBD_logFC < -0.5) | 
-                          (AD_logFC > .5 & LBD_logFC > 0.5) | 
-                          (AD_logFC > .5 & LBD_logFC <= 0) |
-                          (AD_logFC <= 0 & LBD_logFC > 0.5))
-
-
-data_goi <- subset(data, 
-                        (AD_logFC < -0.5 & LBD_logFC < -0.5) | 
-                          (AD_logFC > .5 & LBD_logFC > 0.5) | 
-                          (AD_logFC > .1 & LBD_logFC <= 0) |
-                          (AD_logFC <= 0 & LBD_logFC > 0.1))
-
-#data$difference <- data$LBD_logFC - data$AD_logFC
-corr_AD <- ggplot(data = data, 
-  aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
-  annotate(
-    "rect",
-    xmin = 0,
-    xmax = 2,
-    ymin = 2,
-    ymax = 0,
-    fill = "lightpink3",
-    alpha = .5
-  ) +  annotate(
-    "rect",
-    xmin = 0,
-    xmax = -2,
-    ymin = 0,
-    ymax = -2,
+    ymax = -1.5,
     fill = "cadetblue3",
     alpha = .5) +
   geom_abline(color = "gray40") +
   geom_text_repel(
     data = data_goi, 
     aes(
-      x = AD_logFC, 
-      y = LBD_logFC,
+      x = AD_ROSMAP_logFC, 
+      y = AD_CWOW_logFC,
       label = gene_name
     ),
     color = "black",
     fontface = "italic",
     size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 40)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -199,28 +123,531 @@ corr_AD <- ggplot(data = data,
   theme(axis.title.y = element_text(size = 10),
         axis.text.y = element_text(size = 10)) +
   labs(
-    title = "Expressed genes in both synpase ROSMAP PCC & LBD_CWOW ADvsControl",
+    title = "DEGs shared and unique between LBD CWOW AD and ROSMAP PCC",
     x = expression(paste("ROSMAP ", log[2](AD/control))),
     y = expression(paste("LBD CWOW ", log[2](AD/control))))+
-  scale_y_continuous(breaks = seq(-1.75, 2, by = .5), 
-                     limits = c(-2, 2), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2, by = .5), 
-                     limits = c(-2, 2), expand = c(0,0))
-corr_AD
-#ggplotly(corr_AD)
+  scale_y_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0))
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_AD_CWOW_vs_ROSMAP_FDRq0.05_log2FC0.25"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
-sp <- ggscatter(data, x = "AD_logFC", y = "LBD_logFC",
+sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "AD_CWOW_logFC",
                 add = "reg.line",  # Add regressin line
                 add.params = list(color = "blue", fill = "lightgray"), 
-                conf.int = TRUE) +
-    labs(
-    title = "Expressed in both synpase ROSMAP PCC & LBD_CWOW ADvsControl",
-    x = expression(paste("AD CWOW ", log[2](AD/control))),
-    y = expression(paste("LBD CWOW ", log[2](AD/control))))
+                conf.int = TRUE)
 # Add correlation coefficient
-sp + stat_cor(method = "pearson", label.x = -1.25, label.y = 1)
+sp + stat_cor(method = "pearson", label.x = -.5, label.y = .75)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_AD_CWOW_vs_ROSMAP_FDRq0.05_log2FC0.25_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+```
+```{r}
+data <-
+  merge(ADvsControl,
+        ROSMAP_AD,
+        by = "gene_name",
+        all = T)
+data <- data[c(1,2,6,8,11,14,18,21,24)] #data[c(1,2,6,9,10,13,22,23,26)]
+colnames(data) = c("gene_name", "chr", "gene_id", "AD_CWOW_logFC", "AD_CWOW_AveExpr", "AD_CWOW_adj.P.Val", "AD_ROSMAP_logFC", "AD_ROSMAP_AveExpr", "AD_ROSMAP_adj.P.Val")
+
+#data[is.na(data)] <- 0
+data <- na.omit(data)
+data_goi <- subset(data, 
+                        (AD_ROSMAP_logFC < -0.5 & AD_CWOW_logFC < -0.75) | 
+                          (AD_ROSMAP_logFC > .5 & AD_CWOW_logFC > 0.5) | 
+                          (AD_ROSMAP_logFC > .25 & AD_CWOW_logFC <= 0) |
+                          (AD_ROSMAP_logFC <= 0 & AD_CWOW_logFC > 0.25))
+
+#data$difference <- data$logFC - data$gene.log2FC
+ggplot(data = data, 
+  aes(x = AD_ROSMAP_logFC, y = AD_CWOW_logFC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 1.75,
+    ymin = 1.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -1.5,
+    ymin = 0,
+    ymax = -1.5,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = data_goi, 
+    aes(
+      x = AD_ROSMAP_logFC, 
+      y = AD_CWOW_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between LBD CWOW AD and ROSMAP PCC",
+    x = expression(paste("ROSMAP ", log[2](AD/control))),
+    y = expression(paste("LBD CWOW ", log[2](AD/control))))+
+  scale_y_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0))
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_AD_CWOW_vs_ROSMAP"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "AD_CWOW_logFC",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -.5, label.y = .75)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_AD_CWOW_vs_ROSMAP_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
 
+# CWOW vs ROSMAP - LBD 
+```{r}
+data <-
+  merge(LBDvsControl,
+        ROSMAP_AD,
+        by = "gene_name",
+        all = T)
+data <- data[c(1,2,6,8,11,14,18,21,24)] #data[c(1,2,6,9,10,13,22,23,26)]
+colnames(data) = c("gene_name", "chr", "gene_id", "LBD_CWOW_logFC", "LBD_CWOW_AveExpr", "LBD_CWOW_adj.P.Val", "AD_ROSMAP_logFC", "AD_ROSMAP_AveExpr", "AD_ROSMAP_adj.P.Val")
+
+#data[is.na(data)] <- 0
+data <- na.omit(data)
+CWOW <- subset(data, LBD_CWOW_adj.P.Val <= 0.05)
+ROSMAP <- subset(data, AD_ROSMAP_adj.P.Val <= 0.05) 
+
+data <- subset(data, LBD_CWOW_adj.P.Val <= 0.05 & AD_ROSMAP_adj.P.Val <= 0.05)
+data <- subset(data, LBD_CWOW_logFC <= -0.25 | LBD_CWOW_logFC >= 0.25)
+data <- subset(data, AD_ROSMAP_logFC <= -0.25 | AD_ROSMAP_logFC >= 0.25)
+
+data_goi <- subset(data, 
+                        (AD_ROSMAP_logFC < -0.5 & LBD_CWOW_logFC < -0.75) | 
+                          (AD_ROSMAP_logFC > .5 & LBD_CWOW_logFC > 0.5) | 
+                          (AD_ROSMAP_logFC > .25 & LBD_CWOW_logFC <= 0) |
+                          (AD_ROSMAP_logFC <= 0 & LBD_CWOW_logFC > 0.25))
+
+#data$difference <- data$logFC - data$gene.log2FC
+ggplot(data = data, 
+  aes(x = AD_ROSMAP_logFC, y = LBD_CWOW_logFC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 1.75,
+    ymin = 1.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -1.5,
+    ymin = 0,
+    ymax = -1.5,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = data_goi, 
+    aes(
+      x = AD_ROSMAP_logFC, 
+      y = LBD_CWOW_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between LBD CWOW and AD ROSMAP PCC",
+    x = expression(paste("ROSMAP ", log[2](AD/control))),
+    y = expression(paste("LBD CWOW ", log[2](AD/control))))+
+  scale_y_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0))
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP_FDRq0.05_log2FC0.25"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "LBD_CWOW_logFC",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -.5, label.y = .75)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP_FDRq0.05_log2FC0.25_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+```
+```{r}
+data <-
+  merge(LBDvsControl,
+        ROSMAP_AD,
+        by = "gene_name",
+        all = T)
+data <- data[c(1,2,6,8,11,14,18,21,24)] #data[c(1,2,6,9,10,13,22,23,26)]
+colnames(data) = c("gene_name", "chr", "gene_id", "LBD_CWOW_logFC", "LBD_CWOW_AveExpr", "LBD_CWOW_adj.P.Val", "AD_ROSMAP_logFC", "AD_ROSMAP_AveExpr", "AD_ROSMAP_adj.P.Val")
+
+#data[is.na(data)] <- 0
+data <- na.omit(data)
+CWOW <- subset(data, LBD_CWOW_adj.P.Val <= 0.05)
+ROSMAP <- subset(data, AD_ROSMAP_adj.P.Val <= 0.05) 
+
+data <- subset(data, LBD_CWOW_adj.P.Val <= 0.05 & AD_ROSMAP_adj.P.Val <= 0.05)
+data <- subset(data, LBD_CWOW_logFC <= -0.25 | LBD_CWOW_logFC >= 0.25)
+data <- subset(data, AD_ROSMAP_logFC <= -0.25 | AD_ROSMAP_logFC >= 0.25)
+
+data_goi <- subset(data, 
+                        (AD_ROSMAP_logFC < -0.5 & LBD_CWOW_logFC < -0.75) | 
+                          (AD_ROSMAP_logFC > .5 & LBD_CWOW_logFC > 0.5) | 
+                          (AD_ROSMAP_logFC > .25 & LBD_CWOW_logFC <= 0) |
+                          (AD_ROSMAP_logFC <= 0 & LBD_CWOW_logFC > 0.25))
+
+#data$difference <- data$logFC - data$gene.log2FC
+ggplot(data = data, 
+  aes(x = AD_ROSMAP_logFC, y = LBD_CWOW_logFC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 1.75,
+    ymin = 1.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -1.5,
+    ymin = 0,
+    ymax = -1.5,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = data_goi, 
+    aes(
+      x = AD_ROSMAP_logFC, 
+      y = LBD_CWOW_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between LBD CWOW and AD ROSMAP PCC",
+    x = expression(paste("ROSMAP ", log[2](AD/control))),
+    y = expression(paste("LBD CWOW ", log[2](AD/control))))+
+  scale_y_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0))
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP_FDRq0.05_log2FC0.25"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "LBD_CWOW_logFC",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -.5, label.y = .75)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP_FDRq0.05_log2FC0.25_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+```
+```{r}
+data <-
+  merge(LBDvsControl,
+        ROSMAP_AD,
+        by = "gene_name",
+        all = T)
+data <- data[c(1,2,6,8,11,14,18,21,24)] #data[c(1,2,6,9,10,13,22,23,26)]
+colnames(data) = c("gene_name", "chr", "gene_id", "LBD_CWOW_logFC", "LBD_CWOW_AveExpr", "LBD_CWOW_adj.P.Val", "AD_ROSMAP_logFC", "AD_ROSMAP_AveExpr", "AD_ROSMAP_adj.P.Val")
+
+#data[is.na(data)] <- 0
+data <- na.omit(data)
+CWOW <- subset(data, LBD_CWOW_adj.P.Val <= 0.05)
+ROSMAP <- subset(data, AD_ROSMAP_adj.P.Val <= 0.05) 
+
+data <- subset(data, LBD_CWOW_adj.P.Val <= 0.05 & AD_ROSMAP_adj.P.Val <= 0.05)
+data <- subset(data, LBD_CWOW_logFC <= -0.25 | LBD_CWOW_logFC >= 0.25)
+data <- subset(data, AD_ROSMAP_logFC <= -0.25 | AD_ROSMAP_logFC >= 0.25)
+
+data_goi <- subset(data, 
+                        (AD_ROSMAP_logFC < -0.5 & LBD_CWOW_logFC < -0.75) | 
+                          (AD_ROSMAP_logFC > .5 & LBD_CWOW_logFC > 0.5) | 
+                          (AD_ROSMAP_logFC > .25 & LBD_CWOW_logFC <= 0) |
+                          (AD_ROSMAP_logFC <= 0 & LBD_CWOW_logFC > 0.25))
+
+#data$difference <- data$logFC - data$gene.log2FC
+ggplot(data = data, 
+  aes(x = AD_ROSMAP_logFC, y = LBD_CWOW_logFC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 1.75,
+    ymin = 1.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -1.5,
+    ymin = 0,
+    ymax = -1.5,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = data_goi, 
+    aes(
+      x = AD_ROSMAP_logFC, 
+      y = LBD_CWOW_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between LBD CWOW and AD ROSMAP PCC",
+    x = expression(paste("ROSMAP ", log[2](AD/control))),
+    y = expression(paste("LBD CWOW ", log[2](AD/control))))+
+  scale_y_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0))
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP_FDRq0.05_log2FC0.25"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "LBD_CWOW_logFC",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -.5, label.y = .75)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP_FDRq0.05_log2FC0.25_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+```
+
+```{r}
+data <-
+  merge(LBDvsControl,
+        ROSMAP_AD,
+        by = "gene_name",
+        all = T)
+data <- data[c(1,2,6,8,11,14,18,21,24)] #data[c(1,2,6,9,10,13,22,23,26)]
+colnames(data) = c("gene_name", "chr", "gene_id", "LBD_CWOW_logFC", "LBD_CWOW_AveExpr", "LBD_CWOW_adj.P.Val", "AD_ROSMAP_logFC", "AD_ROSMAP_AveExpr", "AD_ROSMAP_adj.P.Val")
+
+#data[is.na(data)] <- 0
+data <- na.omit(data)
+data_goi <- subset(data, 
+                        (AD_ROSMAP_logFC < -0.5 & LBD_CWOW_logFC < -0.75) | 
+                          (AD_ROSMAP_logFC > .5 & LBD_CWOW_logFC > 0.5) | 
+                          (AD_ROSMAP_logFC > .25 & LBD_CWOW_logFC <= 0) |
+                          (AD_ROSMAP_logFC <= 0 & LBD_CWOW_logFC > 0.25))
+
+#data$difference <- data$logFC - data$gene.log2FC
+ggplot(data = data, 
+  aes(x = AD_ROSMAP_logFC, y = LBD_CWOW_logFC, text = paste(gene_name))) +
+  annotate(
+    "rect",
+    xmin = 0,
+    xmax = 1.75,
+    ymin = 1.75,
+    ymax = 0,
+    fill = "lightpink3",
+    alpha = .5
+  ) +  annotate(
+    "rect",
+    xmin = 0,
+    xmax = -1.5,
+    ymin = 0,
+    ymax = -1.5,
+    fill = "cadetblue3",
+    alpha = .5) +
+  geom_abline(color = "gray40") +
+  geom_text_repel(
+    data = data_goi, 
+    aes(
+      x = AD_ROSMAP_logFC, 
+      y = LBD_CWOW_logFC,
+      label = gene_name
+    ),
+    color = "black",
+    fontface = "italic",
+    size = 2.5, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+  ) +
+  geom_point(size = 1) + 
+  theme_bw() +
+  theme(plot.title = element_text(size = 10)) +
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 10),
+        axis.text.x = element_text(size = 10)) +
+  theme(axis.title.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(
+    title = "DEGs shared and unique between LBD CWOW and AD ROSMAP PCC",
+    x = expression(paste("ROSMAP ", log[2](AD/control))),
+    y = expression(paste("LBD CWOW ", log[2](AD/control))))+
+  scale_y_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 1.75, by = .5), 
+                     limits = c(-1.5, 1.75), expand = c(0,0))
+
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+# Scatter plot with correlation coefficient
+sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "LBD_CWOW_logFC",
+                add = "reg.line",  # Add regressin line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = -.5, label.y = .75)
+path <-
+  paste0(
+    "../../results/",
+    tool,
+    "/correlation/",
+    condition, 
+    "_LBD_CWOW_vs_AD_ROSMAP_corr_pval"
+  )
+saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+
+```
 ```{r}
 ```

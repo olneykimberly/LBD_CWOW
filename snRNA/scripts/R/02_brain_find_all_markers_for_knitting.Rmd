@@ -28,9 +28,7 @@ dataObject.unannotated <- readRDS("../../rObjects/brain_unannotated.rds")
 ```
 ## Define resolution and groups
 ```{r define_res, message=FALSE, warning=FALSE}
-# set levels and idents
 Idents(dataObject.unannotated) <- "seurat_clusters"
-# normalize if SCTtransform was used
 DefaultAssay(dataObject.unannotated) <- "RNA"
 ```
 
