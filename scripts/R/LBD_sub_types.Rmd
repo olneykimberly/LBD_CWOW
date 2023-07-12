@@ -17,7 +17,7 @@ knitr::opts_knit$set(root.dir = ".")
 ```{r set_variables}
 source(here::here("scripts/R", "file_paths_and_colours.R"))
 #source(here::here("scripts/R", "gtf_path.R"))
-condition <- c("LBD.type") # change condition for file naming 
+condition <- c("LBD.type.") # change condition for file naming 
 tool = c("star_LBD_sub_type") # change condition for folder naming 
 typeOfCount <-  c(".bamReadsPerGene.out.tab")
 ```
@@ -67,7 +67,7 @@ genes <- dge$genes # gene information
 
 # Add biomarker expression to dge metadata 
 ```{r biomarker_expression}
-biomarkers <- c("ENO2", "GFAP", "OLIG2", "CD34", "P2RY12")
+biomarkers <- c("ENO2", "GFAP", "OLIG2", "CD34", "P2RY12", "MBP")
 
 for (i in biomarkers) {
   biomarker <- subset(genes, gene_name == i) # gene of interest 
@@ -84,12 +84,22 @@ for (i in biomarkers) {
 
 # add gene expression values into one dataframe 
 # put all data frames into list
-df_list <- list(ENO2, OLIG2, CD34, P2RY12, GFAP)
+df_list <- list(ENO2, OLIG2, CD34, P2RY12, GFAP, MBP)
 
 # merge all data frames in list
 cell_biomarker_lcpm <- df_list %>% reduce(full_join, by='NPID')
 remove(biomarker, biomarker_counts, biomarker_melt, biomarkers,
-       ENO2, OLIG2, CD34, P2RY12, GFAP)
+       ENO2, OLIG2, CD34, P2RY12, GFAP, MBP)
+```
+```{r}
+plot(cell_biomarker_lcpm$ENO2, cell_biomarker_lcpm$MBP)
+
+sp <- ggscatter(cell_biomarker_lcpm, x = "ENO2", y = "MBP",
+                add = "reg.line",  # Add regression line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson", label.x = 7, label.y = 10)
 ```
 # Scale data
 Rescaling a predictor in a regression has absolutely no effect on the magnitude of the relation being studied. The slope itself will not change its steepness, nor will the p-values or variance explained be changed. Rescaling is merely a means of communicating the nature of the regression line in different, hopefully more intuitive language.
@@ -109,11 +119,12 @@ scaled.info <-
     "OLIG2", 
     "CD34", 
     "P2RY12",
+    "MBP",
     "Brain.wt"
   )] %>% scale()
 scaled.info.df <- as.data.frame(scaled.info)
 # remove columns with unscaled data 
-df <- (subset(df, select = -c(Race_numeric, RIN, Age, PCT_CODING_BASES, PCT_INTRONIC_BASES, APOE_E4_allele_count, ENO2, GFAP, OLIG2, CD34, P2RY12, Brain.wt)))
+df <- (subset(df, select = -c(Race_numeric, RIN, Age, PCT_CODING_BASES, PCT_INTRONIC_BASES, APOE_E4_allele_count, ENO2, GFAP, OLIG2, CD34, P2RY12, MBP, Brain.wt)))
 # Add scaled information to the metadata called "info"
 info_with_scale <- cbind(df, scaled.info.df)
 
@@ -153,7 +164,8 @@ design <-
       PCT_CODING_BASES +
       PCT_INTERGENIC_BASES + 
       PCT_INTRONIC_BASES +
-      ENO2,
+      ENO2 +
+      MBP,
     dge$samples
   )
 colnames(design) <-
@@ -173,7 +185,8 @@ colnames(design) <-
     "PCT_CODING_BASES", 
     "PCT_INTERGENIC_BASES", 
     "PCT_INTRONIC_BASES",
-    "ENO2"
+    "ENO2",
+    "MBP"
   )
 ```
 # Voom
@@ -189,7 +202,8 @@ form <- (
       PCT_CODING_BASES +
       PCT_INTERGENIC_BASES + 
       PCT_INTRONIC_BASES +
-      ENO2
+      ENO2 + 
+      MBP
 )
 
 voom_cov <-

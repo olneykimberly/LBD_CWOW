@@ -22,23 +22,55 @@ tool = c("star")
 # read in voom counts matrix & dge object 
 ```{r}
 dge.filtered.norm <- readRDS(paste0("../../rObjects/dge.filtered.norm.rds"))
-voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/ATS.voomCountsMatrix.rds")
+voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/TYPE.voomCountsMatrix.rds")
 ```
 
 ```{r}
 # get the gene id that corresponds to the gene name 
 genes <- dge.filtered.norm$genes # gene information 
-goi <- subset(genes, gene_name == "ROS1") # gene of interest 
+goi <- subset(genes, gene_name == "ENO2" | gene_name == "MBP") # gene of interest 
 # subset counts 
-goi_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% goi)
+goi_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% rownames(goi))
 goi_melt <- reshape2::melt(goi_counts) # reshape data 
 names(goi_melt)[names(goi_melt) == "Var2"] <- "NPID" # rename columns to merge with metadata 
 names(goi_melt)[names(goi_melt) == "Var1"] <- "gene_id"
 df <- merge(goi_melt, metadata, by = "NPID")
-subset(df, NPID == "NA21-004")
 ```
-# Brain weight and ENO2 expression
+# ENO2 & MBP expression
 ```{r}
+ENO2 <- subset(df, gene_id == "ENSG00000111674.9")
+MBP <- subset(df, gene_id == "ENSG00000197971.16")
+df <- merge(ENO2, MBP, by = "NPID")
+ggplot(df, aes(value.x, value.y, col = TYPE.x)) +
+    geom_point() +
+    theme_bw() +
+    ggtitle("ENO2 and Brain weight expression") +
+    xlab("Brain weight (kg)") +
+    ylab("lcpm ENO2") +
+    scale_fill_manual(values=TypeColors) 
+
+cor(df$value.x, df$value.y, method = c("spearman"))
+cor.test(df$value.x, df$value.y, method=c("spearman"))
+
+# is the data normally distributed 
+ggqqplot(df$value.x, ylab = "ENO2 expression")
+ggqqplot(df$value.y, ylab = "MBP expression")
+res <- cor.test(df$value.x, df$value.y, 
+                method = "pearson")
+res
+
+ggscatter(df, x = "value.x", y = "value.y", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "spearman",
+          ylab = "lcpm MBP", xlab = "lcpm ENO2") + 
+  facet_grid(TYPE.x ~ sex_inferred.x) 
+path <- paste0("../../results/clinical/TYPE.sex.ENO2_MBP")
+saveToPDF(paste0(path, ".pdf"), width = 12, height = 10)
+```
+
+
+# Brain weight and ENO2 expression
+```{r eval = FALSE}
 ggplot(df, aes(Brain.wt, value, col = TYPE)) +
     geom_point() +
     theme_bw() +
@@ -75,14 +107,12 @@ saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
 ```
 # Gene_id for gene of interest 
 ```{r}
-column_variables <- c("ENSG00000047936.11") # gene_id to plot expression data for
-df$VaD <- as.factor(df$VaD) # make sure that the variable to compare between is a factor 
-my_comparisons <- list(c("0", "1")) # define comparisons for pairwise stats
-#colors <- brewer.pal(n = 5, name = "Set2") # colors red to blue 
+column_variables <- c("ENSG00000111674.9") # gene_id to plot expression data for
 colors <- TypeColors
 ```
 # Function violin jitter of gene expression 
 ```{r}
+# Disease type 
 violin_plot_fun <- function(j) {
   df <- subset(df, gene_id == j)
   ggplot(df, aes(TYPE, value, fill = TYPE)) +
@@ -90,7 +120,7 @@ violin_plot_fun <- function(j) {
     geom_boxplot(width = 0.1, outlier.shape=NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
     theme_bw() +
-    ggtitle("ROS1 expression") +
+    ggtitle("ENO2 expression") +
     xlab("TYPE") +
     ylab(j) +
     stat_compare_means() +
@@ -102,11 +132,69 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ROS1.TYPE.pdf")) %>%
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.TYPE.pdf")) %>% #
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
                                     height = 5.5, width = 8))
+
+
+factor(df$LBD.type)
+df$LBD.type <- factor(df$LBD.type, levels =c("no LBs", "TLBD", "DLBD", "BLBD"))
+
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_id == j)
+  ggplot(df, aes(LBD.type, value, fill = LBD.type)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
+    theme_bw() +
+    ggtitle("ENO2 expression") +
+    xlab("LBD.type") +
+    ylab(j) +
+    stat_compare_means() +
+    scale_fill_manual(values=colorbindColors) +
+    theme(legend.position = "none") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.LBD.type.pdf")) %>% #
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 8))
+
+
+df <- subset(df, LBD.type == "TLBD" | LBD.type == "DLBD")
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_id == j)
+  ggplot(df, aes(LBD.type, value, fill = LBD.type)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
+    theme_bw() +
+    ggtitle("ENO2 expression") +
+    xlab("LBD.type") +
+    ylab(j) +
+    stat_compare_means() +
+    scale_fill_manual(values=colorbindColors) +
+    theme(legend.position = "none") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.TLBD_DLBD.pdf")) %>% #
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 6))
+
+
 ```
 # GOI gene of interest histogram
 ```{r goi_hist}

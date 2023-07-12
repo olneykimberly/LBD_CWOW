@@ -33,7 +33,7 @@ Idents(dataObject.unannotated) <- "seurat_clusters"
 # normalize if SCTtransform was used
 DefaultAssay(dataObject.unannotated) <- "RNA"
 # natural-log
-#dataObject.unannotated <- NormalizeData(dataObject.unannotated, verbose = FALSE)
+dataObject.unannotated <- NormalizeData(dataObject.unannotated, verbose = FALSE)
 ```
 
 # Clustering QC before annotation

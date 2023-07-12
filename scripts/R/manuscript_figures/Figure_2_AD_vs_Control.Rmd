@@ -1,0 +1,37 @@
+---
+title: "Figure 3. LBD vs AD"
+author: "Kimberly Olney"
+date: "07/10/2023"
+output: html_document
+---
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+library("readxl")
+#source(here::here("scripts/R", "gtf_path.R"))
+condition <- c("TYPE")
+tool <- "star"
+dge.filtered.norm <- readRDS(paste0("../../../rObjects/dge.filtered.norm.rds"))
+```
+# Binary list shared gene function
+```{r}
+fromList <- function (input) {
+  # Same as original fromList()...
+  elements <- unique(unlist(input))
+  data <- unlist(lapply(input, function(x) {
+      x <- as.vector(match(elements, x))
+      }))
+  data[is.na(data)] <- as.integer(0)
+  data[data != 0] <- as.integer(1)
+  data <- data.frame(matrix(data, ncol = length(input), byrow = F))
+  data <- data[which(rowSums(data) != 0), ]
+  names(data) <- names(input)
+  # ... Except now it conserves your original value names!
+  row.names(data) <- elements
+  return(data)
+  }
+```
