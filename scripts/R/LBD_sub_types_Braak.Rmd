@@ -145,7 +145,7 @@ dge$samples <- info_with_scale
 ```{r}
 condition <- c("LBD.type.Braak") # change condition for file naming 
 
-dge$samples$Braak.NFT.binary <-  ifelse(dge$samples$Braak.NFT >= 4, 1, 0) 
+dge$samples$Braak.NFT.binary <-  ifelse(dge$samples$Braak.NFT >= 5, 1, 0) 
 dge$samples$LBD.type_Braak <- paste0(dge$samples$LBD.type, "_", dge$samples$Braak.NFT.binary)
 dge$samples$LBD.type_Braak <- factor(dge$samples$LBD.type_Braak)
 
