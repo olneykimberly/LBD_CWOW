@@ -1,0 +1,197 @@
+---
+title: "Figure 4 - gene networks"
+author: "Kimberly Olney"
+date: "2023-07-13"
+output: html_document
+---
+# Setup
+```{r setup}
+knitr::opts_knit$set(root.dir = ".")
+```
+# User defined variables
+```{r set_variables}
+source(here::here("scripts/R", "file_paths_and_colours.R"))
+library("readxl")
+library(WGCNA)
+library(anRichmentMethods)
+library(tidyverse)
+library(CorLevelPlot)
+library(gridExtra)
+condition <- c("TYPE")
+tool <- "star"
+```
+# Read in data
+```{r}
+voomCounts <- readRDS(paste0("../../../rObjects/", condition, ".voomCountsMatrix.rds"))
+load("../../../rObjects/bwnet.Rdata")
+load("../../../rObjects/WGCNA_allSampleInput.RData")
+module_eigengenes <- bwnet$MEs
+head(module_eigengenes) # inspect 
+ngenes_per_module <- table(bwnet$colors) # number of genes in each module 
+
+dge.filtered.norm <- readRDS(paste0("../../../rObjects/dge.filtered.norm.rds"))
+info <- as.data.frame(dge.filtered.norm$samples)
+genes <- as.data.frame(dge.filtered.norm$genes)
+
+# keep only the columns that hold information we need. 
+dataTraits <- info[, c(6,11:19,21,22,24,29,37,108,109,114,117:124)] # Keep
+dim(dataTraits)
+# disease type isn't numeric, make numeric as this is required down stream
+numeric_traits <- sapply(dataTraits, as.numeric)
+numeric_traits <- as.data.frame(numeric_traits) # save as data frame
+rownames(numeric_traits) <- rownames(dataTraits) # add NPID as row names
+```
+# Plot dendrogram
+This function plots a hierarchical clustering dendrogram and color annotation(s) of objects in the dendrogram underneath.
+guideHang - fraction of the dendrogram height to leave between the top end of the guide line and the dendrogram merge height. 
+```{r plot_dendrogram}
+plotDendroAndColors(bwnet$dendrograms[[1]], cbind(bwnet$unmergedColors, bwnet$colors), 
+                    c("unmerged", "merged"), 
+                    dendroLabels = FALSE, 
+                    addGuide = TRUE, 
+                    hang = 0.03,
+                    guideHang = 0.05)
+
+```
+# Association between modules and traits
+Which modules are associated with our traits
+
+binarizeCategoricalColumns - Given a data frame with (some) categorical columns, this function creates a set of indicator variables for the various possible sets of levels.
+
+includePairwise - logical should pairwise binary indicators be included? For each pair of levels, the indicator is val1 for the lower level (earlier in levelOrder), val2 for the higher level and NA otherwise.
+includeLevelVsAll - Logical: should binary indicators for each level be included? The indicator is val2 where x equals the level and val1 otherwise.
+minCount - 	Levels of x for which there are fewer than minCount elements will be ignored.
+```{r binary_traits}
+controlvsdisease <- binarizeCategoricalColumns(dataTraits$TYPE, 
+                           includePairwise = TRUE, 
+                           includeLevelVsAll = TRUE, 
+                           minCount = 1)
+# remove data. from column names
+names(controlvsdisease) <- gsub(x = names(controlvsdisease), 
+                                pattern = "data.", replacement = "")  
+traits <- cbind(numeric_traits, controlvsdisease) # column combine with dataTraits
+# disease type isn't numeric, make numeric as this is required down stream
+numeric_traits <- sapply(traits, as.numeric) # make sure all are numeric 
+numeric_traits <- as.data.frame(numeric_traits) # save as data frame
+rownames(numeric_traits) <- rownames(dataTraits) # add NPID as row names
+```
+# Correlation
+Add multiple test correction - BH 
+```{r correlation}
+nSamples <- nrow(counts) # number of samples
+nGenes <- ncol(counts) # number of genes
+
+# correlation between modules and traits 
+module_trait_corr <- cor(module_eigengenes, numeric_traits, use = 'p')
+# get the pval
+# Calculates Student asymptotic p-value for given correlations.
+module_trait_corr_pval <- corPvalueStudent(module_trait_corr, nSamples)
+module_trait_corr_pval
+module_trait_corr_pval_df <- as.data.frame(module_trait_corr_pval)
+unadjust <- module_trait_corr_pval_df$AD.vs.CONTROL
+adjust <- p.adjust(module_trait_corr_pval_df$AD.vs.CONTROL, method = p.adjust.methods, n = length(module_trait_corr_pval_df$AD.vs.CONTROL))
+
+library(magrittr)
+module_trait_corr_pval_fdr <- module_trait_corr_pval %>% 
+     as.vector %>% 
+     p.adjust(method='fdr') %>% # FDR is Benjamini & Hochberg
+     matrix(ncol=35)
+
+colnames(module_trait_corr_pval_fdr) <- colnames(module_trait_corr_pval)
+rownames(module_trait_corr_pval_fdr) <- rownames(module_trait_corr_pval)
+```
+# Heatmap
+```{r heatmap}
+heatmap.data <- merge(module_eigengenes, numeric_traits, by = "row.names")
+heatmap.data <- heatmap.data %>%
+  column_to_rownames(var = 'Row.names')
+
+# some data has missing values with na, such as lewy body count. 
+# Replace na with zero 
+heatmap.data["Cing.LB"][is.na(heatmap.data["Cing.LB"])] <- 0
+heatmap.data["Cing.Synuclein"][is.na(heatmap.data["Cing.Synuclein"])] <- 0
+plot_colors <- names(heatmap.data)[1:15]
+plot_colors <- gsub("ME", "", plot_colors)
+
+help(CorLevelPlot)
+#par(mar= c(5, 5, 3, 3)) # bottom, left, top and right 
+cor_disease_plot <- CorLevelPlot(heatmap.data, 
+             x = c(names(heatmap.data)[43:44], names(heatmap.data)[47]), # which traits
+             y = names(heatmap.data)[1:15], # gene modules 
+             col = c("blue1", "skyblue", "white", "pink", "red"),
+             rotLabX = 45, 
+             colLabY = c(plot_colors), 
+            # main = "Module-trait relationships", 
+            # cexMain = 1, 
+             fontLabX = 1,
+             fontLabY = 1) # color scale
+cor_disease_plot
+```
+# Plot gene count per module 
+```{r gene_count_per_module}
+color_counts <- as.data.frame(bwnet$colors) # color modules 
+color_counts$gene_id <- row.names(color_counts) # gene_ids as row names
+colnames(color_counts)[1] ="hcolors"
+color_counts$hcolors <- factor(color_counts$hcolors, levels = rev(plot_colors)) # arrange to match pervious plot 
+rev_plot_colors <- rev(plot_colors)
+gene_count_per_module <- ggplot(color_counts, aes(x=hcolors)) + 
+    geom_bar(fill = rev_plot_colors) +
+  theme_classic() +
+    ggtitle("Gene count in modules") +
+    xlab("Module") +
+    ylab("Gene count") +
+  theme(axis.text.x=element_text(color=rev_plot_colors, angle = 65, vjust = .65)) +
+  geom_text(stat='count', aes(label=after_stat(count)), vjust=-.25) 
+```
+# Gene-level combine all plots 
+```{r}
+plotDendroAndColors(bwnet$dendrograms[[1]], cbind(bwnet$unmergedColors, bwnet$colors), 
+                    c("unmerged", "merged"), 
+                    dendroLabels = FALSE, 
+                    addGuide = TRUE, 
+                    hang = 0.03,
+                    guideHang = 0.05)
+x <- recordPlot()
+replayPlot(x, reloadPkgs=FALSE)
+
+row1 <- ggarrange(replayPlot(x, reloadPkgs=FALSE),
+    gene_count_per_module,
+    ncol = 2,
+    labels = c("a)", "b)"),
+    font.label = list(size = 10)
+  )
+
+row2 <- ggarrange(
+  cor_disease_plot,
+  NULL,
+  ncol = 2,
+  labels = c("c)", "d)"),
+  font.label = list(size = 10)
+  )
+
+row3 <-
+  ggarrange(x,
+    NULL,
+    NULL,
+    ncol = 3,
+    labels = c("e)", "f)", "g)"),
+    font.label = list(size = 10)
+  )
+
+combind <-
+  ggarrange(
+    row1,
+    row2,
+    row3,
+    nrow = 3
+  )
+combind
+
+path <- paste0("../../../results/manuscript_figures/Figure_4_WGCNA_TYPE")
+saveToPDF(paste0(path, ".pdf"), width = 8, height = 11.5)
+
+#jpeg(file="../../../results/manuscript_figures/Figure_5_sex_differences.jpeg",
+#width=8, height=11, units="in", res = 1500)
+#combind
+#dev.off()
+```
