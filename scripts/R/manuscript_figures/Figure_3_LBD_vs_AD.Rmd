@@ -67,7 +67,7 @@ LBDvsControl_down <- subset(LBDvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
 ADvsControl_up <- subset(ADvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
 ADvsControl_down <- subset(ADvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
 ```
-# Upset
+# Upset v2
 ```{r}
 list_input <- list("LBD down-regulated" = LBDvsControl_down$gene_name,
                    "LBD up-regulated" = LBDvsControl_up$gene_name,
@@ -75,7 +75,7 @@ list_input <- list("LBD down-regulated" = LBDvsControl_down$gene_name,
                    "AD up-regulated" = ADvsControl_up$gene_name)
 data <- fromList(list_input)
 
-upset_gene <- upset(data, set_sizes = FALSE,
+upset_gene <- upset(data, name='', set_sizes = FALSE,
       c('LBD down-regulated',
         'AD down-regulated',
         'LBD up-regulated',
@@ -104,7 +104,7 @@ upset_gene <- upset(data, set_sizes = FALSE,
     'Intersection size'=(
         intersection_size(
         size=2,
-        text = list(size = 3),
+        text = list(size = 2.5),
         text_mapping = aes(),
         bar_number_threshold=3,  # show all numbers on top of bars
         width=0.3,   # reduce width of the bars
@@ -112,8 +112,8 @@ upset_gene <- upset(data, set_sizes = FALSE,
       )
       + scale_fill_manual(values=c('grey'), guide='none')
       + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
-      + theme(axis.text.y = element_text(size = 9),
-              axis.title.y = element_text(size = 9),
+      + theme(axis.text.y = element_text(size = 8),
+              axis.title.y = element_text(size = 8),
           panel.grid.major=element_blank(),
           panel.grid.minor=element_blank(),
           plot.margin = margin(0, 0, 0, 0, "cm"), 
@@ -123,13 +123,16 @@ upset_gene <- upset(data, set_sizes = FALSE,
         shape='circle filled',
         size=2,
         stroke=0.45)) +
-        theme(axis.text.y = element_text(size = 9),
-              axis.title.y = element_text(size = 9), 
+        theme(axis.text.y = element_text(size = 8),
+              axis.title.y = element_text(size = 8),
+              axis.text.x = element_blank(),
+              axis.title.x = element_blank(), 
               plot.margin = margin(0, 0, 0, 0, "cm")),
     sort_sets=FALSE,
   sort_intersections=FALSE)
 upset_gene
 ```
+
 # LBD & AD - metascape shared 
 ### Metascape Enrichment shared between LBD & AD
 ```{r}
@@ -144,12 +147,22 @@ shared_up_enrich_results$Description <-
       )
 shared_up_enrich_results$Description <- factor(shared_up_enrich_results$Description, levels = shared_up_enrich_results$Description)
 shared_up_enrich_results <- melt(shared_up_enrich_results)
-
+shared_up_enrich_results$variable <-
+      gsub(
+       "X_LogP_ADvsControl",
+        "AD",
+        shared_up_enrich_results$variable
+      )
+shared_up_enrich_results$variable <-
+      gsub(
+       "X_LogP_LBDvsControl",
+        "LBD",
+        shared_up_enrich_results$variable
+      )
 # plot - up
 shared_up_enric_heatmap <- 
   ggplot(shared_up_enrich_results, aes(variable, fct_rev(Description), fill= value)) + 
   geom_tile() +
-  theme_bw() +
   scale_y_discrete(expand = c(0, 0)) +
   labs(x = "", y = "") +
   guides(fill = guide_legend(
@@ -157,26 +170,28 @@ shared_up_enric_heatmap <-
     title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)")
   )) +
   scale_fill_gradientn(
-    colours = c("#800026FF","#FD8D3CFF", "#FFFFCCFF"),
+    colours = c("#800026FF","#FD8D3CFF", "gray"),
     guide = "legend",
-    limits = c(-25,-1),
-  ) + theme(strip.text = element_text(size = 9), 
-          axis.text.y = element_text(size = 9),
-          axis.text.x = element_text(size = 9), 
-          axis.title.x = element_text(size = 9), 
-          legend.text = element_text(size = 9),
-          legend.title = element_text(size = 9),
+    limits = c(-22,-0),
+  ) +  theme_bw() +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
-          plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-          plot.title = element_text(size = 9, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
- #  theme(aspect.ratio = 1.5) # to reduce the size of the boxes 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.3, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 2.25)) +
+    ggtitle("Up-regulated enrichment summaries")
+
 addSmallLegend <- function(shared_up_enric_heatmap, pointSize = 3, textSize = 6, spaceLegend = .5) {
     shared_up_enric_heatmap +
         guides(shape = guide_legend(override.aes = list(size = pointSize)),
                color = guide_legend(override.aes = list(size = pointSize))) +
         theme(legend.title = element_text(size = textSize), 
-              legend.position = "bottom",
+              legend.position = "right",
               legend.text  = element_text(size = textSize),
               legend.key.size = unit(spaceLegend, "lines"))
 }
@@ -192,12 +207,22 @@ shared_down_enrich_results <-
   read.csv("../../../results/star/metascape/Disease_vs_Control_down_regulated/Enrichment_heatmap/HeatmapSelectedGO.csv")
 shared_down_enrich_results$Description <- factor(shared_down_enrich_results$Description, levels = shared_down_enrich_results$Description)
 shared_down_enrich_results <- melt(shared_down_enrich_results)
-
+shared_down_enrich_results$variable <-
+      gsub(
+       "X_LogP_ADvsControl",
+        "AD",
+        shared_down_enrich_results$variable
+      )
+shared_down_enrich_results$variable <-
+      gsub(
+       "X_LogP_LBDvsControl",
+        "LBD",
+        shared_down_enrich_results$variable
+      )
 # plot - down
 shared_down_enric_heatmap <- 
   ggplot(shared_down_enrich_results, aes(variable, fct_rev(Description), fill= value)) + 
   geom_tile() +
-  theme_bw() +
   scale_y_discrete(expand = c(0, 0)) +
   labs(x = "", y = "") +
   guides(fill = guide_legend(
@@ -205,26 +230,28 @@ shared_down_enric_heatmap <-
     title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)")
   )) +
   scale_fill_gradientn(
-    colours = c("#800026FF","#FD8D3CFF", "#FFFFCCFF"),
+    colours = c("#800026FF","#FD8D3CFF", "gray"),
     guide = "legend",
-    limits = c(-25,-1),
-  ) + theme(strip.text = element_text(size = 9), 
-          axis.text.y = element_text(size = 9),
-          axis.text.x = element_text(size = 9), 
-          axis.title.x = element_text(size = 9), 
-          legend.text = element_text(size = 9),
-          legend.title = element_text(size = 9),
+    limits = c(-22,-0),
+  ) +  theme_bw() +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
-          plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-          plot.title = element_text(size = 9, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
- #  theme(aspect.ratio = 1.5) # to reduce the size of the boxes 
+          plot.margin = margin(0.1, 0.1, 0.2, 0.1, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 1.85)) +
+    ggtitle("Down-regulated enrichment summaries")
+
 addSmallLegend <- function(shared_down_enric_heatmap, pointSize = 3, textSize = 6, spaceLegend = .5) {
     shared_down_enric_heatmap +
         guides(shape = guide_legend(override.aes = list(size = pointSize)),
                color = guide_legend(override.aes = list(size = pointSize))) +
         theme(legend.title = element_text(size = textSize), 
-              legend.position = "bottom",
+              legend.position = "right",
               legend.text  = element_text(size = textSize),
               legend.key.size = unit(spaceLegend, "lines"))
 }
@@ -282,7 +309,7 @@ ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD,
     ),
     color = "black",
     fontface = "italic",
-    size = 2.5, 
+    size = 2, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
   ) +
   geom_text_repel(
@@ -294,7 +321,7 @@ ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD,
     ),
     color = "black",
     fontface = "italic",
-    size = 2.5, 
+    size = 2, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
   ) +
   geom_text_repel(
@@ -306,24 +333,26 @@ ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD,
     ),
     color = "black",
     fontface = "italic",
-    size = 2.5, 
+    size = 2, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
-  theme(plot.title = element_text(size = 9)) +
-  theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 9),
-        axis.text.x = element_text(size = 9)) +
-  theme(axis.title.y = element_text(size = 9),
-        axis.text.y = element_text(size = 9)) +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8),
+          axis.title.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0)) +
   labs(
-    title = "DEGs shared and unique between LBD and AD",
-    x = expression(paste("  ", log[2](AD/control))),
-    y = expression(paste("  ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+    title = "Differentially expressed genes, FDRq < 0.05 & absolute log2FC > 0.25
+Shared and unique between LBD and AD",
+    x = expression(paste("  ", log[2](AD/Control))),
+    y = expression(paste("  ", log[2](LBD/Control))))+
+  scale_y_continuous(breaks = seq(-1.5, 1.5, by = .5), 
                      limits = c(-1.75, 1.75), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+  scale_x_continuous(breaks = seq(-1.5, 1.5, by = .5), 
                      limits = c(-1.75, 1.75), expand = c(0,0))
 ADandLBD_corr_plot_sig
 ```
@@ -373,7 +402,7 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     ),
     color = "black",
     fontface = "italic",
-    size = 2.5, 
+    size = 2, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
   ) +
   geom_text_repel(
@@ -385,7 +414,7 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     ),
     color = "black",
     fontface = "italic",
-    size = 2.5, 
+    size = 2, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
   ) +
   geom_text_repel(
@@ -399,28 +428,29 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     nudge_x = .15,
     nudge_y = -.15,
     fontface = "italic",
-    size = 2.5, 
+    size = 2, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
-  theme(plot.title = element_text(size = 9)) +
-  theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 9),
-        axis.text.x = element_text(size = 9)) +
-  theme(axis.title.y = element_text(size = 9),
-        axis.text.y = element_text(size = 9)) +
+  theme_bw() +
+    theme(strip.text = element_text(size = 8), 
+          axis.title.y = element_text(size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.2, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0)) +
   labs(
-    title = "LBD and AD",
+    title = "All expressed genes
+Shared between LBD and AD",
     x = expression(paste("  ", log[2](AD/control))),
     y = expression(paste("  ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+  scale_y_continuous(breaks = seq(-1.5, 1.5, by = .5), 
                      limits = c(-1.75, 1.75), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-1.75, 1.75, by = .5), 
+  scale_x_continuous(breaks = seq(-1.5, 1.5, by = .5), 
                      limits = c(-1.75, 1.75), expand = c(0,0))
 ADandLBD_corr_plot
-
-
 ```
 # Volcano - LBD vs AD 
 ```{r}
@@ -481,12 +511,12 @@ volcano <- ggplot(data = data,
       geom_point(alpha = 0.8, size = 1) +
       theme_bw() +
       theme(legend.position = "none", 
-        plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-             axis.title.x = element_text(size = 9),
-             axis.text.x = element_text(size = 9),
-             axis.title.y = element_text(size = 9),
-             axis.text.y = element_text(size = 9),
-             plot.title = element_text(size = 9, margin = margin(0,0,0,0))) +
+             axis.title.x = element_text(size = 8),
+             axis.text.x = element_text(size = 8),
+             axis.title.y = element_text(size = 8),
+             axis.text.y = element_text(size = 8),
+             plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
+             plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       scale_color_manual(values = my_colors) +
       labs(
         title = "",
@@ -554,7 +584,8 @@ volcano <- ggplot(data = data,
         fontface = "italic",
         size = 2,
         max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-      )
+      ) +
+  scale_x_continuous(limits = c(-1, 1.5), breaks = seq(-1, 1.5, .5))
 volcano
 i <- gsub(" vs ", "vs", i)
 ```
@@ -712,8 +743,10 @@ remove(
 ```
 ### Enrichment plot showing log10 P-value
 ```{r}
+# lock in factor level order
+down_enrich_results_subset$Description <- factor(down_enrich_results_subset$Description, levels = rev(down_enrich_results_subset$Description))
 down_enrich_plot <-
-  ggplot(data = down_enrich_results_subset, aes(x = InTerm, y = rev(Description))) +
+  ggplot(data = down_enrich_results_subset, aes(x = InTerm, y = Description)) +
   ggplot2::facet_grid(~ Cluster) +
   geom_bar(stat = "identity", aes(fill = LogP), width = .65) +
   theme_bw() +
@@ -724,26 +757,26 @@ down_enrich_plot <-
     title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)")
   )) +
   scale_fill_gradientn(
-    colours = c("darkmagenta", "mediumorchid3", "grey"),
+    colours = c("#800026FF", "#FD8D3CFF", "gray"),
     guide = "legend",
-    limits = c(-40,-1),
-  ) + theme(strip.text = element_text(size = 9), 
-          axis.text.y = element_text(size = 9),
-          axis.text.x = element_text(size = 9), 
-          axis.title.x = element_text(size = 9), 
-          legend.text = element_text(size = 9),
-          legend.title = element_text(size = 9),
+    limits = c(-36,-0),
+  ) + theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
-          plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-          plot.title = element_text(size = 9, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
+          plot.margin = margin(0.1, 0.3, 0.2, 0.1, "cm"), 
+          plot.title = element_text(size = 8, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
  #  theme(aspect.ratio = 1.5) # to reduce the size of the boxes 
 addSmallLegend <- function(down_enrich_plot, pointSize = 3, textSize = 6, spaceLegend = .5) {
     down_enrich_plot +
         guides(shape = guide_legend(override.aes = list(size = pointSize)),
                color = guide_legend(override.aes = list(size = pointSize))) +
         theme(legend.title = element_text(size = textSize), 
-              legend.position = "bottom",
+              legend.position = "right",
               legend.text  = element_text(size = textSize),
               legend.key.size = unit(spaceLegend, "lines"))
 }
@@ -751,8 +784,9 @@ addSmallLegend <- function(down_enrich_plot, pointSize = 3, textSize = 6, spaceL
 down_enrich_plot <- addSmallLegend(down_enrich_plot)
 down_enrich_plot
 
+up_enrich_results_subset$Description <- factor(up_enrich_results_subset$Description, levels = rev(up_enrich_results_subset$Description))
 up_enrich_plot <-
-  ggplot(data = up_enrich_results_subset, aes(x = InTerm, y = rev(Description))) +
+  ggplot(data = up_enrich_results_subset, aes(x = InTerm, y = Description)) +
   ggplot2::facet_grid(~ Cluster) +
   geom_bar(stat = "identity", aes(fill = LogP), width = .65) +
   theme_bw() +
@@ -760,27 +794,27 @@ up_enrich_plot <-
   labs(x = "Gene count", y = "") +
   guides(fill = guide_legend(title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)"))) +
   scale_fill_gradientn(
-    colours = c("darkmagenta", "mediumorchid3", "grey"),
+    colours = c("#800026FF", "#FD8D3CFF", "gray"),
     guide = "legend",
-    limits = c(-40,-1)
+    limits = c(-20,-0)
   ) +
- theme(strip.text = element_text(size = 9), 
-          axis.text.y = element_text(size = 9),
-          axis.text.x = element_text(size = 9), 
-          axis.title.x = element_text(size = 9), 
-          legend.text = element_text(size = 9),
-          legend.title = element_text(size = 9),
+ theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
-          plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-          plot.title = element_text(size = 9, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
+          plot.margin = margin(0.1, 0.3, 0.2, 0.3, "cm"), 
+          plot.title = element_text(size = 8, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
  #  theme(aspect.ratio = 1.5) # to reduce the size of the boxes 
 addSmallLegend <- function(up_enrich_plot, pointSize = 3, textSize = 6, spaceLegend = .5) {
     up_enrich_plot +
         guides(shape = guide_legend(override.aes = list(size = pointSize)),
                color = guide_legend(override.aes = list(size = pointSize))) +
         theme(legend.title = element_text(size = textSize), 
-              legend.position = "bottom",
+              legend.position = "right",
               legend.text  = element_text(size = textSize),
               legend.key.size = unit(spaceLegend, "lines"))
 }
@@ -796,7 +830,7 @@ row1 <-
     shared_up_enric_heatmap,
     ncol = 2,
     labels = c("a)", "b)"),
-    font.label = list(size = 9)
+    font.label = list(size = 8)
   )
 
 row2 <-
@@ -805,7 +839,7 @@ row2 <-
     ADandLBD_corr_plot_sig,
     ncol = 2,
     labels = c("c)", "d)"),
-    font.label = list(size = 9)
+    font.label = list(size = 8)
   )
 
 row3 <-
@@ -814,7 +848,7 @@ row3 <-
     volcano,
     ncol = 2,
     labels = c("e)", "f)"),
-    font.label = list(size = 9)
+    font.label = list(size = 8)
   )
 
 row4 <-
@@ -823,7 +857,7 @@ row4 <-
     down_enrich_plot,
     ncol = 2,
     labels = c("g)", "h)"),
-    font.label = list(size = 9)
+    font.label = list(size = 8)
   )
 
 combind <-
@@ -837,13 +871,7 @@ combind <-
 combind
 
 path <- paste0("../../../results/manuscript_figures/Figure_3_AD_vs_LBD")
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 11.5)
-
-
-jpeg(file="../../../results/manuscript_figures/Figure_2_AD_vs_LBD.jpeg",
-width=8, height=11, units="in", res = 1500)
-combind
-dev.off()
+saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 ```
 ```{r}
 ```
