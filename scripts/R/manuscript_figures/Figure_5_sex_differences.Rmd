@@ -16,6 +16,15 @@ library("readxl")
 condition <- c("TYPE.SEX")
 tool <- "star"
 dge.filtered.norm <- readRDS(paste0("../../../rObjects/dge.filtered.norm.rds"))
+
+addSmallLegend <- function(myPlot, pointSize = 4, textSize = 7, spaceLegend = .5) {
+    myPlot +
+        guides(shape = guide_legend(override.aes = list(size = pointSize)),
+               color = guide_legend(override.aes = list(size = pointSize))) +
+        theme(legend.title = element_text(size = textSize), 
+              legend.text  = element_text(size = textSize),
+              legend.key.size = unit(spaceLegend, "lines"))
+}
 ```
 # Volcano 
 ## LBD vs Control
@@ -48,7 +57,7 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
     up10 <- up[1:10,]
-    upFold <- subset(up, logFC > 1)
+    upFold <- subset(up, logFC > 1.15)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
     down10 <- down[1:10,]
@@ -76,24 +85,25 @@ Female_LBD_vs_control_volcano <- ggplot(data = data,
                y = -log10(P.Value),
                color = color_adjpval_0.05
              )) +
-      geom_point(alpha = 0.8, size = 1) +
+      geom_point(alpha = 0.8, size = 0.85) +
       xlim(-2, 2) +
       ylim(0, 11) +
       theme_bw() +
       theme(legend.position = "none", 
-        plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-             axis.title.x = element_text(size = 10),
-             axis.text.x = element_text(size = 10),
-             axis.title.y = element_text(size = 10),
-             axis.text.y = element_text(size = 10),
-             plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
+        plot.margin = margin(0.1, 0.2, 0.2, 0.2, "cm"), 
+             axis.title.x = element_text(size = 8),
+             axis.text.x = element_text(size = 8),
+             axis.title.y = element_text(size = 8),
+             axis.text.y = element_text(size = 8),
+             plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       scale_color_manual(values = my_colors) +
+      ggtitle(paste0("XX Female
+LBD vs Control")) +
       labs(
-        title = "",
         x = expression(log[2](FC)),
         y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
       )  +
-      #theme(plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
+      #theme(plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       geom_hline(yintercept = hadjpval,
                  #  horizontal line
                  colour = "#000000",
@@ -106,7 +116,6 @@ Female_LBD_vs_control_volcano <- ggplot(data = data,
                  #  horizontal line
                  colour = "#000000",
                  linetype = "dashed") +
-      ggtitle(paste0(i)) +
       geom_text_repel(
         data = up10,
         aes(
@@ -117,7 +126,7 @@ Female_LBD_vs_control_volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = upFold,
@@ -129,7 +138,7 @@ Female_LBD_vs_control_volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = down10,
@@ -188,7 +197,7 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
     up10 <- up[1:10,]
-    upFold <- subset(up, logFC > 1)
+    upFold <- subset(up, logFC > 0.75)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
     down10 <- down[1:10,]
@@ -216,24 +225,24 @@ Male_LBD_vs_control_volcano <- ggplot(data = data,
                y = -log10(P.Value),
                color = color_adjpval_0.05
              )) +
-      geom_point(alpha = 0.8, size = 1) +
+      geom_point(alpha = 0.8, size = 0.85) +
       theme_bw() +
         xlim(-2, 2) +
         ylim(0, 11) +
       theme(legend.position = "none", 
-        plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-             axis.title.x = element_text(size = 10),
-             axis.text.x = element_text(size = 10),
-             axis.title.y = element_text(size = 10),
-             axis.text.y = element_text(size = 10),
-             plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
+        plot.margin = margin(0.1, 0.2, 0.2, 0.2, "cm"), 
+             axis.title.x = element_text(size = 8),
+             axis.text.x = element_text(size = 8),
+             axis.title.y = element_text(size = 8),
+             axis.text.y = element_text(size = 8),
+             plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       scale_color_manual(values = my_colors) +
+        ggtitle("XY Male
+LBD vs Control") +
       labs(
-        title = "",
         x = expression(log[2](FC)),
         y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
       )  +
-      #theme(plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
       geom_hline(yintercept = hadjpval,
                  #  horizontal line
                  colour = "#000000",
@@ -246,7 +255,7 @@ Male_LBD_vs_control_volcano <- ggplot(data = data,
                  #  horizontal line
                  colour = "#000000",
                  linetype = "dashed") +
-      ggtitle(paste0(i)) +
+
       geom_text_repel(
         data = up10,
         aes(
@@ -257,7 +266,7 @@ Male_LBD_vs_control_volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = upFold,
@@ -269,7 +278,7 @@ Male_LBD_vs_control_volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = down10,
@@ -281,7 +290,7 @@ Male_LBD_vs_control_volcano <- ggplot(data = data,
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
       ) +
       geom_text_repel(
         data = downFold,
@@ -293,7 +302,7 @@ Male_LBD_vs_control_volcano <- ggplot(data = data,
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
       )
 Male_LBD_vs_control_volcano
 i <- gsub(" vs ", "vs", i)
@@ -357,24 +366,25 @@ Female_AD_vs_control_volcano <- ggplot(data = data,
                y = -log10(P.Value),
                color = color_adjpval_0.05
              )) +
-      geom_point(alpha = 0.8, size = 1) +
-      xlim(-2, 2.5) +
+      geom_point(alpha = 0.8, size = 0.85) +
+      xlim(-2.25, 2.5) +
       ylim(0, 9) +
       theme_bw() +
       theme(legend.position = "none", 
-        plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-             axis.title.x = element_text(size = 10),
-             axis.text.x = element_text(size = 10),
-             axis.title.y = element_text(size = 10),
-             axis.text.y = element_text(size = 10),
-             plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
+        plot.margin = margin(0.1, 0.2, 0.2, 0.2, "cm"), 
+             axis.title.x = element_text(size = 8),
+             axis.text.x = element_text(size = 8),
+             axis.title.y = element_text(size = 8),
+             axis.text.y = element_text(size = 8),
+             plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       scale_color_manual(values = my_colors) +
+        ggtitle("XX Female
+AD vs Control") +
       labs(
-        title = "",
         x = expression(log[2](FC)),
         y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
       )  +
-      #theme(plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
+      #theme(plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       geom_hline(yintercept = hadjpval,
                  #  horizontal line
                  colour = "#000000",
@@ -387,7 +397,7 @@ Female_AD_vs_control_volcano <- ggplot(data = data,
                  #  horizontal line
                  colour = "#000000",
                  linetype = "dashed") +
-      ggtitle(paste0(i)) +
+
       geom_text_repel(
         data = up10,
         aes(
@@ -398,7 +408,7 @@ Female_AD_vs_control_volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = upFold,
@@ -410,7 +420,7 @@ Female_AD_vs_control_volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = down10,
@@ -422,7 +432,7 @@ Female_AD_vs_control_volcano <- ggplot(data = data,
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = downFold,
@@ -434,7 +444,7 @@ Female_AD_vs_control_volcano <- ggplot(data = data,
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       )
 Female_AD_vs_control_volcano
 i <- gsub(" vs ", "vs", i)
@@ -497,24 +507,26 @@ Male_AD_vs_control_volcano <- ggplot(data = data,
                y = -log10(P.Value),
                color = color_adjpval_0.05
              )) +
-      geom_point(alpha = 0.8, size = 1) +
+      geom_point(alpha = 0.8, size = 0.85) +
       theme_bw() +
         xlim(-2, 2.5) +
         ylim(0, 9) +
+      theme_bw() +
       theme(legend.position = "none", 
-        plot.margin = margin(0.1, 0.2, 0, 0.2, "cm"), 
-             axis.title.x = element_text(size = 10),
-             axis.text.x = element_text(size = 10),
-             axis.title.y = element_text(size = 10),
-             axis.text.y = element_text(size = 10),
-             plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
+        plot.margin = margin(0.1, 0.2, 0.2, 0.2, "cm"), 
+             axis.title.x = element_text(size = 8),
+             axis.text.x = element_text(size = 8),
+             axis.title.y = element_text(size = 8),
+             axis.text.y = element_text(size = 8),
+             plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       scale_color_manual(values = my_colors) +
+        ggtitle("XY Male
+AD vs Control") +
       labs(
-        title = "",
         x = expression(log[2](FC)),
         y = expression(-log[10] ~ "(" ~ italic("p") ~ "-value)")
       )  +
-      #theme(plot.title = element_text(size = 10, margin = margin(0,0,0,0))) +
+      #theme(plot.title = element_text(size = 8, margin = margin(0,0,0,0))) +
       geom_hline(yintercept = hadjpval,
                  #  horizontal line
                  colour = "#000000",
@@ -527,7 +539,6 @@ Male_AD_vs_control_volcano <- ggplot(data = data,
                  #  horizontal line
                  colour = "#000000",
                  linetype = "dashed") +
-      ggtitle(paste0(i)) +
       geom_text_repel(
         data = up10,
         aes(
@@ -562,7 +573,7 @@ Male_AD_vs_control_volcano <- ggplot(data = data,
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = downFold,
@@ -574,7 +585,7 @@ Male_AD_vs_control_volcano <- ggplot(data = data,
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       )
 Male_AD_vs_control_volcano
 i <- gsub(" vs ", "vs", i)
@@ -675,7 +686,7 @@ list_input <- list("female down-regulated" = LBDvsControl_female_XX_down$gene_na
                    "male up-regulated" = LBDvsControl_male_XY_up$gene_name)
 data <- fromList(list_input)
 
-LBD_upset_gene <- upset(data, set_sizes = FALSE,
+LBD_upset_gene <- upset(data, name='', set_sizes = FALSE,
       c('female down-regulated',
         'male down-regulated',
         'female up-regulated',
@@ -709,7 +720,7 @@ LBD_upset_gene <- upset(data, set_sizes = FALSE,
     'Intersection size'=(
         intersection_size(
         size=2,
-        text = list(size = 3),
+        text = list(size = 2.5),
         text_mapping = aes(),
         bar_number_threshold=3,  # show all numbers on top of bars
         width=0.3,   # reduce width of the bars
@@ -717,19 +728,19 @@ LBD_upset_gene <- upset(data, set_sizes = FALSE,
       )
       + scale_fill_manual(values=c('grey'), guide='none')
       + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
-      + theme(axis.text.y = element_text(size = 10),
-              axis.title.y = element_text(size = 10),
+      + theme(axis.text.y = element_text(size = 8),
+              axis.title.y = element_text(size = 8),
           panel.grid.major=element_blank(),
           panel.grid.minor=element_blank(),
-          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          plot.margin = margin(0, 0, 0, 0.2, "cm"), 
           axis.line=element_line(colour='black')))),
   matrix=intersection_matrix(
       geom=geom_point(
         shape='circle filled',
         size=2,
         stroke=0.45)) +
-        theme(axis.text.y = element_text(size = 10),
-              axis.title.y = element_text(size = 10), 
+        theme(axis.text.y = element_text(size = 8),
+              axis.title.y = element_text(size = 8), 
               plot.margin = margin(0, 0, 0, 0, "cm")),
     sort_sets=FALSE,
   sort_intersections=FALSE)
@@ -743,7 +754,7 @@ list_input <- list("female down-regulated" = ADvsControl_female_XX_down$gene_nam
                    "male up-regulated" = ADvsControl_male_XY_up$gene_name)
 data <- fromList(list_input)
 
-AD_upset_gene <- upset(data, set_sizes = FALSE,
+AD_upset_gene <- upset(data, name = '', set_sizes = FALSE,
       c('female down-regulated',
         'male down-regulated',
         'female up-regulated',
@@ -776,7 +787,7 @@ AD_upset_gene <- upset(data, set_sizes = FALSE,
     'Intersection size'=(
         intersection_size(
         size=2,
-        text = list(size = 3),
+        text = list(size = 2.5),
         text_mapping = aes(),
         bar_number_threshold=3,  # show all numbers on top of bars
         width=0.3,   # reduce width of the bars
@@ -784,19 +795,19 @@ AD_upset_gene <- upset(data, set_sizes = FALSE,
       )
       + scale_fill_manual(values=c('grey'), guide='none')
       + scale_y_continuous(expand=expansion(mult=c(0, 0.5)))
-      + theme(axis.text.y = element_text(size = 10),
-              axis.title.y = element_text(size = 10),
+      + theme(axis.text.y = element_text(size = 8),
+              axis.title.y = element_text(size = 8),
           panel.grid.major=element_blank(),
           panel.grid.minor=element_blank(),
-          plot.margin = margin(0, 0, 0, 0, "cm"), 
+          plot.margin = margin(0, 0, 0, 0.2, "cm"), 
           axis.line=element_line(colour='black')))),
   matrix=intersection_matrix(
       geom=geom_point(
         shape='circle filled',
         size=2,
         stroke=0.45)) +
-        theme(axis.text.y = element_text(size = 10),
-              axis.title.y = element_text(size = 10), 
+        theme(axis.text.y = element_text(size = 8),
+              axis.title.y = element_text(size = 8), 
               plot.margin = margin(0, 0, 0, 0, "cm")),
     sort_sets=FALSE,
   sort_intersections=FALSE)
@@ -847,9 +858,9 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
   ) +  annotate(
     "rect",
     xmin = 0,
-    xmax = -2,
+    xmax = -1.75,
     ymin = 0,
-    ymax = -2,
+    ymax = -1.75,
     fill = "cadetblue3",
     alpha = .1) +
   geom_abline(color = "gray80", linetype = 2) +
@@ -865,8 +876,8 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
     ),
     color = "black",
     fontface = "italic",
-    size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 18)
+    size = 2, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
     ) +
   geom_text_repel(
     data = sig_f_sub, 
@@ -877,8 +888,8 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
     ),
     color = "#490092",
     fontface = "italic",
-    size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 18)
+    size = 2, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
     ) +
     geom_text_repel(
     data = sig_m_sub, 
@@ -889,25 +900,26 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
     ),
     color = "#D55E00",
     fontface = "italic",
-    size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    size = 2, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
     ) +
   theme_bw() +
-  theme(plot.title = element_text(size = 10)) +
-  theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 10),
-        axis.text.x = element_text(size = 10)) +
-  theme(axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10)) +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8),
+          axis.title.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0)) +
   labs(
-  title = "DEGs shared and unique between the sexes
-adj.P.val <= 0.05 & absolute log2FC > 0.25",
+  title = "Differentially expressed genes, FDRq < 0.05 & absolute log2FC > 0.25
+Shared and unique between the sexes",
   x = expression(paste("XX female ", log[2](LBD/control))),
   y = expression(paste("XY male ", log[2](LBD/control))))+
-  scale_y_continuous(breaks = seq(-2, 2, by = .5), 
-                     limits = c(-2, 2), expand = c(0,0)) +
-  scale_x_continuous(breaks = seq(-2, 2, by = .5), 
-                     limits = c(-2, 2), expand = c(0,0))
+  scale_y_continuous(breaks = seq(-1.5, 2, by = .5), 
+                     limits = c(-1.75, 2), expand = c(0,0)) +
+  scale_x_continuous(breaks = seq(-1.5, 2, by = .5), 
+                     limits = c(-1.75, 2), expand = c(0,0))
 LBD_corr_plot_adjPval_05 
 ```
 ### AD vs Control bt the sexes
@@ -971,8 +983,8 @@ AD_corr_plot_adjPval_05 <- ggplot(data = AD_FandM,
     ),
     color = "black",
     fontface = "italic",
-    size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    size = 2, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
     ) +
   geom_text_repel(
     data = sig_f_sub, 
@@ -983,8 +995,8 @@ AD_corr_plot_adjPval_05 <- ggplot(data = AD_FandM,
     ),
     color = "#490092",
     fontface = "italic",
-    size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    size = 2, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
     ) +
     geom_text_repel(
     data = sig_m_sub, 
@@ -995,22 +1007,23 @@ AD_corr_plot_adjPval_05 <- ggplot(data = AD_FandM,
     ),
     color = "#D55E00",
     fontface = "italic",
-    size = 2.5, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    size = 2, 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
     ) +
   theme_bw() +
-  theme(plot.title = element_text(size = 10)) +
-  theme(legend.position = "none") +
-  theme(axis.title.x = element_text(size = 10),
-        axis.text.x = element_text(size = 10)) +
-  theme(axis.title.y = element_text(size = 10),
-        axis.text.y = element_text(size = 10)) +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8),
+          axis.title.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8), 
+          axis.title.x = element_text(size = 8), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0)) +
   labs(
-  title = "DEGs shared and unique between the sexes
-adj.P.val <= 0.05 & absolute log2FC > 0.25",
+  title = "Differentially expressed genes, FDRq < 0.05 & absolute log2FC > 0.25
+Shared and unique between the sexes",
   x = expression(paste("XX female ", log[2](AD/control))),
   y = expression(paste("XY male ", log[2](AD/control))))+
-  scale_y_continuous(breaks = seq(-2, 2.25, by = .5), 
+  scale_y_continuous(breaks = seq(-1.5, 2.5, by = .5), 
                      limits = c(-2, 2.5), expand = c(0,0)) +
   scale_x_continuous(breaks = seq(-1.5, 2.5, by = .5), 
                      limits = c(-2, 2.5), expand = c(0,0))
@@ -1023,84 +1036,105 @@ AD_corr_plot_adjPval_05
 ```{r}
 LBD_FandM$difference <- LBD_FandM$female_logFC - LBD_FandM$male_logFC
 
-LBD_FandM <- subset(LBD_FandM, difference > .75 | difference < -.75)
+LBD_FandM <- subset(LBD_FandM, difference > .8 | difference < -.8)
 LBD_FandM <- LBD_FandM[order(-LBD_FandM$difference),]
 LBD_FandM_DEGs_melt <- reshape2::melt(LBD_FandM)
 data <- subset(LBD_FandM_DEGs_melt, variable == "female_logFC" | variable == "male_logFC")
 data$gene_name <- factor(data$gene_name , levels = unique(data$gene_name))
 data$gene_name <- fct_rev(data$gene_name)
+data$variable <- factor(data$variable)
+
+data$variable <- gsub("female_logFC", "XX Female", data$variable)
+data$variable <- gsub("male_logFC", "XY Male", data$variable)
+
+data$colorVal <-  ifelse(data$value > -.5, 'black', "white")
 
 LBD_heatmap <- ggplot(data = data) +
   geom_tile(aes(x = variable, y =gene_name, fill = value)) +
-  scale_fill_gradient2(
-    low = "blue",
-    mid = "white",
-    high = "red",
-    midpoint = 0,
-    space = "rgb",
-    guide = "colourbar",
-    breaks = c(-2.5, 0, 2.5),
-    name = expression(log[2](CPM))
-  ) +
+  geom_text(aes(x = variable, y =gene_name, label = round(value, digits = 2), color = colorVal), size = 2.5) +
+  scale_color_manual(values = c('black' = 'black', 'white' = 'white'), guide = "none") +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-1,0,2)),
+                         guide = "colorbar", limits=c(-1, 2),
+                         breaks = c(-1, 0, 2), name = expression(log[2](FC))) +
   scale_x_discrete(expand = c(0,0)) +
   theme_bw() +
   theme(
     strip.text = element_text(size = 8),
-   # legend.position = "none",
+    legend.position = "none",
     panel.border = element_blank(),
     panel.background = element_blank(),
-    plot.margin = margin(0, 0.2, 0, 0.2, "cm"), 
+    plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
+    plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0),
     panel.spacing = unit(0,'lines'), 
-    plot.title = element_text(size = 8, vjust = -1, hjust = 0),
+   # plot.title = element_text(size = 8, vjust = -1, hjust = 0),
     axis.title.x=element_blank(),
     axis.ticks.x=element_blank(), 
+    axis.text.x = element_text(size = 8, color = "black"),
     axis.title.y = element_blank(), 
-    axis.text.y = element_text(size = 8, margin = margin(r = -2)),
+    axis.text.y = element_text(size = 7, margin = margin(r = -2)),
     axis.ticks.y=element_blank()) +
-  ggtitle("Genes with the largest
-difference in log2FC between the sexes") 
+  ggtitle("Genes with the largest difference between the sexes
+LBD vs Control within each sex") +
+    theme(
+    legend.position = "right", 
+    legend.text = element_text(size =6), 
+    legend.title = element_text (size = 8), 
+    legend.margin=margin(0,0,1,0),
+    legend.key.size = unit(0.5, "cm"))
+LBD_heatmap <- addSmallLegend(LBD_heatmap)
 ```
 ### AD
 ```{r}
 AD_FandM$difference <- AD_FandM$female_logFC - AD_FandM$male_logFC
 
-AD_FandM <- subset(AD_FandM, difference > 1.1 | difference < -.75)
+AD_FandM <- subset(AD_FandM, difference > 1.1 | difference < -.8)
 AD_FandM <- AD_FandM[order(-AD_FandM$difference),]
 AD_FandM_DEGs_melt <- reshape2::melt(AD_FandM)
 data <- subset(AD_FandM_DEGs_melt, variable == "female_logFC" | variable == "male_logFC")
 data$gene_name <- factor(data$gene_name , levels = unique(data$gene_name))
 data$gene_name <- fct_rev(data$gene_name)
+data$variable <- factor(data$variable)
+
+data$variable <- gsub("female_logFC", "XX Female", data$variable)
+data$variable <- gsub("male_logFC", "XY Male", data$variable)
+
+data$colorVal <-  ifelse(data$value > -.5, 'black', "white")
 
 AD_heatmap <- ggplot(data = data) +
   geom_tile(aes(x = variable, y =gene_name, fill = value)) +
-  scale_fill_gradient2(
-    low = "blue",
-    mid = "white",
-    high = "red",
-    midpoint = 0,
-    space = "rgb",
-    guide = "colourbar",
-    breaks = c(-2.5, 0, 2.5),
-    name = expression(log[2](CPM))
-  ) +
+  geom_text(aes(x = variable, y =gene_name, label = round(value, digits = 2), color = colorVal), size = 2.5) +
+  scale_color_manual(values = c('black' = 'black', 'white' = 'white'), guide = "none") +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-1.3,0,2.35)),
+                         guide = "colorbar", limits=c(-1.3, 2.35),
+                         breaks = c(-1.3, 0, 2.35), name = expression(log[2](FC))) +
   scale_x_discrete(expand = c(0,0)) +
   theme_bw() +
   theme(
-    strip.text = element_text(size = 10),
+    strip.text = element_text(size = 8),
     legend.position = "none",
     panel.border = element_blank(),
     panel.background = element_blank(),
-    plot.margin = margin(0, 0.2, 0, 0.2, "cm"), 
+    plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
+    plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0),
     panel.spacing = unit(0,'lines'), 
-    plot.title = element_text(size = 10, vjust = -1, hjust = 0),
+   # plot.title = element_text(size = 8, vjust = -1, hjust = 0),
     axis.title.x=element_blank(),
-   # axis.text.x = element_blank(), 
+    axis.text.x = element_text(size = 8, color = "black"),
     axis.ticks.x=element_blank(), 
     axis.title.y = element_blank(), 
-    axis.text.y = element_text(size = 10, margin = margin(r = -2)),
+    axis.text.y = element_text(size = 7, margin = margin(r = -2)),
     axis.ticks.y=element_blank()) +
-  ggtitle("Genes with the largest
-difference in log2FC between the sexes") 
+  ggtitle("Genes with the largest difference between the sexes
+AD vs Control within each sex") +
+  theme(
+    legend.position = "right", 
+    legend.text = element_text(size =6), 
+    legend.title = element_text (size = 8), 
+    legend.margin=margin(0,0,1,0),
+    legend.key.size = unit(0.5, "cm"))
+AD_heatmap <- addSmallLegend(AD_heatmap)
 AD_heatmap
 ```
 # Gene-level combine all plots 
@@ -1112,7 +1146,7 @@ row1 <-
     LBD_upset_gene,
     ncol = 3,
     labels = c("a)", "b)", "c)"),
-    font.label = list(size = 10),
+    font.label = list(size = 8),
     widths = c(.8, .8, 1.2)
   )
 
@@ -1121,7 +1155,7 @@ row2 <- ggarrange(
   LBD_heatmap,
   ncol = 2,
   labels = c("d)", "e)"),
-  font.label = list(size = 10),
+  font.label = list(size = 8),
   widths = c(1.2, .9)
   )
 
@@ -1132,7 +1166,7 @@ row3 <-
     AD_upset_gene,
     ncol = 3,
     labels = c("f)", "g)", "h)"),
-    font.label = list(size = 10),
+    font.label = list(size = 8),
     widths = c(.8, .8, 1.2)
   )
 
@@ -1141,7 +1175,7 @@ row4 <- ggarrange(
   AD_heatmap,
   ncol = 2,
   labels = c("i)", "j)"),
-  font.label = list(size = 10),
+  font.label = list(size = 8),
   widths = c(1.2, .9)
   )
 
@@ -1155,8 +1189,8 @@ combind <-
   )
 combind
 
-path <- paste0("../../../results/manuscript_figures/Figure_5_sex_differences")
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 11.5)
+path <- paste0("../../../results/manuscript_figures/Figure_5_sex_differences_v2")
+saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 
 #jpeg(file="../../../results/manuscript_figures/Figure_5_sex_differences.jpeg",
 #width=8, height=11, units="in", res = 1500)

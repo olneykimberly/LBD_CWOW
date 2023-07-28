@@ -782,6 +782,11 @@ remove(bar_plots, pie_plots, plotnames, p) # do not remove metadata_categorical
 # Continuous variables 
 ### TYPE
 ```{r message=FALSE, warning=FALSE, tidy=TRUE}
+
+#tapply(metadata$Age, metadata$TYPE, t.test) 
+#result <- t.test(data)
+#result$conf.int
+
 metadata_continuous <-
   data.frame(
     metadata$Brain.wt,

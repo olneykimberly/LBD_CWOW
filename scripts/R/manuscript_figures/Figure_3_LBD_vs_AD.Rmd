@@ -67,7 +67,7 @@ LBDvsControl_down <- subset(LBDvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
 ADvsControl_up <- subset(ADvsControl, logFC > 0.25 & adj.P.Val <= 0.05)
 ADvsControl_down <- subset(ADvsControl, logFC < -0.25 & adj.P.Val <= 0.05)
 ```
-# Upset v2
+# Upset
 ```{r}
 list_input <- list("LBD down-regulated" = LBDvsControl_down$gene_name,
                    "LBD up-regulated" = LBDvsControl_up$gene_name,
@@ -170,9 +170,9 @@ shared_up_enric_heatmap <-
     title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)")
   )) +
   scale_fill_gradientn(
-    colours = c("#800026FF","#FD8D3CFF", "gray"),
+    colours = c("#800026FF","#FD8D3CFF", "#FFFFCCFF"),
     guide = "legend",
-    limits = c(-22,-0),
+    limits = c(-22,-3),
   ) +  theme_bw() +
     theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -230,9 +230,10 @@ shared_down_enric_heatmap <-
     title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)")
   )) +
   scale_fill_gradientn(
-    colours = c("#800026FF","#FD8D3CFF", "gray"),
+    colours = c("#800026FF","#FD8D3CFF", "#FFFFCCFF"),
     guide = "legend",
-    limits = c(-22,-0),
+    limits = c(-19,-2),
+    breaks = c(-19, -15, -10, -5)
   ) +  theme_bw() +
     theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -243,7 +244,7 @@ shared_down_enric_heatmap <-
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
           plot.margin = margin(0.1, 0.1, 0.2, 0.1, "cm"), #t,r,b,l
-          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 1.85)) +
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 1.95)) +
     ggtitle("Down-regulated enrichment summaries")
 
 addSmallLegend <- function(shared_down_enric_heatmap, pointSize = 3, textSize = 6, spaceLegend = .5) {
@@ -279,7 +280,8 @@ ADandLBD_goi <- subset(ADandLBD,
                           (AD_logFC > .5 & LBD_logFC < 0) | # up in AD, down in LBD
                           (AD_logFC < -.5 & LBD_logFC > 0)) # up in LBD, down in AD
 ROS1_goi <- subset(ADandLBD, gene_name == "ROS1")
-more_goi <- subset(ADandLBD, AD_logFC > .15 & LBD_logFC < -0.2) 
+more_goi <- subset(ADandLBD, (AD_logFC > .15 & LBD_logFC < 0) | (AD_logFC < -.15 & LBD_logFC > 0.15)) 
+more_goi <- more_goi[!(more_goi$gene_name %in% ADandLBD_goi$gene_name),]
 
 ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD, 
   aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
@@ -310,7 +312,7 @@ ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD,
     color = "black",
     fontface = "italic",
     size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
   ) +
   geom_text_repel(
     data = ROS1_goi, 
@@ -322,19 +324,21 @@ ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD,
     color = "black",
     fontface = "italic",
     size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
   ) +
   geom_text_repel(
     data = more_goi, 
     aes(
       x = AD_logFC, 
       y = LBD_logFC,
-      label = gene_name
+      label = gene_name,
+      x_nudge = 0.15,
+      y_nudge = -0.15
     ),
     color = "black",
     fontface = "italic",
     size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -481,11 +485,11 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
     up10 <- up[1:10,]
-    upFold <- subset(up, logFC > 1)
+    upFold <- subset(up, logFC > 0.75)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
     down10 <- down[1:10,]
-    downFold <- subset(down, logFC < -1)
+    downFold <- subset(down, logFC < -0.65)
     downFold <- downFold[!(downFold$gene_name %in% down10$gene_name),]
     if (!1 %in% unique(data$color_adjpval_0.05)) {
       my_colors <- c("blue", "gray")
@@ -547,7 +551,7 @@ volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
         data = upFold,
@@ -559,7 +563,8 @@ volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
+        x_nudge = 0.3,
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
       ) +
       geom_text_repel(
         data = down10,
@@ -757,9 +762,10 @@ down_enrich_plot <-
     title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)")
   )) +
   scale_fill_gradientn(
-    colours = c("#800026FF", "#FD8D3CFF", "gray"),
+    colours = c("midnightblue", "blue", "cadetblue1"), # midnightblue
     guide = "legend",
-    limits = c(-36,-0),
+    limits = c(-36,-2),
+    breaks = c(-36, -30, -20, -10, -5, -2)
   ) + theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
           axis.text.x = element_text(size = 8), 
@@ -794,9 +800,9 @@ up_enrich_plot <-
   labs(x = "Gene count", y = "") +
   guides(fill = guide_legend(title = expression(log[10] ~ "(" ~ italic("p") ~ "-value)"))) +
   scale_fill_gradientn(
-    colours = c("#800026FF", "#FD8D3CFF", "gray"),
+    colours = c("darkred", "red", "lightcoral"),
     guide = "legend",
-    limits = c(-20,-0)
+    limits = c(-20,-5)
   ) +
  theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -870,7 +876,7 @@ combind <-
   )
 combind
 
-path <- paste0("../../../results/manuscript_figures/Figure_3_AD_vs_LBD")
+path <- paste0("../../../results/manuscript_figures/Figure_3_AD_vs_LBD_vHeatmap_updated")
 saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 ```
 ```{r}

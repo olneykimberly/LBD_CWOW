@@ -395,7 +395,7 @@ up_and_down_enrich_plot <-
   ggforce::facet_col(facets = vars(Cluster), 
                      scales = "free_y", 
                      space = "free") +
-  geom_bar(stat = "identity", aes(fill = `Log(q-value)`), width = .7, position = position_dodge(width = .2)) +
+  geom_bar(stat = "identity", aes(fill = LogP), width = .7, position = position_dodge(width = .2)) +
   theme_bw() +
   ggtitle(paste0("Enrichment summaries")) +
   labs(x = "Gene count", y = NULL) +
@@ -403,7 +403,7 @@ up_and_down_enrich_plot <-
   scale_fill_gradientn(
     colours = c("#800026FF", "#FD8D3CFF", "gray"),
     guide = "legend",
-    limits = c(-18,-0)
+    limits = c(-22,-3)
   ) +
     theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -550,11 +550,10 @@ GO_1_DEG$FC <- 2^(GO_1_DEG$logFC)
 up_GO_1_lcpm_heat <- ggplot(data = GO_1_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "black", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -588,11 +587,10 @@ GO_2_DEG$FC <- 2^(GO_2_DEG$logFC)
 up_GO_2_lcpm_heat <- ggplot(data = GO_2_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "black", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -626,11 +624,10 @@ GO_3_DEG$FC <- 2^(GO_3_DEG$logFC)
 up_GO_3_lcpm_heat <- ggplot(data = GO_3_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "black", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -663,11 +660,10 @@ GO_4_DEG$FC <- 2^(GO_4_DEG$logFC)
 up_GO_4_lcpm_heat <- ggplot(data = GO_4_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "black", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -701,11 +697,10 @@ GO_5_DEG$FC <- 2^(GO_5_DEG$logFC)
 up_GO_5_lcpm_heat <- ggplot(data = GO_5_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "black", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -831,11 +826,10 @@ GO_1_DEG$FC <- GO_1_DEG$FC*-1
 down_GO_1_lcpm_heat <- ggplot(data = GO_1_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "white", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -870,11 +864,10 @@ GO_2_DEG$FC <- GO_2_DEG$FC*-1
 down_GO_2_lcpm_heat <- ggplot(data = GO_2_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "white", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -910,11 +903,10 @@ GO_3_DEG$FC <- GO_3_DEG$FC*-1
 down_GO_3_lcpm_heat <- ggplot(data = GO_3_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "white", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -950,11 +942,10 @@ GO_4_DEG$FC <- GO_4_DEG$FC*-1
 down_GO_4_lcpm_heat <- ggplot(data = GO_4_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "white", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -989,11 +980,10 @@ GO_5_DEG$FC <- GO_5_DEG$FC*-1
 down_GO_5_lcpm_heat <- ggplot(data = GO_5_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = round(FC, digits = 2)), color = "white", size = 2.5) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,-1,0,1,2.5)) +
+  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1)) +
   scale_x_discrete(expand = c(0,0)) +
   scale_y_discrete(expand = c(0,0)) +
   theme_bw() +
@@ -1020,18 +1010,18 @@ down_GO_5_lcpm_heat
 ```
 ### legend only
 ```{r}
-u=seq(-3,2.5, by=0.01)
+u=seq(-2.8,2.1, by=0.01)
 df <- data.frame(u)
 # heatmap 
 legend_data <- ggplot(data = df, aes(x=u,y=row_number(df))) +
   geom_tile(aes(fill = u)) +
-  scale_fill_gradient2(low = "blue",
-                       mid = "#FFFFCC",
-                       high = "#FF0000",
-                       midpoint = 0,
-                       breaks = c(-3,0,2.5),
-                      name = "Fold change
-                      ") +
+    scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
+                         values = rescale(c(-2.8,0,2.1)),
+                         guide = "colorbar", limits=c(-2.8, 2.1),
+                         breaks = c(-2.8, 0, 2.1),
+                         labels = c(-2.8, 0, 2.1),
+                         name = "Fold change
+                         ") +
   theme(
     legend.position = "bottom", 
     legend.text = element_text(size =6), 
