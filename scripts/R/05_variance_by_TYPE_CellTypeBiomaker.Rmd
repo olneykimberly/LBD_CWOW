@@ -36,6 +36,10 @@ dge.filtered.norm$samples$APOE <- factor(dge.filtered.norm$samples$APOE)
 
 info <- as.data.frame(dge.filtered.norm$samples)
 genes <- dge.filtered.norm$genes
+gene_name <- genes$gene_name
+saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, ".veBayesFit.rds"))
+
+saveRDS(gene_name, file ="/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/gene_tables/gene_options.rds")
 ```
 
 # Add biomarker expression to dge metadata 
@@ -605,6 +609,7 @@ col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444")
 path <- paste0("../../results/", tool ,"/varpart/", condition, ".CCA_PC1_10")
 saveToPDF(paste0(path, ".pdf"), width = 20, height = 20)
 ```
+
 ```{r}
 Sys.setenv(RSTUDIO_PANDOC="/usr/local/biotools/pandoc/3.1.2/bin")
 glimmaMDS(dge.filtered.norm)

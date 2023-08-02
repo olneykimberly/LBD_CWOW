@@ -137,6 +137,10 @@ all.equal(dge$samples$NPID, as.character(info_with_scale$NPID))
 # replace sample information with the updated info that includes biomakrer expression
 dge$samples <- info_with_scale
 ```
+# LBD type refined
+```{r}
+info_with_scale$LBD.type <-
+```
 # Voom transform counts
 Transform count data to log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observation-level weights. The data are then ready for linear mixed modelling with dream(). This method is the same as limma::voom(), except that it allows random effects in the formula. 
 ```{r voom, warning=FALSE}

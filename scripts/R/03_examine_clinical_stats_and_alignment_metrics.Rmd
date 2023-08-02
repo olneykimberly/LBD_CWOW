@@ -1135,5 +1135,6 @@ corrplot(
 path <- paste0("../../results/clinical/correlation_continuous_variables")
 saveToPDF(paste0(path, ".pdf"), width = 10, height = 10)
 ```
-
+```{r}
+```
 

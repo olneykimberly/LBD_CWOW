@@ -56,11 +56,11 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- subset(data, (adj.P.Val < 0.05 & logFC < -.25)  | (adj.P.Val < 0.05 & logFC > .25 ))
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
-    up10 <- up[1:10,]
+    up10 <- up[1:2,]
     upFold <- subset(up, logFC > 1.15)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
-    down10 <- down[1:10,]
+    down10 <- down[1:4,]
     downFold <- subset(down, logFC < -1)
     downFold <- downFold[!(downFold$gene_name %in% down10$gene_name),]
     if (!1 %in% unique(data$color_adjpval_0.05)) {
@@ -116,54 +116,8 @@ LBD vs Control")) +
                  #  horizontal line
                  colour = "#000000",
                  linetype = "dashed") +
-      geom_text_repel(
-        data = up10,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "maroon",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-      ) +
-      geom_text_repel(
-        data = upFold,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "maroon",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-      ) +
-      geom_text_repel(
-        data = down10,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "navyblue",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
-      ) +
-      geom_text_repel(
-        data = downFold,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "navyblue",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
-      )
+  scale_x_continuous(limits = c(-2, 2), breaks = seq(-2, 2, 1)) +
+  scale_y_continuous(limits = c(0, 12), breaks = seq(0, 12, 3))
 Female_LBD_vs_control_volcano
 i <- gsub(" vs ", "vs", i)
 i <- gsub(" ", "_", i)
@@ -196,11 +150,11 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- subset(data, (adj.P.Val < 0.05 & logFC < -.25)  | (adj.P.Val < 0.05 & logFC > .25 ))
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
-    up10 <- up[1:10,]
+    up10 <- up[1:4,]
     upFold <- subset(up, logFC > 0.75)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
-    down10 <- down[1:10,]
+    down10 <- down[1:4,]
     downFold <- subset(down, logFC < -1)
     downFold <- downFold[!(downFold$gene_name %in% down10$gene_name),]
     if (!1 %in% unique(data$color_adjpval_0.05)) {
@@ -255,55 +209,8 @@ LBD vs Control") +
                  #  horizontal line
                  colour = "#000000",
                  linetype = "dashed") +
-
-      geom_text_repel(
-        data = up10,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "maroon",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-      ) +
-      geom_text_repel(
-        data = upFold,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "maroon",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-      ) +
-      geom_text_repel(
-        data = down10,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "navyblue",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
-      ) +
-      geom_text_repel(
-        data = downFold,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "navyblue",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
-      )
+  scale_x_continuous(limits = c(-2, 2), breaks = seq(-2, 2, 1)) +
+  scale_y_continuous(limits = c(0, 12), breaks = seq(0, 12, 3))
 Male_LBD_vs_control_volcano
 i <- gsub(" vs ", "vs", i)
 i <- gsub(" ", "_", i)
@@ -337,11 +244,11 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- subset(data, (adj.P.Val < 0.05 & logFC < -.25)  | (adj.P.Val < 0.05 & logFC > .25 ))
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
-    up10 <- up[1:10,]
+    up10 <- up[1:4,]
     upFold <- subset(up, logFC > 1)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
-    down10 <- down[1:10,]
+    down10 <- down[1:4,]
     downFold <- subset(down, logFC < -1)
     downFold <- downFold[!(downFold$gene_name %in% down10$gene_name),]
     if (!1 %in% unique(data$color_adjpval_0.05)) {
@@ -408,7 +315,7 @@ AD vs Control") +
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 2)
       ) +
       geom_text_repel(
         data = upFold,
@@ -420,7 +327,7 @@ AD vs Control") +
         color = "maroon",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 2)
       ) +
       geom_text_repel(
         data = down10,
@@ -432,20 +339,10 @@ AD vs Control") +
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 2)
       ) +
-      geom_text_repel(
-        data = downFold,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "navyblue",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-      )
+  scale_x_continuous(limits = c(-2.5, 2.5), breaks = seq(-2.5, 2.5, 1)) +
+  scale_y_continuous(limits = c(0, 9.5), breaks = seq(0, 9.5, 3))
 Female_AD_vs_control_volcano
 i <- gsub(" vs ", "vs", i)
 i <- gsub(" ", "_", i)
@@ -478,11 +375,11 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- subset(data, (adj.P.Val < 0.05 & logFC < -.25)  | (adj.P.Val < 0.05 & logFC > .25 ))
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
-    up10 <- up[1:10,]
+    up10 <- up[1:4,]
     upFold <- subset(up, logFC > 1)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
-    down10 <- down[1:10,]
+    down10 <- down[1:4,]
     downFold <- subset(down, logFC < -1)
     downFold <- downFold[!(downFold$gene_name %in% down10$gene_name),]
     if (!1 %in% unique(data$color_adjpval_0.05)) {
@@ -540,30 +437,6 @@ AD vs Control") +
                  colour = "#000000",
                  linetype = "dashed") +
       geom_text_repel(
-        data = up10,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "maroon",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-      ) +
-      geom_text_repel(
-        data = upFold,
-        aes(
-          x = logFC,
-          y = -log10(P.Value),
-          label = gene_name
-        ),
-        color = "maroon",
-        fontface = "italic",
-        size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-      ) +
-      geom_text_repel(
         data = down10,
         aes(
           x = logFC,
@@ -573,7 +446,7 @@ AD vs Control") +
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 2)
       ) +
       geom_text_repel(
         data = downFold,
@@ -585,8 +458,10 @@ AD vs Control") +
         color = "navyblue",
         fontface = "italic",
         size = 2,
-        max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-      )
+        max.overlaps = getOption("ggrepel.max.overlaps", default = 2)
+      ) +
+  scale_x_continuous(limits = c(-2.5, 2.5), breaks = seq(-2.5, 2.5, 1)) +
+  scale_y_continuous(limits = c(0, 9.5), breaks = seq(0, 9.5, 3))
 Male_AD_vs_control_volcano
 i <- gsub(" vs ", "vs", i)
 i <- gsub(" ", "_", i)
@@ -867,42 +742,6 @@ LBD_corr_plot_adjPval_05 <- ggplot(data = LBD_FandM,
   geom_point(data = sig_f, color="#490092", shape=16) + 
   geom_point(data = sig_m, color="#D55E00", shape=15) + 
   geom_point(data = sig_both, color="gray20", shape=25) + 
-  geom_text_repel(
-    data = sig_both_sub, 
-    aes(
-    x = female_logFC, 
-    y = male_logFC,
-    label = gene_name
-    ),
-    color = "black",
-    fontface = "italic",
-    size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-    ) +
-  geom_text_repel(
-    data = sig_f_sub, 
-    aes(
-    x = female_logFC, 
-    y = male_logFC,
-    label = gene_name
-    ),
-    color = "#490092",
-    fontface = "italic",
-    size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-    ) +
-    geom_text_repel(
-    data = sig_m_sub, 
-    aes(
-    x = female_logFC, 
-    y = male_logFC,
-    label = gene_name
-    ),
-    color = "#D55E00",
-    fontface = "italic",
-    size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-    ) +
   theme_bw() +
     theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -974,42 +813,6 @@ AD_corr_plot_adjPval_05 <- ggplot(data = AD_FandM,
   geom_point(data = sig_f, color="#490092", shape=16) + 
   geom_point(data = sig_m, color="#D55E00", shape=15) + 
   geom_point(data = sig_both, color="gray20", shape=25) + 
-  geom_text_repel(
-    data = sig_both_sub, 
-    aes(
-    x = female_logFC, 
-    y = male_logFC,
-    label = gene_name
-    ),
-    color = "black",
-    fontface = "italic",
-    size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-    ) +
-  geom_text_repel(
-    data = sig_f_sub, 
-    aes(
-    x = female_logFC, 
-    y = male_logFC,
-    label = gene_name
-    ),
-    color = "#490092",
-    fontface = "italic",
-    size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-    ) +
-    geom_text_repel(
-    data = sig_m_sub, 
-    aes(
-    x = female_logFC, 
-    y = male_logFC,
-    label = gene_name
-    ),
-    color = "#D55E00",
-    fontface = "italic",
-    size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
-    ) +
   theme_bw() +
     theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -1064,7 +867,7 @@ LBD_heatmap <- ggplot(data = data) +
     legend.position = "none",
     panel.border = element_blank(),
     panel.background = element_blank(),
-    plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
+    plot.margin = margin(0.1, 0.3, 0.2, 0.8, "cm"), #t,r,b,l
     plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0),
     panel.spacing = unit(0,'lines'), 
    # plot.title = element_text(size = 8, vjust = -1, hjust = 0),
@@ -1116,8 +919,8 @@ AD_heatmap <- ggplot(data = data) +
     legend.position = "none",
     panel.border = element_blank(),
     panel.background = element_blank(),
-    plot.margin = margin(0.1, 0.3, 0.2, 0.4, "cm"), #t,r,b,l
-    plot.title = element_text(size = 8, margin = margin(.1,.1,.1,0), hjust = 0),
+    plot.margin = margin(0.1, 0.6, 0.2, 0.6, "cm"), #t,r,b,l
+    plot.title = element_text(size = 8, margin = margin(.1,.3,.1,0), hjust = 0),
     panel.spacing = unit(0,'lines'), 
    # plot.title = element_text(size = 8, vjust = -1, hjust = 0),
     axis.title.x=element_blank(),
@@ -1189,7 +992,7 @@ combind <-
   )
 combind
 
-path <- paste0("../../../results/manuscript_figures/Figure_5_sex_differences_v2")
+path <- paste0("../../../results/manuscript_figures/Figure_5_sex_differences")
 saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 
 #jpeg(file="../../../results/manuscript_figures/Figure_5_sex_differences.jpeg",

@@ -283,6 +283,10 @@ ROS1_goi <- subset(ADandLBD, gene_name == "ROS1")
 more_goi <- subset(ADandLBD, (AD_logFC > .15 & LBD_logFC < 0) | (AD_logFC < -.15 & LBD_logFC > 0.15)) 
 more_goi <- more_goi[!(more_goi$gene_name %in% ADandLBD_goi$gene_name),]
 
+sig_AD <- subset(ADandLBD, AD_adj.P.Val < 0.05 & LBD_adj.P.Val > 0.05)
+sig_LBD <- subset(ADandLBD, LBD_adj.P.Val < 0.05 &  AD_adj.P.Val > 0.05)
+sig_both <- subset(ADandLBD, AD_adj.P.Val < 0.05 & LBD_adj.P.Val < 0.05)
+
 ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD, 
   aes(x = AD_logFC, y = LBD_logFC, text = paste(gene_name))) +
   annotate(
@@ -292,7 +296,7 @@ ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD,
     ymin = 1.75,
     ymax = 0,
     fill = "lightpink3",
-    alpha = .5
+    alpha = .1
   ) +  annotate(
     "rect",
     xmin = 0,
@@ -300,47 +304,48 @@ ADandLBD_corr_plot_sig <- ggplot(data = ADandLBD,
     ymin = 0,
     ymax = -1.75,
     fill = "cadetblue3",
-    alpha = .5) +
-  geom_abline(color = "gray40") +
+    alpha = .1) +
+ # geom_abline(color = "gray40") +
+  geom_abline(color = "gray80", linetype = 2) +
+  geom_point(data = sig_AD, color=AD_color, shape=AD_shape) + 
+  geom_point(data = sig_LBD, color=LBD_color, shape=LBD_shape) + 
+  geom_point(data = sig_both, color="black", shape=25) + 
   geom_text_repel(
-    data = ADandLBD_goi, 
+    data = sig_both, 
     aes(
-      x = AD_logFC, 
-      y = LBD_logFC,
-      label = gene_name
+    x = AD_logFC, 
+    y = LBD_logFC,
+    label = gene_name
     ),
     color = "black",
     fontface = "italic",
     size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-  ) +
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
+    ) +
   geom_text_repel(
-    data = ROS1_goi, 
+    data = sig_LBD, 
     aes(
-      x = AD_logFC, 
-      y = LBD_logFC,
-      label = gene_name
+    x = AD_logFC, 
+    y = LBD_logFC,
+    label = gene_name
     ),
-    color = "black",
+    color = LBD_color,
     fontface = "italic",
     size = 2, 
     max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
-  ) +
-  geom_text_repel(
-    data = more_goi, 
+    ) +
+    geom_text_repel(
+    data = sig_AD, 
     aes(
-      x = AD_logFC, 
-      y = LBD_logFC,
-      label = gene_name,
-      x_nudge = 0.15,
-      y_nudge = -0.15
+    x = AD_logFC, 
+    y = LBD_logFC,
+    label = gene_name
     ),
-    color = "black",
+    color = AD_color,
     fontface = "italic",
     size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 10)
-  ) +
-  geom_point(size = 1) + 
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 30)
+    ) +
   theme_bw() +
     theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -407,19 +412,7 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     color = "black",
     fontface = "italic",
     size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 15)
-  ) +
-  geom_text_repel(
-    data = ROS1_goi, 
-    aes(
-      x = AD_logFC, 
-      y = LBD_logFC,
-      label = gene_name
-    ),
-    color = "black",
-    fontface = "italic",
-    size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
   ) +
   geom_text_repel(
     data = more_goi, 
@@ -433,7 +426,7 @@ ADandLBD_corr_plot <- ggplot(data = ADandLBD,
     nudge_y = -.15,
     fontface = "italic",
     size = 2, 
-    max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+    max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
   ) +
   geom_point(size = 1) + 
   theme_bw() +
@@ -484,8 +477,10 @@ group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condi
   num <- subset(data, (adj.P.Val < 0.05 & logFC < -.25)  | (adj.P.Val < 0.05 & logFC > .25 ))
   num <- nrow(num)
     up <- data[data$color_adjpval_0.05 == 1,]
-    up10 <- up[1:10,]
-    upFold <- subset(up, logFC > 0.75)
+    up10 <- up[1:7,]
+    up10 <- 
+
+    upFold <- subset(up, logFC > 0.9)
     upFold <- upFold[!(upFold$gene_name %in% up10$gene_name),]
     down <- data[data$color_adjpval_0.05 == 2,]
     down10 <- down[1:10,]
@@ -551,6 +546,8 @@ volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
+        x_nudge = 0.5,
+        y_nudge = 0.5,
         max.overlaps = getOption("ggrepel.max.overlaps", default = 8)
       ) +
       geom_text_repel(
@@ -563,7 +560,8 @@ volcano <- ggplot(data = data,
         color = "maroon",
         fontface = "italic",
         size = 2,
-        x_nudge = 0.3,
+        x_nudge = 0.5,
+       # y_nudge = 0.5,
         max.overlaps = getOption("ggrepel.max.overlaps", default = 5)
       ) +
       geom_text_repel(
@@ -748,11 +746,16 @@ remove(
 ```
 ### Enrichment plot showing log10 P-value
 ```{r}
+# New facet label names for supp variable
+Cluster.labs <- c("LBD vs AD
+down-regulated")
+names(Cluster.labs ) <- c("down-regulated")
+
 # lock in factor level order
 down_enrich_results_subset$Description <- factor(down_enrich_results_subset$Description, levels = rev(down_enrich_results_subset$Description))
 down_enrich_plot <-
   ggplot(data = down_enrich_results_subset, aes(x = InTerm, y = Description)) +
-  ggplot2::facet_grid(~ Cluster) +
+  ggplot2::facet_grid(~ Cluster, labeller = labeller(Cluster = Cluster.labs)) +
   geom_bar(stat = "identity", aes(fill = LogP), width = .65) +
   theme_bw() +
   scale_y_discrete(expand = c(0, 0)) +
@@ -774,8 +777,8 @@ down_enrich_plot <-
           legend.title = element_text(size = 8),
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
-          plot.margin = margin(0.1, 0.3, 0.2, 0.1, "cm"), 
-          plot.title = element_text(size = 8, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
+          plot.margin = margin(0.3, 0.3, 0.2, 0.1, "cm"), 
+          plot.title = element_text(size = 8, hjust = 0, vjust=0, margin = margin(0,0,0,0)))
  #  theme(aspect.ratio = 1.5) # to reduce the size of the boxes 
 addSmallLegend <- function(down_enrich_plot, pointSize = 3, textSize = 6, spaceLegend = .5) {
     down_enrich_plot +
@@ -790,10 +793,16 @@ addSmallLegend <- function(down_enrich_plot, pointSize = 3, textSize = 6, spaceL
 down_enrich_plot <- addSmallLegend(down_enrich_plot)
 down_enrich_plot
 
+
+# New facet label names for supp variable
+Cluster.labs <- c("LBD vs AD
+up-regulated")
+names(Cluster.labs ) <- c("up-regulated")
+
 up_enrich_results_subset$Description <- factor(up_enrich_results_subset$Description, levels = rev(up_enrich_results_subset$Description))
 up_enrich_plot <-
   ggplot(data = up_enrich_results_subset, aes(x = InTerm, y = Description)) +
-  ggplot2::facet_grid(~ Cluster) +
+  ggplot2::facet_grid(~ Cluster, labeller = labeller(Cluster = Cluster.labs)) +
   geom_bar(stat = "identity", aes(fill = LogP), width = .65) +
   theme_bw() +
   scale_y_discrete(expand = c(0, 0)) +
@@ -812,8 +821,8 @@ up_enrich_plot <-
           legend.title = element_text(size = 8),
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
-          plot.margin = margin(0.1, 0.3, 0.2, 0.3, "cm"), 
-          plot.title = element_text(size = 8, hjust = -2.25, vjust=0, margin = margin(0,0,0,0)))
+          plot.margin = margin(0.3, 0.3, 0.2, 0.3, "cm"), 
+          plot.title = element_text(size = 8, hjust = 0, vjust=0, margin = margin(0,0,0,0)))
  #  theme(aspect.ratio = 1.5) # to reduce the size of the boxes 
 addSmallLegend <- function(up_enrich_plot, pointSize = 3, textSize = 6, spaceLegend = .5) {
     up_enrich_plot +
@@ -876,7 +885,7 @@ combind <-
   )
 combind
 
-path <- paste0("../../../results/manuscript_figures/Figure_3_AD_vs_LBD_vHeatmap_updated")
+path <- paste0("../../../results/manuscript_figures/Figure_3_AD_vs_LBD")
 saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 ```
 ```{r}
