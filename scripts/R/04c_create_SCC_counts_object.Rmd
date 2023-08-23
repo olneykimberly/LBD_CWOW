@@ -176,6 +176,16 @@ keepProtein <- dge.filtered$genes$gene_type == "protein_coding"
 dge.filtered <- dge.filtered[keepProtein,,keep.lib.sizes = FALSE]
 dim(dge.filtered)
 ```
+
+```{r eval = FALSE}
+cpm <- edgeR::cpm(dge.filtered$counts, log = FALSE)
+write.table(cpm, "/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/counts/cpm.tsv", quote = FALSE, sep = "\t")
+dim(cpm)
+
+lcpm <- edgeR::cpm(dge.filtered$counts, log = TRUE)
+write.table(lcpm, "/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/counts/lcpm.tsv", quote = FALSE, sep = "\t")
+write.table(metadata, "/research/labs/neurology/fryer/m239830/LBD_CWOW/results/star/counts/metadata.tsv", quote = FALSE, sep = "\t")
+```
 # Library sizes
 ```{r library}
 # before filtering
@@ -242,7 +252,7 @@ saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
 ```{r RIN_check, warning=FALSE}
 # check if there is correlation between RIN and library size
 box <- dge.filtered.norm$samples
-
+box <- box[!is.na(box$RIN),]
 cor(box$RIN, box$lib.size, method = c("pearson", "kendall", "spearman"))
 cor.test(box$RIN, box$lib.size, method=c("pearson", "kendall", "spearman"))
 

@@ -139,7 +139,7 @@ path <-
     condition, 
     "_AD_CWOW_vs_ROSMAP_FDRq0.05_log2FC0.25"
   )
-saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+#saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
 sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "AD_CWOW_logFC",
@@ -156,7 +156,7 @@ path <-
     condition, 
     "_AD_CWOW_vs_ROSMAP_FDRq0.05_log2FC0.25_corr_pval"
   )
-saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+#saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
 ```{r}
 data <-
@@ -232,7 +232,7 @@ path <-
     condition, 
     "_AD_CWOW_vs_ROSMAP"
   )
-saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+#saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 
 # Scatter plot with correlation coefficient
 sp <- ggscatter(data, x = "AD_ROSMAP_logFC", y = "AD_CWOW_logFC",
@@ -249,7 +249,7 @@ path <-
     condition, 
     "_AD_CWOW_vs_ROSMAP_corr_pval"
   )
-saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
+#saveToPDF(paste0(path, ".pdf"), width = 6.25, height = 4.5)
 ```
 
 # CWOW vs ROSMAP - LBD 

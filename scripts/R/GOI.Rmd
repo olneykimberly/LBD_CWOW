@@ -28,7 +28,7 @@ voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rOb
 ```{r}
 # get the gene id that corresponds to the gene name 
 genes <- dge.filtered.norm$genes # gene information 
-goi <- subset(genes, gene_name == "ENO2" | gene_name == "MBP") # gene of interest 
+goi <- subset(genes, gene_name == "PINK1" | gene_name == "PRKN") # gene of interest 
 # subset counts 
 goi_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% rownames(goi))
 goi_melt <- reshape2::melt(goi_counts) # reshape data 
@@ -107,8 +107,17 @@ saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
 ```
 # Gene_id for gene of interest 
 ```{r}
-column_variables <- c("ENSG00000111674.9") # gene_id to plot expression data for
+PINK1 <- subset(df, gene_id == "ENSG00000158828.8")
+PRKN <- subset(df, gene_id == "ENSG00000185345.23")
+column_variables <- c("ENSG00000158828.8") # gene_id to plot expression data for
 colors <- TypeColors
+
+
+PINK1 = subset(PINK1, select = c(NPID, TYPE, gene_id, value))
+PRKN = subset(PRKN, select = c(NPID, TYPE, gene_id, value))
+write.table(PINK1, "../../results/star/goi/PINK1.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(PRKN, "../../results/star/goi/PRKN.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
 ```
 # Function violin jitter of gene expression 
 ```{r}
@@ -120,7 +129,7 @@ violin_plot_fun <- function(j) {
     geom_boxplot(width = 0.1, outlier.shape=NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
     theme_bw() +
-    ggtitle("ENO2 expression") +
+    ggtitle("PINK1 expression") +
     xlab("TYPE") +
     ylab(j) +
     stat_compare_means() +
@@ -132,7 +141,7 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.TYPE.pdf")) %>% #
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/PINK1.TYPE.pdf")) %>% #
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
@@ -149,7 +158,7 @@ violin_plot_fun <- function(j) {
     geom_boxplot(width = 0.1, outlier.shape=NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
     theme_bw() +
-    ggtitle("ENO2 expression") +
+    ggtitle("PINK1 expression") +
     xlab("LBD.type") +
     ylab(j) +
     stat_compare_means() +
@@ -161,7 +170,7 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.LBD.type.pdf")) %>% #
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/PINK1.LBD.type.pdf")) %>% #
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
@@ -176,7 +185,7 @@ violin_plot_fun <- function(j) {
     geom_boxplot(width = 0.1, outlier.shape=NA) + 
     geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
     theme_bw() +
-    ggtitle("ENO2 expression") +
+    ggtitle("PINK1 expression") +
     xlab("LBD.type") +
     ylab(j) +
     stat_compare_means() +
@@ -188,7 +197,7 @@ violin_plots <-
   Map(violin_plot_fun, j = column_variables)
 violin_plots
 
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/ENO2.TLBD_DLBD.pdf")) %>% #
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/PINK1.TLBD_DLBD.pdf")) %>% #
   flatten()
 plotnames
 walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 

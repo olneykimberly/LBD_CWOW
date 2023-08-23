@@ -722,7 +722,8 @@ write.table(
   row.names = FALSE
 )
 ```
+```{r}
+```
 # NOTE!! 
-Now go back to script 04a to create a new dge object that includes these cell type enrichment values. 
-Will need to edit the file_paths_and_colours to include the updated metadata that has the cell type enrichment values. 
+Now goto script 04c to create a new dge object that includes these cell type enrichment values. 
 

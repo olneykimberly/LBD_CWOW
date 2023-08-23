@@ -20,8 +20,8 @@ tool <- c("star")
 
 # Read in DEGs
 The DEGs are already ordered by smallest to largest adjusted p-value.
-```{r loop, echo=FALSE}
-allComparisons <- c("LBDvsControl", "LBDvsAD", "LBDvsPA", "ADvsControl",  "ADvsPA") # no DEGs "PAvsControl"
+```{r loop, echo=FALSE, eval = FALSE}
+allComparisons <- c("LBDvsControl", "LBDvsAD", "ADvsControl") # no DEGs "PAvsControl"
 # first read in the files
 for (i in allComparisons) {
   filepath <- paste0("../../results/",tool,
@@ -43,9 +43,11 @@ for (i in allComparisons) {
   # gprofiler
   gp_up <- gost(up, ordered_query = TRUE, organism = "hsapiens")
   gp_down <- gost(down, ordered_query = TRUE, organism = "hsapiens")
-
-  multi_gp = gost(list("down-regulated" = down, 
-                     "up-regulated" = up), ordered_query = TRUE, 
+  
+  up_names = gconvert(up, organism = "hsapiens")
+  down_names = gconvert(down, organism = "hsapiens")
+  multi_gp = gost(list("down-regulated" = down_names, 
+                     "up-regulated" = up_names), ordered_query = TRUE, 
                      organism = "hsapiens")
   # rearrange so that up-regulated is on top 
   neworder <- c("up-regulated","down-regulated")
@@ -94,6 +96,14 @@ for (i in allComparisons) {
   gp_mod_cluster = new("compareClusterResult", compareClusterResult = gp_mod)
   # define as enrichResult object
   gp_mod_enrich = new("enrichResult", result = gp_mod)
+  bar <- barplot(gp_mod_enrich, showCategory = 15, font.size = 8) + 
+  ggplot2::facet_grid(~Cluster) +
+  ggplot2::ylab("Intersection size")
+  path <- paste0("../../results/", tool, "/gprofiler/", i, "_up_and_down_gprofiler_bar-plot")
+  pdf(paste0(path, ".pdf"), height = 6, width = 4.5)
+  print(bar)
+  dev.off()
+  
   # output table 
   write.table(gp_mod_enrich@result, paste0("../../results/", tool,
                                            "/gprofiler/", i, "_up_and_down_gp_mod_enrich.txt"), 
@@ -101,7 +111,7 @@ for (i in allComparisons) {
 }
 ```
 # Make excel table
-```{r excel, echo=FALSE}
+```{r excel, echo=FALSE, eval=FALSE}
 # first read in the files
 for (i in allComparisons) {
   filepath <- paste0("../../results/",tool,
@@ -120,8 +130,6 @@ allComparisons
 list_of_datasets <- list(
 "ADvsControl" = ADvsControl,     
 "LBDvsControl" = LBDvsControl,
-"ADvsPA" = ADvsPA,         
-"LBDvsPA" = LBDvsPA,
 "LBDvsAD "= LBDvsAD)
 write.xlsx(list_of_datasets, file = paste0(
     "../../results/",
@@ -129,7 +137,7 @@ write.xlsx(list_of_datasets, file = paste0(
     "/gprofiler/", condition,"_up_and_down_gp_mod_enrich.xlsx"))
 ```
 # Excel gene name descriptions
-```{r}
+```{r gene_name, eval = FALSE}
 # first read in the files
 for (i in allComparisons) {
   filepath <- paste0("../../results/",tool,
@@ -147,13 +155,11 @@ for (i in allComparisons) {
 list_of_datasets <- list(
 "ADvsControl" = ADvsControl,     
 "LBDvsControl" = LBDvsControl,
-"ADvsPA" = ADvsPA,         
-"LBDvsPA" = LBDvsPA,
 "LBDvsAD "= LBDvsAD)
 write.xlsx(list_of_datasets, file = paste0(
     "../../results/",
     tool,
-    "/gprofiler/", condition,"_up_gene_descriptions.txt.xlsx"))
+    "/gprofiler/", condition,"_up_gene_descriptions.xlsx"))
 
 # first read in the files
 for (i in allComparisons) {
@@ -172,12 +178,183 @@ for (i in allComparisons) {
 write.xlsx(list_of_datasets, file = paste0(
     "../../results/",
     tool,
-    "/gprofiler/", condition,"_down_gene_descriptions.txt.xlsx"))
+    "/gprofiler/", condition,"_down_gene_descriptions.xlsx"))
 ```
+# function
+```{r function}
+publish_gostplot_intersect <- function (p, highlight_terms = NULL, filename = NULL, width = NA, 
+          height = NA) 
+{
+  if (!("ggplot" %in% class(p))) {
+    warning("Highlighting terms in a Manhattan plot is available for a ggplot object only.\nPlease set 'interactive = F' in the gostplot() function and try again.")
+    return(NULL)
+  }
+  term_id <- logpval <- term_size_scaled <- id <- query <- p_value <- NULL
+  if (!is.null(highlight_terms)) {
+    if (is.data.frame(highlight_terms)) {
+      message("The input 'highlight_terms' is a data.frame and therefore the column 'term_id' will be used for detection.")
+      if ("term_id" %in% colnames(highlight_terms)) {
+        highlight_terms <- highlight_terms$term_id
+      }
+      else {
+        stop("No column named 'term_id'.")
+      }
+    }
+    df <- p$data
+    subdf <- base::subset(df, term_id %in% highlight_terms)
+    if (nrow(subdf) == 0) {
+      message("None of the term IDs in the 'highlight_terms' was found from the results.")
+      return(p)
+    }
+    highlight_terms <- unique(highlight_terms)
+    subdf$id <- match(subdf$term_id, highlight_terms)
+    p <- p + ggplot2::geom_point(data = subdf, ggplot2::aes(x = order, 
+                                                            y = logpval, size = term_size_scaled), pch = 21, 
+                                 colour = "black")
+    p <- p + ggplot2::geom_text(data = subdf, size = 4, colour = "white", 
+                                ggplot2::aes(label = as.character(id), family = "mono", 
+                                             fontface = "bold"), hjust = -1.2, vjust = -0.05) + 
+      ggplot2::geom_text(data = subdf, size = 4, colour = "black", 
+                         fontface = "bold", ggplot2::aes(label = as.character(id)), 
+                         hjust = -1.2, vjust = -0.05)
+    pseudo_gostres <- list(result = data.frame(subdf), meta = list(query_metadata = list(queries = sapply(unique(subdf$query), 
+                                                                                                          function(x) NULL))))
+    tb <- publish_gosttable(pseudo_gostres, highlight_terms = highlight_terms, 
+                            use_colors = TRUE, show_columns = c("source", "term_name", 
+                                                                "intersection_size"), filename = NULL, ggplot = FALSE)
+    h <- grid::unit.c(grid::unit(1, "null"), sum(tb$heights) + 
+                        grid::unit(3, "mm"))
+    w <- grid::unit.c(grid::unit(1, "null"))
+    tg <- gridExtra::grid.arrange(p, tb, ncol = 1, heights = h, 
+                                  widths = w, newpage = TRUE)
+    p <- ggplot2::ggplot() + ggplot2::annotation_custom(tg) + 
+      ggplot2::geom_blank() + ggplot2::theme_void()
+  }
+  if (is.null(filename)) {
+    return(p)
+  }
+  else {
+    imgtype <- strsplit(basename(filename), split = "\\.")[[1]][-1]
+    if (length(imgtype) == 0) {
+      filename = paste0(filename, ".pdf")
+    }
+    if (tolower(imgtype) %in% c("png", "pdf", "jpeg", "tiff", 
+                                "bmp")) {
+      if (is.na(width)) {
+        width = max(grDevices::dev.size()[1], 8)
+      }
+      if (is.na(height)) {
+        height = max(grDevices::dev.size()[2], 6)
+      }
+      ggplot2::ggsave(filename = filename, plot = p, width = width, 
+                      height = height, limitsize = F)
+      message("The image is saved to ", filename)
+      return(p)
+    }
+    else {
+      stop("The given file format is not supported.\nPlease use one of the following extensions: .png, .pdf, .jpeg, .tiff, .bmp")
+    }
+  }
+}
+```
+# LBD vs Control
+```{r}
+i <- "LBDvsControl"
+filepath <- paste0(
+  "../../results/",
+  tool,
+  "/DEGs/",
+  condition,
+  "_",
+  i,
+  "_gene_DEGs_FDRq0.05_logFC_0.25.txt"
+)
+df <- assign(paste0(i),
+             tryCatch(
+               read.delim(
+                 filepath,
+                 header = TRUE,
+                 sep = "\t",
+                 stringsAsFactors = FALSE
+               ),
+               error = function(e)
+                 NULL
+             ))
+up <- subset(df$gene_name, df$logFC > 0, sort = FALSE)
+assign(paste0(i, "_up"), up)
+down <- subset(df$gene_name, df$logFC < 0, sort = FALSE)
+assign(paste0(i, "_down"), down)
+
+# gprofiler
+gp_up <- gost(up, ordered_query = TRUE, organism = "hsapiens")
+gp_down <- gost(down, ordered_query = TRUE, organism = "hsapiens")
+
+#--- up
+# interactive plot
+gostplot(gp_up, interactive = TRUE)
+p_up = gostplot(gp_up, interactive = FALSE)
+plot_up <- publish_gostplot_intersect(p_up, highlight_terms = c("GO:0005515", "GO:0031982", "GO:0071944", "GO:0023052","GO:0051716",  "WP:WP3945"))
+plot_up
+path <- paste0("../../results/", tool, "/gprofiler/", i, "_up_gprofiler")
+pdf(paste0(path, ".pdf"), height = 6, width = 8)
+print(plot_up)
+dev.off()
+
+#--- down
+# interactive plot
+gostplot(gp_down, interactive = TRUE)
+p_down = gostplot(gp_down, interactive = FALSE)
+plot_down <- publish_gostplot_intersect(p_down, highlight_terms = c("GO:0016491", "GO:0005759", "GO:0016054", "KEGG:01212", "WP:WP5241"))
+plot_down
+path <- paste0("../../results/", tool, "/gprofiler/", i, "_down_gprofiler")
+pdf(paste0(path, ".pdf"), height = 6, width = 8)
+print(plot_down)
+dev.off()
+```
+```{r}
+row1 <-
+  ggarrange(
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    ncol = 4,
+    labels = c("up-regulated", "", "", ""),
+    font.label = list(size = 9, color = "red")
+  )
+
+row3 <-
+  ggarrange(
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    ncol = 4,
+    labels = c("down-regulated", "", "", ""),
+    font.label = list(size = 9, color = "blue")
+  )
+combind <-
+  ggarrange(
+    row1,
+    plot_up,
+    row3,
+    plot_down,
+    nrow = 4,
+    labels = c("a)", "", "b)", ""),
+    heights = c(0.1, 1, 0.05, 1),
+    font.label = list(size = 8)
+  )
+combind
+
+path <- paste0("../../results/manuscript_figures/Supplemental_Figure_LBD_vs_Control_gProfiler_bubble")
+saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
+```
+
+
 # GO Plot
-```{r plot, eval=FALSE, echo=FALSE}
-up <- subset(ADvsControl, Cluster == "up-regulated")
-up <- up[1:15, ]
+```{r plot, eval=FALSE, echo=FALSE, eval = FALSE}
+up <- subset(gp_mod, Cluster == "up-regulated")
+#up <- up[1:15, ]
 p_enrich <- ggplot(data=up, aes(x=Count, y=Description)) +
    geom_bar(stat="identity", aes(fill = p.adjust), width = .65) +
   theme(axis.title.x = element_text(size = 12),

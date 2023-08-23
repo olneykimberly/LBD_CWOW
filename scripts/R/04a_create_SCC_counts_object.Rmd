@@ -21,6 +21,10 @@ source(here::here("scripts/R", "gtf_path.R"))
 condition <- c("") # change condition to rename files for comparing between different approaches. 
 tool = c("star")
 typeOfCount <-  c(".bamReadsPerGene.out.tab")
+metadata <-
+  read.delim(
+    "/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt"
+  )
 ```
 # Read data
 ### Metadata
@@ -153,7 +157,7 @@ dim(dge)
 keep.expr <-
   filterByExpr(
     edgeR::cpm(dge$counts),
-    dge$samples$ATS_names, # by ATS groups
+    dge$samples$TYPE, # by disease groups
     min.count = 1, # min count of 1 CPM 
     min.prop = 0.3 # at least 30% of the smallest group 
   )
@@ -223,7 +227,7 @@ saveToPDF(paste0(path, ".pdf"), width = 35, height = 6)
 ```{r RIN_check, warning=FALSE}
 # check if there is correlation between RIN and library size
 box <- dge.filtered.norm$samples
-
+box <- box[!is.na(box$RIN),]
 cor(box$RIN, box$lib.size, method = c("pearson", "kendall", "spearman"))
 cor.test(box$RIN, box$lib.size, method=c("pearson", "kendall", "spearman"))
 
@@ -409,7 +413,7 @@ remove(
 
 # Save R object
 ```{r save_dge_final}
-saveRDS(dge.filtered.norm, file = paste0("../../rObjects/", condition, "dge.filtered.norm.rds"))
+saveRDS(dge.filtered.norm, file = paste0("../../rObjects/dge.filtered.norm.rds"))
 check_info <- dge.filtered.norm$samples
 ```
 
