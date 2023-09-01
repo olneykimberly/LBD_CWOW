@@ -323,7 +323,6 @@ list_input <- list("group1" = group1$NPID,
                    "group6" = group6$NPID,
                    "group7" = group7$NPID)
 group_data <- fromList(list_input)
-upset(group_data)
 
 metadata$ATS <-
   ifelse(
@@ -673,6 +672,7 @@ bar_plot_fun <- function(i, j) {
       color = "black",
       size = 3.5
     )
+
 }
 bar_plots <-
   Map(bar_plot_fun, i = metadata_categorical, j = column_variables)
@@ -720,6 +720,130 @@ walk2(plotnames,
         plot = .y,
         height = 7,
         width = 6.5
+      ))
+```
+
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
+# clean up
+remove(bar_plots, pie_plots, plotnames, p) # do not remove metadata_categorical
+```
+## TYPE.sex
+```{r message=FALSE, warning=FALSE, tidy=TRUE}
+metadata_categorical <-
+  data.frame(
+    metadata$LBD.type,
+    metadata$AD.subtype,
+    metadata$CDLB,
+    metadata$TDP.type,
+    metadata$APOE,
+    metadata$MAPT,
+    metadata$GRN,
+    metadata$TMEM106b,
+    metadata$Braak.NFT,
+    metadata$Thal.amyloid,
+    metadata$MF.Tau,
+    metadata$MF.Amyloid,
+    metadata$VaD,
+    metadata$TDP.43,
+    metadata$FHx,
+    metadata$MF.SP,
+    metadata$MF.NFT,
+    metadata$MF.LB,
+    metadata$Cing.LB,
+    metadata$Cing.Synuclein,
+    metadata$Race
+  )
+# To do it for all names
+column_variables <-
+  c(
+    "LBD.type",
+    "AD.subtype",
+    "CDLB",
+    "TDP.type",
+    "APOE",
+    "MAPT",
+    "GRN",
+    "TMEM106b",
+    "Braak.NFT",
+    "Thal.amyloid",
+    "MF.Tau",
+    "MF.Amyloid",
+    "VaD",
+    "TDP.43",
+    "FHx",
+    "MF.SP",
+    "MF.NFT",
+    "MF.LB",
+    "Cing.LB",
+    "Cing.Synuclein",
+    "Race"
+  )
+
+bar_plot_fun <- function(i, j) {
+  ggplot(metadata, aes(TYPE, after_stat(count), fill = factor(i))) +
+    geom_bar(colour = "black") +
+    theme_bw() +
+    ggtitle(j) + 
+    guides(fill = guide_legend(title = j)) +
+    xlab("Disease group") +
+    ylab("Count") +
+    scale_fill_manual(values=colorbindColors) +
+    geom_text(
+      stat = 'count',
+      aes(label = after_stat(count)),
+      position = position_stack(vjust = .5),
+      color = "black",
+      size = 3.5
+    ) + facet_grid(. ~ sex_inferred)
+
+}
+bar_plots <-
+  Map(bar_plot_fun, i = metadata_categorical, j = column_variables)
+bar_plots
+
+pie_plot_fun <- function(j) {
+  data <- metadata %>%
+    group_by(metadata[j], TYPE) %>%
+    dplyr::count() %>%
+    ungroup(all_of(j)) %>%
+    mutate(perc = `n` / sum(`n`)) %>%
+    arrange(perc) %>%
+    mutate(labels = scales::percent(perc))
+  k <- unlist(data[, c(1)])
+  
+  pie <- ggplot(data, aes(x = "", y = perc, fill = factor(k))) +
+    geom_col(color = "black") +
+    geom_label(
+      aes(label = labels),
+      color = c("black"),
+      position = position_stack(vjust = 0.5),
+      show.legend = FALSE
+    ) +
+    facet_wrap( ~ TYPE, ncol = 4) +
+    guides(fill = guide_legend(title = j)) +
+    coord_polar(theta = "y") +
+    theme_void() +
+    theme(legend.position = "none")+ 
+    scale_fill_manual(values=colorbindColors)+ 
+    facet_grid(. ~ sex_inferred)
+}
+pie_plots <- Map(pie_plot_fun, j = column_variables)
+
+p <- list()
+for (i in 1:length(column_variables)) {
+  p[[i]] <- grid.arrange(grobs = c(bar_plots[i], pie_plots[i]), heights = c(2,1))
+}
+
+plotnames = imap(pie_plots, ~ paste0("../../results/clinical/TYPE.sex", .y, ".pdf")) %>%
+  flatten()
+plotnames
+walk2(plotnames,
+      p,
+      ~ ggsave(
+        filename = .x,
+        plot = .y,
+        height = 7,
+        width = 8.5
       ))
 ```
 

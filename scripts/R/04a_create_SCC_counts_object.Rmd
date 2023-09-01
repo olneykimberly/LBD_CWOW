@@ -48,10 +48,10 @@ metadata$path <- count_files
 ```
 ### Create a counts matrix
 ```{r counts_matrix}
-counts <- data.frame(fread(count_files[1]))[c(1, 2)]
-# Loop and read the 2nd column remaining files
+counts <- data.frame(fread(count_files[1]))[c(1, 4)]
+# Loop and read the 4th column remaining files
 for (i in 2:length(count_files)) {
-  counts <- cbind(counts, data.frame(fread(count_files[i]))[2])
+  counts <- cbind(counts, data.frame(fread(count_files[i]))[4])
 }
 ```
 # Star mapping metrics
@@ -98,8 +98,8 @@ table(dge$samples$ATS_names)
 
 # Save R object
 ```{r rOjects}
-saveRDS(dge, file = paste0("../../rObjects/", condition, "dge.raw.rds"))
-dge <- readRDS(paste0("../../rObjects/", condition, "dge.raw.rds"))
+#saveRDS(dge, file = paste0("../../rObjects/", condition, "dge.raw.rds"))
+#dge <- readRDS(paste0("../../rObjects/", condition, "dge.raw.rds"))
 ```
 # MDS
 convert counts to cpm and lcpm
@@ -156,8 +156,8 @@ This means at least 6 samples (6 is the smallest group sample size) must express
 dim(dge)
 keep.expr <-
   filterByExpr(
-    edgeR::cpm(dge$counts),
-    dge$samples$TYPE, # by disease groups
+    dge,
+    group = dge$samples$TYPE, # by disease groups
     min.count = 1, # min count of 1 CPM 
     min.prop = 0.3 # at least 30% of the smallest group 
   )

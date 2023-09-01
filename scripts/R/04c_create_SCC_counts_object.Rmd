@@ -44,10 +44,10 @@ metadata$path <- count_files
 ```
 ### Create a counts matrix
 ```{r counts_matrix}
-counts <- data.frame(fread(count_files[1]))[c(1, 2)]
-# Loop and read the 2nd column remaining files
+counts <- data.frame(fread(count_files[1]))[c(1, 4)]
+# Loop and read the remaining counts files
 for (i in 2:length(count_files)) {
-  counts <- cbind(counts, data.frame(fread(count_files[i]))[2])
+  counts <- cbind(counts, data.frame(fread(count_files[i]))[4])
 }
 ```
 # Star mapping metrics

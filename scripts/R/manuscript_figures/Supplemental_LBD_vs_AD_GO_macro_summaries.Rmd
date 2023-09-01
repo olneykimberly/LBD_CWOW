@@ -1,5 +1,5 @@
 ---
-title: "Figure 3. within LBD comparisons"
+title: "Supplemental LBD vs AD GO term gene heatmap"
 author: "Kimberly Olney"
 date: "07/10/2023"
 output: html_document
@@ -193,7 +193,7 @@ up_and_down_enrich_plot <-
   scale_fill_gradientn(
     colours = c("#800026FF", "#FD8D3CFF", "gray"),
     guide = "legend",
-    limits = c(-38,0)
+    limits = c(-22,-3)
   ) +
     theme(strip.text = element_text(size = 8), 
           axis.text.y = element_text(size = 8),
@@ -203,7 +203,7 @@ up_and_down_enrich_plot <-
           legend.title = element_text(size = 8),
           legend.margin=margin(0,0.5,0,0),
           legend.box.margin=margin(-10,-2,-10,-7.5), 
-          plot.margin = margin(0.1, 0.2, 0.5, 0.3, "cm"), #t,r,b,l
+          plot.margin = margin(0.1, 0.2, 0.5, 0.8, "cm"), #t,r,b,l
           plot.title = element_text(size = 8, hjust = -2.85, vjust=0, margin = margin(0,0,0,0)))
  #  theme(aspect.ratio = 1.5) # to reduce the size of the boxes 
 addSmallLegend <- function(myPlot, pointSize = 4, textSize = 7, spaceLegend = .5) {
@@ -357,32 +357,25 @@ format_order_down_df <- format_down_df[, c(2,1,4,3,5:9)] # reorder
 # write table 
 write.table(format_order_down_df, "Supplemental_LBD_vs_AD_Metascape_downregulated_genes_within_GO.txt", sep= "\t", quote = FALSE, row.names = FALSE)
 ```
-# immune
+# Up heatmap
+## synaptic signaling 
 ```{r}
-GO_immune <-
+GO_1 <-
   subset(
     up_df,
     (
- up_df$variable == "positive regulation of immune response" | 
- up_df$variable == "positive regulation of cytokine production" | 
- up_df$variable == "cellular response to cytokine stimulus" | 
- up_df$variable == "inflammatory response" | 
- up_df$variable == "cell activation" | 
- up_df$variable == "regulation of cell activation" | 
- up_df$variable == "TYROBP causal network in microglia" |  
- up_df$variable == "regulation of tumor necrosis factor superfamily cytokine production" | 
- up_df$variable == "negative regulation of immune system process"
+        up_df$variable == "synaptic signaling" 
     )
     & up_df$value == 1
   )
-GO_immune_unique <- GO_immune[!duplicated(GO_immune[,c('gene')]),]
-GO_immune_top <- head(GO_immune_unique, 40)
+GO_1_unique <- GO_1[!duplicated(GO_1[,c('gene')]),]
+GO_1_top <- head(GO_1_unique, 40)
 
 # lock in gene order which is sorted by adjusted p-value
-GO_immune_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_immune_top$gene_id)
-GO_immune_DEG$FC <- 2^(GO_immune_DEG$logFC)
+GO_1_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_1_top$gene_id)
+GO_1_DEG$FC <- 2^(GO_1_DEG$logFC)
 # heatmap 
-up_GO_immune_heat <- ggplot(data = GO_immune_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
+up_GO_1_heat <- ggplot(data = GO_1_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = sprintf("%0.2f", round(FC, digits = 2))), color = "black", size = 2.75) +
   scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
@@ -408,31 +401,28 @@ up_GO_immune_heat <- ggplot(data = GO_immune_DEG, aes(x = gene_type, y = reorder
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("immune") +
-  xlab("LBD/Control")
-up_GO_immune_heat
+    ggtitle("synaptic signaling") +
+  xlab("LBD/AD")
+up_GO_1_heat
 ```
-# vasculature
+## Signaling by Receptor Tyrosine Kinases        
 ```{r}
-GO_vasculature <-
+GO_2 <-
   subset(
     up_df,
     (
-      up_df$variable == "tube morphogenesis" |
-        up_df$variable == "Hemostasis" |
-        up_df$variable == "VEGFA-VEGFR2 signaling" |
-        up_df$variable == "Osteoclast differentiation"
+      up_df$variable == "Signaling by Receptor Tyrosine Kinases"
     )
     & up_df$value == 1
   )
-GO_vasculature_unique <- GO_vasculature[!duplicated(GO_vasculature[,c('gene')]),]
-GO_vasculature_top <- head(GO_vasculature_unique, 40)
+GO_2_unique <- GO_2[!duplicated(GO_2[,c('gene')]),]
+GO_2_top <- head(GO_2_unique, 40)
 
 # lock in gene order which is sorted by adjusted p-value
-GO_vasculature_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_vasculature_top$gene_id)
-GO_vasculature_DEG$FC <- 2^(GO_vasculature_DEG$logFC)
+GO_2_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_2_top$gene_id)
+GO_2_DEG$FC <- 2^(GO_2_DEG$logFC)
 # heatmap 
-up_GO_vasculature_heat <- ggplot(data = GO_vasculature_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
+up_GO_2_heat <- ggplot(data = GO_2_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = sprintf("%0.2f", round(FC, digits = 2))), color = "black", size = 2.75) +
   scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
@@ -458,29 +448,29 @@ up_GO_vasculature_heat <- ggplot(data = GO_vasculature_DEG, aes(x = gene_type, y
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("vasculature") +
-  xlab("LBD/Control")
-up_GO_vasculature_heat
+    ggtitle("Signaling by 
+Receptor Tyrosine Kinases") +
+  xlab("LBD/AD")
+up_GO_2_heat
 ```
-# kinase cascade
+## forebrain development   
 ```{r}
-GO_kinase <-
+GO_3 <-
   subset(
     up_df,
     (
- up_df$variable == "regulation of kinase activity" |  
- up_df$variable == "regulation of MAPK cascade"
+ up_df$variable == "forebrain development"
     )
     & up_df$value == 1
   )
-GO_kinase_unique <- GO_kinase[!duplicated(GO_kinase[,c('gene')]),]
-GO_kinase_top <- head(GO_kinase_unique, 40)
+GO_3_unique <- GO_3[!duplicated(GO_3[,c('gene')]),]
+GO_3_top <- head(GO_3_unique, 40)
 
 # lock in gene order which is sorted by adjusted p-value
-GO_kinase_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_kinase_top$gene_id)
-GO_kinase_DEG$FC <- 2^(GO_kinase_DEG$logFC)
+GO_3_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_3_top$gene_id)
+GO_3_DEG$FC <- 2^(GO_3_DEG$logFC)
 # heatmap 
-up_GO_kinase_heat <- ggplot(data = GO_kinase_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
+up_GO_3_heat <- ggplot(data = GO_3_DEG, aes(x = gene_type, y = reorder(gene, FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = sprintf("%0.2f", round(FC, digits = 2))), color = "black", size = 2.75) +
   scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
@@ -506,30 +496,32 @@ up_GO_kinase_heat <- ggplot(data = GO_kinase_DEG, aes(x = gene_type, y = reorder
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("kinase cascade") +
-  xlab("LBD/Control")
-up_GO_kinase_heat
+    ggtitle("forebrain development") +
+  xlab("LBD/AD")
+up_GO_3_heat
 ```
-# organic acid 
+
+# Down heatmap
+## organic acid 
 ```{r}
-GO_organic_acid <-
+GO_down_1 <-
   subset(
     down_df,
     (
- down_df$variable == "organic acid catabolic process" 
+ down_df$variable == "Cytoplasmic ribosomal proteins" 
     )
     & down_df$value == 1
   )
-GO_organic_acid_unique <- GO_organic_acid[!duplicated(GO_organic_acid[,c('gene')]),]
-GO_organic_acid_top <- head(GO_organic_acid_unique, 40)
+GO_down_1_unique <- GO_down_1[!duplicated(GO_down_1[,c('gene')]),]
+GO_down_1_top <- head(GO_down_1_unique, 40)
 
 # lock in gene order which is sorted by adjusted p-value
-GO_organic_acid_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_organic_acid_top$gene_id)
-GO_organic_acid_DEG$FC <- 2^(abs(GO_organic_acid_DEG$logFC))
-GO_organic_acid_DEG$FC <- GO_organic_acid_DEG$FC*-1
+GO_down_1_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_down_1_top$gene_id)
+GO_down_1_DEG$FC <- 2^(abs(GO_down_1_DEG$logFC))
+GO_down_1_DEG$FC <- GO_down_1_DEG$FC*-1
 
 # heatmap 
-down_GO_organic_acid_heat <- ggplot(data = GO_organic_acid_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
+down_GO_1_heat <- ggplot(data = GO_down_1_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = sprintf("%0.2f", round(FC, digits = 2))), color = "black", size = 2.75) +
   scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
@@ -555,29 +547,30 @@ down_GO_organic_acid_heat <- ggplot(data = GO_organic_acid_DEG, aes(x = gene_typ
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("organic acid catabolic process") +
-  xlab("LBD/Control")
-down_GO_organic_acid_heat
+    ggtitle("Cytoplasmic ribosomal proteins") +
+  xlab("LBD/AD")
+down_GO_1_heat
 ```
+## mitochondrion organization 
 ```{r}
-GO_steroid <-
+GO_down_2 <-
   subset(
     down_df,
     (
- down_df$variable == "steroid hormone biosynthetic process" 
+ down_df$variable == "mitochondrion organization" 
     )
     & down_df$value == 1
   )
-GO_steroid_unique <- GO_steroid[!duplicated(GO_steroid[,c('gene')]),]
-GO_steroid_top <- head(GO_steroid_unique, 40)
+GO_down_2_unique <- GO_down_2[!duplicated(GO_down_2[,c('gene')]),]
+GO_down_2_top <- head(GO_down_2_unique, 40)
 
 # lock in gene order which is sorted by adjusted p-value
-GO_steroid_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_steroid_top$gene_id)
-GO_steroid_DEG$FC <- 2^(GO_steroid_DEG$logFC)
-GO_steroid_DEG$FC <- GO_steroid_DEG$FC*-1
+GO_down_2_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_down_2_top$gene_id)
+GO_down_2_DEG$FC <- 2^(abs(GO_down_2_DEG$logFC))
+GO_down_2_DEG$FC <- GO_down_2_DEG$FC*-1
 
 # heatmap 
-down_GO_steroid_heat <- ggplot(data = GO_steroid_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
+down_GO_2_heat <- ggplot(data = GO_down_2_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = sprintf("%0.2f", round(FC, digits = 2))), color = "black", size = 2.75) +
   scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
@@ -603,31 +596,31 @@ down_GO_steroid_heat <- ggplot(data = GO_steroid_DEG, aes(x = gene_type, y = reo
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("steroid") +
-  xlab("LBD/Control")
-down_GO_steroid_heat
+    ggtitle("mitochondrion organization") +
+  xlab("LBD/AD")
+down_GO_2_heat
 ```
 
-# steroid
+## small molecule catabolic process
 ```{r}
-GO_steroid <-
+GO_down_3 <-
   subset(
     down_df,
     (
- down_df$variable == "steroid hormone biosynthetic process" 
+ down_df$variable == "small molecule catabolic process" 
     )
     & down_df$value == 1
   )
-GO_steroid_unique <- GO_steroid[!duplicated(GO_steroid[,c('gene')]),]
-GO_steroid_top <- head(GO_steroid_unique, 40)
+GO_down_3_unique <- GO_down_3[!duplicated(GO_down_3[,c('gene')]),]
+GO_down_3_top <- head(GO_down_3_unique, 40)
 
 # lock in gene order which is sorted by adjusted p-value
-GO_steroid_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_steroid_top$gene_id)
-GO_steroid_DEG$FC <- 2^(abs(GO_steroid_DEG$logFC))
-GO_steroid_DEG$FC <- GO_steroid_DEG$FC*-1
+GO_down_3_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_down_3_top$gene_id)
+GO_down_3_DEG$FC <- 2^(abs(GO_down_3_DEG$logFC))
+GO_down_3_DEG$FC <- GO_down_3_DEG$FC*-1
 
 # heatmap 
-down_GO_steroid_heat <- ggplot(data = GO_steroid_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
+down_GO_3_heat <- ggplot(data = GO_down_3_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
   geom_tile(aes(fill = FC), color = "gray") +
   geom_text(aes(label = sprintf("%0.2f", round(FC, digits = 2))), color = "black", size = 2.75) +
   scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
@@ -653,60 +646,9 @@ down_GO_steroid_heat <- ggplot(data = GO_steroid_DEG, aes(x = gene_type, y = reo
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("steroid") +
-  xlab("LBD/Control")
-down_GO_steroid_heat
-```
-# response to toxic substance
-```{r}
-GO_toxic <-
-  subset(
-    down_df,
-    (
- down_df$variable == "response to toxic substance" 
-    )
-    & down_df$value == 1
-  )
-GO_toxic_unique <- GO_toxic[!duplicated(GO_toxic[,c('gene')]),]
-GO_toxic_top <- head(GO_toxic_unique, 40)
-
-# lock in gene order which is sorted by adjusted p-value
-GO_toxic_DEG <- subset(DEG_df, DEG_df$gene_id %in% GO_toxic_top$gene_id)
-GO_toxic_DEG$FC <- 2^(abs(GO_toxic_DEG$logFC))
-GO_toxic_DEG$FC <- GO_toxic_DEG$FC*-1
-
-GO_toxic_DEG$colorVal <-  ifelse(GO_toxic_DEG$FC < -2, 'white', "black")
-
-# heatmap 
-down_GO_toxic_heat <- ggplot(data = GO_toxic_DEG, aes(x = gene_type, y = reorder(gene, -FC))) +
-  geom_tile(aes(fill = FC), color = "gray") +
-  geom_text(aes(label = sprintf("%0.2f", round(FC, digits = 2))), color = GO_toxic_DEG$colorVal, size = 2.75) +
-  scale_fill_gradientn(colours = c("blue","#FFFFCC","red"), 
-                         values = rescale(c(-2.8,0,2.1)),
-                         guide = "colorbar", limits=c(-2.8, 2.1),
-                         breaks = c(-2.8, 0, 2.1)) +
-  scale_x_discrete(expand = c(0,0)) +
-  scale_y_discrete(expand = c(0,0)) +
-  theme_bw() +
-  theme(
-    strip.text = element_text(size = 8),
-    legend.position = "none",
-    panel.border = element_blank(),
-    panel.background = element_blank(),
-    plot.margin = margin(0.1, 1, 0.2, 1, "cm"), #t,r,b,l
-    panel.spacing = unit(0,'lines'), 
-    plot.title = element_text(size = 8, vjust = -1, hjust = 0),
-    axis.title.x=element_text(size = 7),
-    axis.text.x = element_blank(), 
-    axis.ticks.x=element_blank(), 
-    axis.title.y = element_blank(), 
-    axis.text.y = element_text(size = 7, margin = margin(r = -2)),
-    axis.ticks.y=element_blank(),
-    panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank())+
-    ggtitle("response to toxic substance") +
-  xlab("LBD/Control")
-down_GO_toxic_heat
+    ggtitle("small molecule catabolic process") +
+  xlab("LBD/AD")
+down_GO_3_heat
 ```
 ### legend only
 ```{r}
@@ -749,9 +691,9 @@ row1 <-
   )
 
 row2 <- ggarrange(
-  up_GO_immune_heat,
-  up_GO_vasculature_heat,
-  up_GO_kinase_heat,
+  up_GO_1_heat,
+  up_GO_2_heat,
+  up_GO_3_heat,
   ncol = 3,
   labels = c("a)", "b)", "c)"),
   font.label = list(size = 8)
@@ -769,9 +711,9 @@ row3 <-
   )
 
 row4 <- ggarrange(
-  down_GO_organic_acid_heat,
-  down_GO_steroid_heat,
-  down_GO_toxic_heat,
+  down_GO_1_heat,
+  down_GO_2_heat,
+  down_GO_3_heat,
   ncol = 3,
   labels = c("d)", "e)", "f)"),
   font.label = list(size = 8)
@@ -788,7 +730,7 @@ combind <-
   )
 combind
 
-path <- paste0("../../../results/manuscript_figures/Supplemental_Figure_LBD_vs_Control_metascape_gene_FC_heatmaps")
+path <- paste0("../../../results/manuscript_figures/Supplemental_Figure_LBD_vs_AD_metascape_gene_FC_heatmaps")
 saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 ```
 ```{r}

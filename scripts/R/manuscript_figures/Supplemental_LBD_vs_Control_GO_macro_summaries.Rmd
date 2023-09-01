@@ -1,5 +1,5 @@
 ---
-title: "Figure 3. within LBD comparisons"
+title: "Supplemental LBD GO term gene heatmap"
 author: "Kimberly Olney"
 date: "07/10/2023"
 output: html_document
@@ -358,21 +358,14 @@ format_order_down_df <- format_down_df[, c(2,1,4,3,5:9)] # reorder
 # write table 
 write.table(format_order_down_df, "Supplemental_LBD_vs_Control_Metascape_downregulated_genes_within_GO.txt", sep= "\t", quote = FALSE, row.names = FALSE)
 ```
-# immune
+# Up heatmaps
+## Immune
 ```{r}
 GO_immune <-
   subset(
     up_df,
     (
- up_df$variable == "positive regulation of immune response" | 
- up_df$variable == "positive regulation of cytokine production" | 
- up_df$variable == "cellular response to cytokine stimulus" | 
- up_df$variable == "inflammatory response" | 
- up_df$variable == "cell activation" | 
- up_df$variable == "regulation of cell activation" | 
- up_df$variable == "TYROBP causal network in microglia" |  
- up_df$variable == "regulation of tumor necrosis factor superfamily cytokine production" | 
- up_df$variable == "negative regulation of immune system process"
+ up_df$variable == "positive regulation of immune response" 
     )
     & up_df$value == 1
   )
@@ -409,20 +402,18 @@ up_GO_immune_heat <- ggplot(data = GO_immune_DEG, aes(x = gene_type, y = reorder
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("immune") +
+    ggtitle("positive regulation of 
+immune response") +
   xlab("LBD/Control")
 up_GO_immune_heat
 ```
-# vasculature
+## Hemostasis
 ```{r}
 GO_vasculature <-
   subset(
     up_df,
     (
-      up_df$variable == "tube morphogenesis" |
-        up_df$variable == "Hemostasis" |
-        up_df$variable == "VEGFA-VEGFR2 signaling" |
-        up_df$variable == "Osteoclast differentiation"
+        up_df$variable == "Hemostasis" 
     )
     & up_df$value == 1
   )
@@ -459,18 +450,17 @@ up_GO_vasculature_heat <- ggplot(data = GO_vasculature_DEG, aes(x = gene_type, y
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("vasculature") +
+    ggtitle("hemostasis") +
   xlab("LBD/Control")
 up_GO_vasculature_heat
 ```
-# kinase cascade
+## Kinase 
 ```{r}
 GO_kinase <-
   subset(
     up_df,
     (
- up_df$variable == "regulation of kinase activity" |  
- up_df$variable == "regulation of MAPK cascade"
+ up_df$variable == "regulation of kinase activity"
     )
     & up_df$value == 1
   )
@@ -507,11 +497,12 @@ up_GO_kinase_heat <- ggplot(data = GO_kinase_DEG, aes(x = gene_type, y = reorder
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("kinase cascade") +
+    ggtitle("regulation of kinase activity") +
   xlab("LBD/Control")
 up_GO_kinase_heat
 ```
-# organic acid 
+# Down heatmaps
+## organic acid 
 ```{r}
 GO_organic_acid <-
   subset(
@@ -609,7 +600,7 @@ down_GO_steroid_heat <- ggplot(data = GO_steroid_DEG, aes(x = gene_type, y = reo
 down_GO_steroid_heat
 ```
 
-# steroid
+## steroid
 ```{r}
 GO_steroid <-
   subset(
@@ -654,11 +645,12 @@ down_GO_steroid_heat <- ggplot(data = GO_steroid_DEG, aes(x = gene_type, y = reo
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("steroid") +
+    ggtitle("steroid hormone 
+biosynthetic process") +
   xlab("LBD/Control")
 down_GO_steroid_heat
 ```
-# response to toxic substance
+## response to toxic substance
 ```{r}
 GO_toxic <-
   subset(
