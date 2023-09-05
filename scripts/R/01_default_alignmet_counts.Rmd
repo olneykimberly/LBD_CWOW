@@ -35,7 +35,14 @@ Samples are aligned to a default human reference genome GRCh38. See Snakemake pi
 Read in the STAR aligned counts files for each sample. 
 ```{r read_data}
 # read in metadata
-metadata <- vroom(paste0(pathToRawData, "metadata_cleaned.tsv"))
+#metadata <- vroom(paste0(pathToRawData, "metadata_cleaned.tsv"))
+
+# updated because we removed some samples due to poor quality. 
+# Now read in this table. 
+metadata <-
+  read.delim(
+    "/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/metadata_A-T-S_scores.txt"
+  )
 metadata$TYPE <- gsub(" - ", "_", metadata$TYPE) 
 # RNA integrity number (RIN)
 RIN <- vroom(paste0(pathToRawData, "RIN.tsv"))
@@ -73,7 +80,6 @@ counts_metadata$path <- count_files
 
 # create a counts matrix
 counts <- data.frame(fread(count_files[1]))[c(1, 4)]
-# Loop and read the 2nd column remaining files
 for (i in 2:length(count_files)) {
   counts <- cbind(counts, data.frame(fread(count_files[i]))[4])
 }
@@ -174,7 +180,7 @@ MDS_1 <- plotMDS(
 title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 
 path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_gene_MDS_techreps_label_sex_dim1&2")
+               condition,"_gene_MDS_label_sex_dim1&2")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 5)
 
 # plot MDS
@@ -190,11 +196,11 @@ MDS_2 <- plotMDS(
 )
 title(expression('Top 100 Genes (Log'[2]~'CPM)'))
 path <- paste0("../../results/", tool, "/MDS/", 
-               condition,"_gene_MDS_techreps_label_sex_dim2&3")
+               condition,"_gene_MDS_label_sex_dim2&3")
 saveToPDF(paste0(path, ".pdf"), width = 5, height = 5)
 ```
 # Sex check
-View the expression of sex-linked genes to determine if samples are correctly annoated as XX or XY. 
+View the expression of sex-linked genes to determine if samples are correctly annotated as XX or XY. 
 Genetic sex is not gender. 
 ```{r}
 genes_and_counts <- cbind(dge$genes$gene_name, dge$counts)
@@ -222,7 +228,7 @@ sex_gene_meta <- sex_gene_meta %>%
   )
 ```
 # Sex inference model
-Infer the genetic sex of the sample using GTEx data as a reference or typical sex-linked gene expression. 
+Infer the genetic sex of the sample using GTEx data as a reference for typical sex-linked gene expression. 
 ```{r}
 # for_rna_sex_check.tsv is GTEx expression data 
 training_model_data <- "for_rna_sex_check.tsv"

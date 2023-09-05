@@ -15,7 +15,7 @@ library("readxl")
 #source(here::here("scripts/R", "gtf_path.R"))
 condition <- c("TYPE")
 tool <- "star"
-dge.filtered.norm <- readRDS(paste0("../../../rObjects/dge.filtered.norm.rds"))
+dge.filtered.norm <- readRDS(paste0("../../../../rObjects/dge.filtered.norm.rds"))
 ```
 # Binary list shared gene function
 ```{r}
@@ -43,7 +43,7 @@ i <- "ADvsControl"
 up_enrich_results <-
   read_excel(
     paste0(
-      "../../../results/",
+      "../../../../results/",
       tool,
       "/metascape/",
       i,
@@ -54,7 +54,7 @@ up_enrich_results <-
 down_enrich_results <-
   read_excel(
     paste0(
-      "../../../results/",
+      "../../../../results/",
       tool,
       "/metascape/",
       i,
@@ -219,12 +219,12 @@ addSmallLegend <- function(myPlot, pointSize = 4, textSize = 7, spaceLegend = .5
 up_and_down_enrich_plot <- addSmallLegend(up_and_down_enrich_plot)
 up_and_down_enrich_plot
 
-path <- paste0("../../../results/manuscript_figures/Supplemental_AD_vs_Control_metascape")
+path <- paste0("../../../../results/manuscript_figures/Supplemental_AD_vs_Control_metascape")
 saveToPDF(paste0(path, ".pdf"), width = 7, height = 6)
 ```
 ### Fold change information 
 ```{r}
-group1_vs_group2 <- read.delim(paste0("../../../results/", tool, "/DEGs/", condition, "_", i, "_gene_DEGs_FDRq1.00.txt"))
+group1_vs_group2 <- read.delim(paste0("../../../../results/", tool, "/DEGs/", condition, "_", i, "_gene_DEGs_FDRq1.00.txt"))
 up_regulated <- subset(
   group1_vs_group2, adj.P.Val <= 0.05 & logFC > 0.25)
 down_regulated <- subset(
@@ -645,7 +645,7 @@ down_GO_2_heat <- ggplot(data = GO_down_2_DEG, aes(x = gene_type, y = reorder(ge
     axis.ticks.y=element_blank(),
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank())+
-    ggtitle("behavoir") +
+    ggtitle("behavior") +
   xlab("AD/Control")
 down_GO_2_heat
 ```
@@ -780,7 +780,7 @@ combind <-
   )
 combind
 
-path <- paste0("../../../results/manuscript_figures/Supplemental_Figure_AD_vs_Control_metascape_gene_FC_heatmaps")
+path <- paste0("../../../../results/manuscript_figures/Supplemental_Figure_AD_vs_Control_metascape_gene_FC_heatmaps")
 saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 ```
 ```{r}

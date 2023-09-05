@@ -98,7 +98,7 @@ table(dge$samples$ATS_names)
 
 # Save R object
 ```{r rOjects}
-#saveRDS(dge, file = paste0("../../rObjects/", condition, "dge.raw.rds"))
+saveRDS(dge, file = paste0("../../rObjects/", condition, "dge.raw.rds"))
 #dge <- readRDS(paste0("../../rObjects/", condition, "dge.raw.rds"))
 ```
 # MDS

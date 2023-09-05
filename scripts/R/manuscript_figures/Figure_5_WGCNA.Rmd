@@ -44,6 +44,9 @@ dge.filtered.norm <- readRDS(paste0("../../../rObjects/dge.filtered.norm.rds"))
 info <- as.data.frame(dge.filtered.norm$samples)
 genes <- as.data.frame(dge.filtered.norm$genes)
 
+info$lib.size.1 <- NULL
+info$norm.factors.1 <- NULL
+
 # keep only the columns that hold information we need. 
 dataTraits <- info[, c(6,11:19,21,22,24,29,37,108,109,114,117:124)] # Keep
 dim(dataTraits)
@@ -63,7 +66,7 @@ plotDendroAndColors(bwnet$dendrograms[[1]], cbind(bwnet$unmergedColors, bwnet$co
                     hang = 0.03,
                     guideHang = 0.05)
 
-path <- paste0("../../../results/manuscript_figures/Figure_4_dendrogram")
+path <- paste0("../../../results/manuscript_figures/Figure_WGCNA_dendrogram")
 saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 
 ```
@@ -250,6 +253,171 @@ df_LBDvsAD$FDRq <- ifelse(df_LBDvsAD$adj.P.Val < 0.05, "< 0.05", "No difference"
 df_LBDvsAD$FDRq <- df_LBDvsAD$FDRq %>% replace_na('Not DE')
 colnames(df_LBDvsAD)[2] ="hcolors"
 ```
+DEGs in modules
+# DEGs in modules
+```{r}
+data <- df_ADvsControl %>% 
+  group_by(FDRq,hcolors) %>%
+  dplyr::count() %>% 
+  ungroup(FDRq) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+data$hcolors <- factor(data$hcolors, levels = plot_colors) 
+data$FDRq <- factor(data$FDRq, levels = c("Not DE", "< 0.05"))
+
+ADvsControl_per_DEGs <- ggplot(data, aes(fill=FDRq, y=hcolors, x=perc)) + 
+    geom_bar(position="fill", stat="identity") +
+ theme_bw() +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8, margin = margin(t = 0, r = 10, b = 0, l = 0)),
+          axis.title.y = element_blank(), 
+          axis.text.x = element_text(size = 8, color = "black", angle = 45, vjust = 1, hjust=1), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
+          legend.margin=margin(0,0.5,0,0),
+          legend.box.margin=margin(-10,-2,-10,-7.5), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.3, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.4,0))) +
+    scale_fill_manual("legend", values = c("< 0.05" = "maroon3", "Not DE" = "grey65")) +
+  ggtitle("AD vs Control") +
+    xlab("Fraction") +
+    ylab("Gene modules") +
+    theme(
+    legend.position = "none", 
+    legend.text = element_text(size =6), 
+    legend.title = element_text (size = 8), 
+    legend.margin=margin(0,0,1,0),
+    legend.key.size = unit(0.5, "cm"))
+ADvsControl_per_DEGs <- addSmallLegend(ADvsControl_per_DEGs)
+ADvsControl_per_DEGs
+
+# LBD vs Control
+data <- df_LBDvsControl %>% 
+  group_by(FDRq,hcolors) %>%
+  dplyr::count() %>% 
+  ungroup(FDRq) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+data$hcolors <- factor(data$hcolors, levels = plot_colors) 
+data$FDRq <- factor(data$FDRq, levels = c("Not DE", "< 0.05"))
+
+LBDvsControl_per_DEGs <- ggplot(data, aes(fill=FDRq, y=hcolors, x=perc)) + 
+    geom_bar(position="fill", stat="identity") +
+ theme_bw() +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8, margin = margin(t = 0, r = 10, b = 0, l = 0)),
+          axis.title.y = element_blank(), 
+          axis.text.x = element_text(size = 8, color = "black", angle = 45, vjust = 1, hjust=1), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
+          legend.margin=margin(0,0.5,0,0),
+          legend.box.margin=margin(-10,-2,-10,-7.5), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.3, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.4,0))) +
+    scale_fill_manual("legend", values = c("< 0.05" = "maroon3", "Not DE" = "grey65")) +
+  ggtitle("LBD vs Control") +
+    xlab("Fraction") +
+    ylab("Gene modules") +
+    theme(
+    legend.position = "none", 
+    legend.text = element_text(size =6), 
+    legend.title = element_text (size = 8), 
+    legend.margin=margin(0,0,1,0),
+    legend.key.size = unit(0.5, "cm"))
+LBDvsControl_per_DEGs <- addSmallLegend(LBDvsControl_per_DEGs)
+LBDvsControl_per_DEGs
+
+
+#### LBD vs AD
+data <- df_LBDvsAD %>% 
+  group_by(FDRq,hcolors) %>%
+  dplyr::count() %>% 
+  ungroup(FDRq) %>% 
+  mutate(perc = `n` / sum(`n`)) %>% 
+  arrange(perc) %>%
+  mutate(labels = scales::percent(perc))
+data$hcolors <- factor(data$hcolors, levels = plot_colors) 
+data$FDRq <- factor(data$FDRq, levels = c("Not DE", "< 0.05"))
+
+LBDvsAD_per_DEGs <- ggplot(data, aes(fill=FDRq, y=hcolors, x=perc)) + 
+    geom_bar(position="fill", stat="identity") +
+ theme_bw() +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8, margin = margin(t = 0, r = 10, b = 0, l = 0)),
+          axis.title.y = element_blank(), 
+          axis.text.x = element_text(size = 8, color = "black", angle = 45, vjust = 1, hjust=1), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
+          legend.margin=margin(0,0.5,0,0),
+          legend.box.margin=margin(-10,-2,-10,-7.5), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.3, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.4,0))) +
+    scale_fill_manual("legend", values = c("< 0.05" = "maroon3", "Not DE" = "grey65")) +
+  ggtitle("LBD vs AD") +
+    xlab("Fraction") +
+    ylab("Gene modules") +
+    theme(
+    legend.position = "none", 
+    legend.text = element_text(size =6), 
+    legend.title = element_text (size = 8), 
+    legend.margin=margin(0,0,1,0),
+    legend.key.size = unit(0.5, "cm"))
+LBDvsAD_per_DEGs <- addSmallLegend(LBDvsAD_per_DEGs)
+LBDvsAD_per_DEGs
+
+
+LegDummy <- ggplot(data, aes(fill=FDRq, y=hcolors, x=perc)) + 
+    geom_bar(position="fill", stat="identity") +
+ theme_bw() +
+    theme(strip.text = element_text(size = 8), 
+          axis.text.y = element_text(size = 8, margin = margin(t = 0, r = 10, b = 0, l = 0)),
+          axis.title.y = element_blank(), 
+          axis.text.x = element_text(size = 8, color = "black", angle = 45, vjust = 1, hjust=1), 
+          axis.title.x = element_text(size = 8), 
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
+          legend.margin=margin(0,0.5,0,0),
+          legend.box.margin=margin(-10,-2,-10,-7.5), 
+          plot.margin = margin(0.1, 0.3, 0.2, 0.3, "cm"), #t,r,b,l
+          plot.title = element_text(size = 8, margin = margin(.1,.1,.4,0))) +
+    scale_fill_manual("legend", values = c("< 0.05" = "maroon3", "Not DE" = "grey65")) +
+  ggtitle("LBD vs AD") +
+    xlab("Fraction") +
+    ylab("Gene modules") +
+    theme(
+    legend.position = "right", 
+    legend.text = element_text(size =6), 
+    legend.title = element_text (size = 8), 
+    legend.margin=margin(0,0,1,0),
+    legend.key.size = unit(0.5, "cm"))
+leg <- get_legend(LegDummy)
+# Convert to a ggplot and print
+legend_box <- as_ggplot(leg)
+legend_box
+
+DEGs_modules <-
+  ggarrange(
+    ADvsControl_per_DEGs,
+    LBDvsControl_per_DEGs,
+    LBDvsAD_per_DEGs,
+    legend_box,
+    ncol = 4,
+    labels = c("a)", "b)", "c)", ""),
+    font.label = list(size = 8),
+    widths = c(1, 1, 1, .2)
+  )
+DEGs_modules
+
+path <- paste0("../../../results/manuscript_figures/Supplemental_Figure_DEGs_in_WGCNA_modules")
+saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 4)
+```
+
+
 ### magenta graph all 
 ```{r eval = FALSE}
 magenta_graph <- wgcna2igraph(net = bwnet, datExpr = counts,

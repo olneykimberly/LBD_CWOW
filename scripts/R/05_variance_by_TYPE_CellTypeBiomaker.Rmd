@@ -37,8 +37,6 @@ dge.filtered.norm$samples$APOE <- factor(dge.filtered.norm$samples$APOE)
 info <- as.data.frame(dge.filtered.norm$samples)
 genes <- dge.filtered.norm$genes
 gene_name <- genes$gene_name
-saveRDS(veBayesFit, file = paste0("../../rObjects/", condition, ".veBayesFit.rds"))
-
 saveRDS(gene_name, file ="/research/labs/neurology/fryer/m239830/LBD_CWOW/rObjects/gene_tables/gene_options.rds")
 ```
 
@@ -70,6 +68,7 @@ df_list <- list(ENO2, OLIG2, CD34, P2RY12, GFAP)
 
 # merge all data frames in list
 cell_biomarker_lcpm <- df_list %>% reduce(full_join, by='NPID')
+write.table(cell_biomarker_lcpm, "../../rObjects/gene_tables/cell_biomarker_cpm.txt", quote = FALSE, sep = "\t")
 ```
 # Scale data
 rescaling a predictor in a regression has absolutely no effect on the magnitude of the relation being studied—the slope itself will not change its steepness, nor will the p-values or variance explained be changed. Rescaling is merely a means of communicating the nature of the regression line in different, hopefully more intuitive language.
