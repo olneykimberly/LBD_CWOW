@@ -18,9 +18,9 @@ This git repo contains scripts for the following:
 -   Generation of shiny app for exploration of the results presented in Olney et al. 202x publication, view app [here](https://fryerlab.shinyapps.io/LBD_CWOW/)
 
 
-## 1. Create conda enviroment
+## Create conda enviroment
 
-The necessary software for bulk RNAseq data processing is contained in this file: `LBD.yml`.
+The necessary software for bulk RNAseq data processing is contained in: `LBD.yml`.
 
 To create the environment:
 ```
@@ -35,12 +35,12 @@ conda env create -n LBD --file LBD.yml
 #     $ conda deactivate
 
 ```
-After the conda LBD environment has been created, you will need to add gatk..
-This step must be done manually and not through conda; see [here](https://gatk.broadinstiitute.org
-/hc/en-us/articles/360035889851--How-to-Install-and-use-Conda-for-GATK4)
+After the conda LBD environment has been created, you will need to additional install i GATK
+This step must be done manually and not through conda; see [here](https://gatk.broadinstitute.org/hc/en-us/articles/360036194592-Getting-started-with-GATK4)
 The above link will explain how to download GATK4, then you will need to add an alias to your bash profile:
 ```
 alias gatk='/path/to/gatk-package/gatk'
 ```
-Follow the step [here](https://gatk.broadinstitute.org/hc/en-us/articles/360036194592-Getting-started-with-GATK4)
+
+## Run Snakemake for bulk RNAseq  data processing 
 
