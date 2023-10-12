@@ -105,17 +105,17 @@ module_trait_corr <- cor(module_eigengenes, numeric_traits, use = 'p')
 module_trait_corr_pval <- corPvalueStudent(module_trait_corr, nSamples)
 module_trait_corr_pval
 module_trait_corr_pval_df <- as.data.frame(module_trait_corr_pval)
-unadjust <- module_trait_corr_pval_df$AD.vs.CONTROL
-adjust <- p.adjust(module_trait_corr_pval_df$AD.vs.CONTROL, method = p.adjust.methods, n = length(module_trait_corr_pval_df$AD.vs.CONTROL))
 
-library(magrittr)
-module_trait_corr_pval_fdr <- module_trait_corr_pval %>% 
-     as.vector %>% 
-     p.adjust(method='fdr') %>% # FDR is Benjamini & Hochberg
-     matrix(ncol=35)
+module_trait_corr_pval_fdr <- module_trait_corr_pval_df%>%mutate(across(contains("p-value"), ~ p.adjust(.x, method = "fdr", n = length(.x))))
 
-colnames(module_trait_corr_pval_fdr) <- colnames(module_trait_corr_pval)
-rownames(module_trait_corr_pval_fdr) <- rownames(module_trait_corr_pval)
+#library(magrittr)
+#module_trait_corr_pval_fdr <- module_trait_corr_pval %>% 
+#     as.vector %>% 
+ #    p.adjust(method='fdr') %>% # FDR is Benjamini & Hochberg
+#   matrix(ncol=35)
+
+#colnames(module_trait_corr_pval_fdr) <- colnames(module_trait_corr_pval)
+#rownames(module_trait_corr_pval_fdr) <- rownames(module_trait_corr_pval)
 ```
 # Heatmap
 ```{r heatmap}
@@ -177,9 +177,11 @@ ME_heatmap <- ggplot(data = data) +
   geom_text(aes(x = Var2, y =Var1, label = sig), size = 2.8) +
   #scale_color_manual(values = c('black' = 'black', 'white' = 'white'), guide = "none") +
   scale_fill_gradientn(colours = c("blue","white","red"), 
-                         values = rescale(c(-.3,.3)),
-                         guide = "colorbar", limits=c(-.3, .3),
-                         breaks = c(-.3, 0, .3), name = "Pearson's r") +
+                         #values = rescale(c(-.3,.3)),
+                         guide = "colorbar", 
+                         limits=c(-.3, .3),
+                         breaks = c(-.3, 0, .3),
+                         name = "Pearson's r") +
   scale_x_discrete(expand = c(0,0)) +
  theme_bw() +
     theme(strip.text = element_text(size = 8), 
@@ -255,7 +257,7 @@ colnames(df_LBDvsAD)[2] ="hcolors"
 ```
 DEGs in modules
 # DEGs in modules
-```{r}
+```{r eval = FALSE}
 data <- df_ADvsControl %>% 
   group_by(FDRq,hcolors) %>%
   dplyr::count() %>% 
@@ -1065,7 +1067,7 @@ combind <-
   )
 combind
 
-path <- paste0("../../../results/manuscript_figures/Figure_4_WGCNA_TYPE")
+path <- paste0("../../../results/manuscript_figures/Figure_4_WGCNA_TYPE_updated_FDRq")
 saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 11)
 ```
 ```{r}

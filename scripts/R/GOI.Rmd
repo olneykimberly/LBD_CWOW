@@ -28,13 +28,136 @@ voomCountsMatrix <- readRDS("/research/labs/neurology/fryer/m239830/LBD_CWOW/rOb
 ```{r}
 # get the gene id that corresponds to the gene name 
 genes <- dge.filtered.norm$genes # gene information 
-goi <- subset(genes, gene_name == "PINK1" | gene_name == "PRKN") # gene of interest 
+# KANSL1, KAT8, and THAP11 expression
+goi <- subset(genes, gene_name == "KANSL1" | gene_name == "KAT8" | gene_name == "THAP11" | gene_name == "PINK1" | gene_name == "PRKN") # gene of interest 
 # subset counts 
 goi_counts <- subset(voomCountsMatrix, rownames(voomCountsMatrix) %in% rownames(goi))
 goi_melt <- reshape2::melt(goi_counts) # reshape data 
 names(goi_melt)[names(goi_melt) == "Var2"] <- "NPID" # rename columns to merge with metadata 
 names(goi_melt)[names(goi_melt) == "Var1"] <- "gene_id"
 df <- merge(goi_melt, metadata, by = "NPID")
+```
+
+# Gene_id for gene of interest 
+```{r}
+PINK1 <- subset(df, gene_id == "ENSG00000158828.8")
+PRKN <- subset(df, gene_id == "ENSG00000185345.23")
+KANSL1 <- subset(df, gene_id == "ENSG00000103510.20")
+KAT8 <- subset(df, gene_id == "ENSG00000168286.3")
+THAP11 <- subset(df, gene_id == "ENSG00000120071.15")
+
+plot(PINK1$value, KANSL1$value)
+
+column_variables <- c("ENSG00000120071.15") # gene_id to plot expression data for
+colors <- TypeColors
+
+KANSL1 = subset(KANSL1, select = c(NPID, TYPE, gene_id, value))
+KAT8 = subset(KAT8, select = c(NPID, TYPE, gene_id, value))
+THAP11 = subset(THAP11, select = c(NPID, TYPE, gene_id, value))
+
+write.table(KANSL1, "../../results/star/goi/KANSL1.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(KAT8, "../../results/star/goi/KAT8.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(THAP11, "../../results/star/goi/THAP11.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+PINK1_old <- read.delim("../../results/star/goi/PINK1.txt", header = TRUE)
+plot(PINK1_old$value, PINK1$value)
+
+
+df <- cbind(PINK1$value, KANSL1$value)
+df <- as.data.frame(df)
+# Scatter plot with correlation coefficient
+sp <- ggscatter(df, x = "V1", y = "V2",
+                add = "reg.line",  # Add regression line
+                add.params = list(color = "blue", fill = "lightgray"), 
+                conf.int = TRUE)
+# Add correlation coefficient
+sp + stat_cor(method = "pearson")
+```
+# Function violin jitter of gene expression 
+```{r}
+# Disease type 
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_id == j)
+  ggplot(df, aes(TYPE, value, fill = TYPE)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
+    theme_bw() +
+    ggtitle("THAP11 expression") +
+    xlab("TYPE") +
+    ylab(j) +
+    stat_compare_means() +
+    scale_fill_manual(values=colors) +
+    theme(legend.position = "none") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/THAP11.TYPE.pdf")) %>% #
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 8))
+
+
+factor(df$LBD.type)
+df$LBD.type <- factor(df$LBD.type, levels =c("no LBs", "TLBD", "DLBD", "BLBD"))
+
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_id == j)
+  ggplot(df, aes(LBD.type, value, fill = LBD.type)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
+    theme_bw() +
+    ggtitle("THAP11 expression") +
+    xlab("LBD.type") +
+    ylab(j) +
+    stat_compare_means() +
+    scale_fill_manual(values=colorbindColors) +
+    theme(legend.position = "none") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/THAP11.LBD.type.pdf")) %>% #
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 8))
+
+
+df <- subset(df, LBD.type == "TLBD" | LBD.type == "DLBD")
+violin_plot_fun <- function(j) {
+  df <- subset(df, gene_id == j)
+  ggplot(df, aes(LBD.type, value, fill = LBD.type)) +
+    geom_violin() +
+    geom_boxplot(width = 0.1, outlier.shape=NA) + 
+    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
+    theme_bw() +
+    ggtitle("THAP11 expression") +
+    xlab("LBD.type") +
+    ylab(j) +
+    stat_compare_means() +
+    scale_fill_manual(values=colorbindColors) +
+    theme(legend.position = "none") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+violin_plots <-
+  Map(violin_plot_fun, j = column_variables)
+violin_plots
+
+plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/THAP11.TLBD_DLBD.pdf")) %>% #
+  flatten()
+plotnames
+walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
+                                    height = 5.5, width = 6))
+
+
 ```
 # ENO2 & MBP expression
 ```{r}
@@ -104,106 +227,6 @@ ggscatter(df, x = "Brain.wt", y = "value",
   facet_grid(. ~ sex_inferred)
 path <- paste0("../../results/clinical/ENO2_brainweight_bySex")
 saveToPDF(paste0(path, ".pdf"), width = 10, height = 6)
-```
-# Gene_id for gene of interest 
-```{r}
-PINK1 <- subset(df, gene_id == "ENSG00000158828.8")
-PRKN <- subset(df, gene_id == "ENSG00000185345.23")
-column_variables <- c("ENSG00000158828.8") # gene_id to plot expression data for
-colors <- TypeColors
-
-
-PINK1 = subset(PINK1, select = c(NPID, TYPE, gene_id, value))
-PRKN = subset(PRKN, select = c(NPID, TYPE, gene_id, value))
-write.table(PINK1, "../../results/star/goi/PINK1.txt", sep = "\t", quote = FALSE, row.names = FALSE)
-write.table(PRKN, "../../results/star/goi/PRKN.txt", sep = "\t", quote = FALSE, row.names = FALSE)
-
-```
-# Function violin jitter of gene expression 
-```{r}
-# Disease type 
-violin_plot_fun <- function(j) {
-  df <- subset(df, gene_id == j)
-  ggplot(df, aes(TYPE, value, fill = TYPE)) +
-    geom_violin() +
-    geom_boxplot(width = 0.1, outlier.shape=NA) + 
-    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
-    theme_bw() +
-    ggtitle("PINK1 expression") +
-    xlab("TYPE") +
-    ylab(j) +
-    stat_compare_means() +
-    scale_fill_manual(values=colors) +
-    theme(legend.position = "none") +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-}
-violin_plots <-
-  Map(violin_plot_fun, j = column_variables)
-violin_plots
-
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/PINK1.TYPE.pdf")) %>% #
-  flatten()
-plotnames
-walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
-                                    height = 5.5, width = 8))
-
-
-factor(df$LBD.type)
-df$LBD.type <- factor(df$LBD.type, levels =c("no LBs", "TLBD", "DLBD", "BLBD"))
-
-violin_plot_fun <- function(j) {
-  df <- subset(df, gene_id == j)
-  ggplot(df, aes(LBD.type, value, fill = LBD.type)) +
-    geom_violin() +
-    geom_boxplot(width = 0.1, outlier.shape=NA) + 
-    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
-    theme_bw() +
-    ggtitle("PINK1 expression") +
-    xlab("LBD.type") +
-    ylab(j) +
-    stat_compare_means() +
-    scale_fill_manual(values=colorbindColors) +
-    theme(legend.position = "none") +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-}
-violin_plots <-
-  Map(violin_plot_fun, j = column_variables)
-violin_plots
-
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/PINK1.LBD.type.pdf")) %>% #
-  flatten()
-plotnames
-walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
-                                    height = 5.5, width = 8))
-
-
-df <- subset(df, LBD.type == "TLBD" | LBD.type == "DLBD")
-violin_plot_fun <- function(j) {
-  df <- subset(df, gene_id == j)
-  ggplot(df, aes(LBD.type, value, fill = LBD.type)) +
-    geom_violin() +
-    geom_boxplot(width = 0.1, outlier.shape=NA) + 
-    geom_jitter(shape=16, position=position_jitter(0.2), alpha = 0.1) +
-    theme_bw() +
-    ggtitle("PINK1 expression") +
-    xlab("LBD.type") +
-    ylab(j) +
-    stat_compare_means() +
-    scale_fill_manual(values=colorbindColors) +
-    theme(legend.position = "none") +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-}
-violin_plots <-
-  Map(violin_plot_fun, j = column_variables)
-violin_plots
-
-plotnames = imap(violin_plots, ~paste0("../../results/", tool, "/goi/PINK1.TLBD_DLBD.pdf")) %>% #
-  flatten()
-plotnames
-walk2(plotnames, violin_plots, ~ggsave(filename = .x, plot = .y, 
-                                    height = 5.5, width = 6))
-
-
 ```
 # GOI gene of interest histogram
 ```{r goi_hist}

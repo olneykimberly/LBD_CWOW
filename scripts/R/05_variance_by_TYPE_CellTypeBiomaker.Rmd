@@ -141,9 +141,19 @@ varPart <- fitExtractVarPartModel(voomCounts, form_varPart, info_with_scale,
 ```
 
 ```{r}
-setnames(varPart, old = c('flowcell_and_lane','sex_inferred'), 
-         new = c('Batch','Sex'))
-plotVarPart(sortCols(varPart), label.angle = 80)
+setnames(varPart, old = c('flowcell_and_lane','sex_inferred','PCT_INTRONIC_BASES','PCT_CODING_BASES','PCT_INTERGENIC_BASES'), 
+         new = c('Batch','Sex','% intronic','% coding','% intergenic'))
+setnames(varPart, old = c('PCT_INTRONIC_BASES','PCT_CODING_BASES','PCT_INTERGENIC_BASES'), 
+         new = c('% intronic','% coding','% intergenic'))
+setnames(varPart, old = c('TYPE'), 
+         new = c('Diagnosis'))
+
+plotVarPart(sortCols(varPart), label.angle = 80) +
+      theme(
+             axis.title.x = element_text(size = 9),
+             axis.text.x = element_text(size = 9),
+             axis.title.y = element_text(size = 9),
+             axis.text.y = element_text(size = 9)) 
 path <-
   paste0(
     "../../results/",
@@ -152,8 +162,8 @@ path <-
     condition,
     ".finalmodel.varpart"
   )
-saveToPDF(paste0(path, ".pdf"), width = 8, height = 7)
-
+saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 5)
+saveRDS(varPart,   paste0("../../rObjects/finalmodel.varpart.rds"))
 
 # sort variables (i.e. columns) by median fraction # of variance explained
 vp <- sortCols( varPart )
@@ -163,6 +173,7 @@ plotPercentBars( vp[1:10,] )
 varPart$gene_id <- rownames(varPart)
 # merge with gene information to get gene names for gene_id
 variance_explained <- merge(varPart, genes, by = "gene_id")
+
 # Reorder columns
 variance_explained_reorder <- variance_explained[, c(1,21,11,2:10)]
 

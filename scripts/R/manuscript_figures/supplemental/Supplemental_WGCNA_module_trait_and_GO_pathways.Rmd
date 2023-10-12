@@ -33,14 +33,14 @@ addSmallLegend <- function(myPlot, pointSize = 4, textSize = 7, spaceLegend = .5
 ```
 # Read in data
 ```{r}
-voomCounts <- readRDS(paste0("../../../rObjects/", condition, ".voomCountsMatrix.rds"))
-load("../../../rObjects/bwnet.Rdata")
-load("../../../rObjects/WGCNA_allSampleInput.RData")
+voomCounts <- readRDS(paste0("../../../../rObjects/", condition, ".voomCountsMatrix.rds"))
+load("../../../../rObjects/bwnet.Rdata")
+load("../../../../rObjects/WGCNA_allSampleInput.RData")
 module_eigengenes <- bwnet$MEs
 head(module_eigengenes) # inspect 
 ngenes_per_module <- table(bwnet$colors) # number of genes in each module 
 
-dge.filtered.norm <- readRDS(paste0("../../../rObjects/dge.filtered.norm.rds"))
+dge.filtered.norm <- readRDS(paste0("../../../../rObjects/dge.filtered.norm.rds"))
 info <- as.data.frame(dge.filtered.norm$samples)
 genes <- as.data.frame(dge.filtered.norm$genes)
 
@@ -76,9 +76,8 @@ plotDendroAndColors(bwnet$dendrograms[[1]], cbind(bwnet$unmergedColors, bwnet$co
                     hang = 0.03,
                     guideHang = 0.05)
 
-path <- paste0("../../../results/manuscript_figures/Figure_4_dendrogram")
-saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
-
+#path <- paste0("../../../results/manuscript_figures/Figure_4_dendrogram")
+#saveToPDF(paste0(path, ".pdf"), width = 6, height = 4)
 ```
 # Association between modules and traits
 Which modules are associated with our traits
@@ -120,14 +119,16 @@ module_trait_corr_pval_df <- as.data.frame(module_trait_corr_pval)
 #unadjust <- module_trait_corr_pval_df$AD.vs.CONTROL
 #adjust <- p.adjust(module_trait_corr_pval_df$AD.vs.CONTROL, method = p.adjust.methods, n = length(module_trait_corr_pval_df$AD.vs.CONTROL))
 
-library(magrittr)
-module_trait_corr_pval_fdr <- module_trait_corr_pval %>% 
-     as.vector %>% 
-     p.adjust(method='fdr') %>% # FDR is Benjamini & Hochberg
-     matrix(ncol=17)
+module_trait_corr_pval_fdr <- module_trait_corr_pval_df%>%mutate(across(contains("p-value"), ~ p.adjust(.x, method = "fdr", n = length(.x))))
 
-colnames(module_trait_corr_pval_fdr) <- colnames(module_trait_corr_pval)
-rownames(module_trait_corr_pval_fdr) <- rownames(module_trait_corr_pval)
+#library(magrittr)
+#module_trait_corr_pval_fdr <- module_trait_corr_pval %>% 
+#     as.vector %>% 
+#     p.adjust(method='fdr') %>% # FDR is Benjamini & Hochberg
+#     matrix(ncol=17)
+
+#colnames(module_trait_corr_pval_fdr) <- colnames(module_trait_corr_pval)
+#rownames(module_trait_corr_pval_fdr) <- rownames(module_trait_corr_pval)
 ```
 # Heatmap
 ```{r heatmap}
@@ -182,7 +183,13 @@ data$Var2 <-
 data$Var2 <-
       gsub(
        "sex_numeric",
-        "sex",
+        "Sex",
+        data$Var2
+      )
+data$Var2 <-
+      gsub(
+       "APOE_E4_allele_count",
+        "APOE E4 count",
         data$Var2
       )
 #data$Var2 <- factor(data$Var2, levels = c("PA vs Control",  "AD vs Control", "LBD vs Control", "LBD vs AD"))
@@ -198,7 +205,7 @@ ME_heatmap <- ggplot(data = data) +
   geom_text(aes(x = Var2, y = Var1, label = sig), size = 2.8) +
   #scale_color_manual(values = c('black' = 'black', 'white' = 'white'), guide = "none") +
   scale_fill_gradientn(colours = c("blue","white","red"), 
-                         values = rescale(c(-.3,.3)),
+                        # values = rescale(c(-.3,.3)),
                          guide = "colorbar", limits=c(-.35, .35),
                          breaks = c(-.35, 0, .35), name = "Pearson's r") +
   scale_x_discrete(expand = c(0,0)) +
@@ -224,7 +231,7 @@ ME_heatmap <- ggplot(data = data) +
 ME_heatmap <- addSmallLegend(ME_heatmap)
 ME_heatmap
 
-path <- paste0("../../../results/manuscript_figures/Supplemental_Figure_5_WGCNA_module_trait_relationship_FDRq")
+path <- paste0("../../../../results/manuscript_figures/Supplemental_Figure_5_WGCNA_module_trait_relationship_FDRq")
 saveToPDF(paste0(path, ".pdf"), width = 8.5, height = 6)
 ```
 

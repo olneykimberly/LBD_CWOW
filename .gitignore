@@ -5,3 +5,4 @@ trimmedReads/
 scripts/snakemake/.snakemake/*/*
 scripts/snakemake/.snakemake/*
 scripts/R/glimma-plots/*
+.Rproj.user

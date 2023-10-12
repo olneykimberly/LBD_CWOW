@@ -276,6 +276,7 @@ coef.fit <- fit$coefficients
 contrasts <- makeContrasts(
   DLBD_BraakvsDLBD = DLBD_Braak - DLBD,
   TLBD_BraakvsDLBD = TLBD_Braak - DLBD,
+  TLBD_BraakvsTLBD = TLBD_Braak - TLBD,
   LBD_BraakvsLBD = (TLBD_Braak + DLBD_Braak)/2 - (TLBD + DLBD +BLBD)/3,
   levels = colnames(design))
 head(contrasts)
