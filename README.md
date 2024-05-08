@@ -5,17 +5,17 @@ Raw fastq files are available on SRA, PRJNA1023207
 
 | Disease                   | Count   |
 | ------------------------- |:-------:|
-| Control                   | 86      |
-| Pathological  aging (PA)  | 39      |
-| Alzheimer’s disease (AD)  | 54      |
-| Lewy body dementia (LBD)  | 440     |
+| Control                   | 81      |
+| Pathological  amyloid (PA)  | 39      |
+| Alzheimer’s disease (AD)  | 53      |
+| Lewy body disease (LBD)  | 436    |
 
 This git repo contains scripts for the following:
 -   Metadata analysis
 -   Processing of bulk-tissue RNA-sequencing data
 -   Analysis of bulk-tissue RNA-sequencing data 
--   Generation of manuscript figures from Olney et al. 202x publication 
--   Generation of shiny app for exploration of the results presented in Olney et al. 202x publication, view app [here](https://fryerlab.shinyapps.io/LBD_CWOW/)
+-   Generation of manuscript figures from Olney et al. 2024 publication 
+-   Generation of shiny app for exploration of the results presented in Olney et al. 2024 publication, view app [here](https://fryerlab.shinyapps.io/LBD_CWOW/)
 
 
 ## Create conda enviroment
